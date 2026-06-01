@@ -1,0 +1,38 @@
+import type { Lesson, Module } from "./types";
+import { javascript } from "./javascript";
+import { aiLlms } from "./ai-llms";
+
+// The whole curriculum. Add a module here and it shows up everywhere.
+export const MODULES: Module[] = [javascript, aiLlms];
+
+export function getModule(slug: string): Module | undefined {
+  return MODULES.find((m) => m.slug === slug);
+}
+
+export function getLesson(
+  moduleSlug: string,
+  lessonSlug: string,
+): { module: Module; lesson: Lesson; index: number } | undefined {
+  const module = getModule(moduleSlug);
+  if (!module) return undefined;
+  const index = module.lessons.findIndex((l) => l.slug === lessonSlug);
+  if (index === -1) return undefined;
+  return { module, lesson: module.lessons[index], index };
+}
+
+export function lessonId(moduleSlug: string, lessonSlug: string): string {
+  return `${moduleSlug}/${lessonSlug}`;
+}
+
+export function totalLessons(): number {
+  return MODULES.reduce((sum, m) => sum + m.lessons.length, 0);
+}
+
+export function totalXpAvailable(): number {
+  return MODULES.reduce(
+    (sum, m) => sum + m.lessons.reduce((s, l) => s + l.xp, 0),
+    0,
+  );
+}
+
+export type { Lesson, Module } from "./types";

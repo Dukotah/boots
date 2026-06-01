@@ -1,0 +1,64 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+}
+
+html,
+body {
+  background-color: theme("colors.canvas");
+  color: #e5e7eb;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Subtle starfield-ish ambiance for the RPG feel, kept cheap. */
+body {
+  background-image:
+    radial-gradient(circle at 15% 10%, rgba(139, 92, 246, 0.08), transparent 40%),
+    radial-gradient(circle at 85% 0%, rgba(52, 211, 153, 0.06), transparent 35%);
+  background-attachment: fixed;
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2
+      font-medium transition-all duration-150 active:scale-95;
+  }
+  .btn-primary {
+    @apply btn bg-accent text-white shadow-glow hover:bg-accent-soft;
+  }
+  .btn-ghost {
+    @apply btn border border-line bg-surface-2 text-gray-200 hover:border-accent/60;
+  }
+  .card {
+    @apply rounded-2xl border border-line bg-surface p-5;
+  }
+}
+
+/* Markdown lesson body styling. */
+.prose-lesson h1 {
+  @apply mb-3 mt-1 text-2xl font-bold text-white;
+}
+.prose-lesson h2 {
+  @apply mb-2 mt-5 text-lg font-semibold text-accent-soft;
+}
+.prose-lesson p {
+  @apply mb-3 leading-relaxed text-gray-300;
+}
+.prose-lesson ul {
+  @apply mb-3 list-disc pl-5 text-gray-300;
+}
+.prose-lesson code {
+  @apply rounded bg-surface-2 px-1.5 py-0.5 font-mono text-sm text-emerald-300;
+}
+.prose-lesson pre {
+  @apply mb-4 overflow-x-auto rounded-xl border border-line bg-[#0d0d17] p-4;
+}
+.prose-lesson pre code {
+  @apply bg-transparent p-0 text-gray-200;
+}
+.prose-lesson strong {
+  @apply font-semibold text-white;
+}
