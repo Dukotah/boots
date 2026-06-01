@@ -11,7 +11,9 @@ import { asyncJs } from "../src/lib/curriculum/async.ts";
 import { webApis } from "../src/lib/curriculum/web-apis.ts";
 import { strings } from "../src/lib/curriculum/strings.ts";
 import { functional } from "../src/lib/curriculum/functional.ts";
+import { closures } from "../src/lib/curriculum/closures.ts";
 import { oop } from "../src/lib/curriculum/oop.ts";
+import { collections } from "../src/lib/curriculum/collections.ts";
 import { recursion } from "../src/lib/curriculum/recursion.ts";
 import { regex } from "../src/lib/curriculum/regex.ts";
 import { errorHandling } from "../src/lib/curriculum/error-handling.ts";
@@ -19,9 +21,11 @@ import { json } from "../src/lib/curriculum/json.ts";
 import { math } from "../src/lib/curriculum/math.ts";
 import { algorithms } from "../src/lib/curriculum/algorithms.ts";
 import { dataStructures } from "../src/lib/curriculum/data-structures.ts";
+import { bitManipulation } from "../src/lib/curriculum/bit-manipulation.ts";
 import { dynamicProgramming } from "../src/lib/curriculum/dynamic-programming.ts";
 import { interview } from "../src/lib/curriculum/interview.ts";
 import { python } from "../src/lib/curriculum/python.ts";
+import { pythonOop } from "../src/lib/curriculum/python-oop.ts";
 import { pythonData } from "../src/lib/curriculum/python-data.ts";
 import { sql } from "../src/lib/curriculum/sql.ts";
 import { sqlJoins } from "../src/lib/curriculum/sql-joins.ts";
@@ -36,7 +40,9 @@ const MODULES: Module[] = [
   webApis,
   strings,
   functional,
+  closures,
   oop,
+  collections,
   recursion,
   regex,
   errorHandling,
@@ -44,9 +50,11 @@ const MODULES: Module[] = [
   math,
   algorithms,
   dataStructures,
+  bitManipulation,
   dynamicProgramming,
   interview,
   python,
+  pythonOop,
   pythonData,
   sql,
   sqlJoins,

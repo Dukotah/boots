@@ -5,7 +5,9 @@ import { asyncJs } from "./async";
 import { webApis } from "./web-apis";
 import { strings } from "./strings";
 import { functional } from "./functional";
+import { closures } from "./closures";
 import { oop } from "./oop";
+import { collections } from "./collections";
 import { recursion } from "./recursion";
 import { regex } from "./regex";
 import { errorHandling } from "./error-handling";
@@ -13,9 +15,11 @@ import { json } from "./json";
 import { math } from "./math";
 import { algorithms } from "./algorithms";
 import { dataStructures } from "./data-structures";
+import { bitManipulation } from "./bit-manipulation";
 import { dynamicProgramming } from "./dynamic-programming";
 import { interview } from "./interview";
 import { python } from "./python";
+import { pythonOop } from "./python-oop";
 import { pythonData } from "./python-data";
 import { sql } from "./sql";
 import { sqlJoins } from "./sql-joins";
@@ -30,7 +34,9 @@ export const MODULES: Module[] = [
   asyncJs,
   strings,
   functional,
+  closures,
   oop,
+  collections,
   recursion,
   regex,
   errorHandling,
@@ -39,10 +45,12 @@ export const MODULES: Module[] = [
   math,
   algorithms,
   dataStructures,
+  bitManipulation,
   dynamicProgramming,
   interview,
   // Python track
   python,
+  pythonOop,
   pythonData,
   // SQL track
   sql,
