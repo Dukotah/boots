@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getLesson, MODULES } from "@/lib/curriculum";
+import { lessonJsonLd, breadcrumbJsonLd } from "@/lib/seo";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { LessonView } from "@/components/LessonView";
 
 export function generateStaticParams() {
@@ -16,9 +18,19 @@ export function generateMetadata({
 }): Metadata {
   const found = getLesson(params.module, params.lesson);
   if (!found) return {};
+  const { module, lesson } = found;
+  const title = `${lesson.title} — ${module.title}`;
+  const path = `/learn/${module.slug}/${lesson.slug}`;
   return {
-    title: `${found.lesson.title} — ${found.module.title} | Boots`,
-    description: found.lesson.blurb,
+    title,
+    description: lesson.blurb,
+    alternates: { canonical: path },
+    openGraph: {
+      type: "article",
+      title: `${title} | Boots`,
+      description: lesson.blurb,
+      url: path,
+    },
   };
 }
 
@@ -34,5 +46,18 @@ export default function LessonPage({
   const next = module.lessons[index + 1];
   const nextHref = next ? `/learn/${module.slug}/${next.slug}` : null;
 
-  return <LessonView module={module} lesson={lesson} nextHref={nextHref} />;
+  return (
+    <>
+      <JsonLd data={lessonJsonLd(module, lesson)} />
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: "Home", path: "/" },
+          { name: "Courses", path: "/learn" },
+          { name: module.title, path: `/learn/${module.slug}` },
+          { name: lesson.title, path: `/learn/${module.slug}/${lesson.slug}` },
+        ])}
+      />
+      <LessonView module={module} lesson={lesson} nextHref={nextHref} />
+    </>
+  );
 }
