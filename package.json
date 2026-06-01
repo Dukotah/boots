@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "next lint",
     "check": "node --experimental-strip-types scripts/check-curriculum.ts",
+    "seed:sql": "node --experimental-strip-types scripts/seed-curriculum-sql.ts",
     "new:lesson": "node --experimental-strip-types scripts/new-lesson.ts"
   },
   "dependencies": {

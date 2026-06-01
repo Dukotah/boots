@@ -10,6 +10,7 @@ import type { Lesson, Module } from "@/lib/curriculum/types";
 import { lessonId } from "@/lib/curriculum";
 import { lessonLanguage, langMeta } from "@/lib/curriculum/lang";
 import { runLesson, type RunOutcome } from "@/lib/runner";
+import { recordCompletion } from "@/lib/scoring";
 import { useGameStore } from "@/store/useGameStore";
 import { useAccess } from "@/hooks/useAccess";
 import { useMounted } from "@/hooks/useMounted";
@@ -82,6 +83,9 @@ export function LessonView({
 
     if (result.results.every((r) => r.pass)) {
       completeLesson(id, lesson.xp);
+      // Server-authoritative record (best-effort; no-ops when signed out / no
+      // backend). The server awards canonical XP so totals can't be forged.
+      void recordCompletion(module.slug, lesson.slug);
     }
   }
 
