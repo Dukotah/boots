@@ -1,4 +1,4 @@
-import type { TestCase } from "./curriculum/types";
+import type { Lesson, TestCase, LessonLanguage } from "./curriculum/types";
 import type { TestResult } from "@/workers/codeRunner";
 
 export type RunOutcome = {
@@ -8,8 +8,22 @@ export type RunOutcome = {
 
 const TIMEOUT_MS = 4000;
 
-// Spawns a fresh worker per run so a runaway loop can be terminated cleanly.
-export function runCode(code: string, tests: TestCase[]): Promise<RunOutcome> {
+// Dispatch a lesson run to the right runtime. Every path runs client-side, so
+// there is no server sandbox: JS in a Web Worker, Python via Pyodide (WASM),
+// SQL via sql.js (SQLite in WASM). Pyodide/sql.js are loaded lazily from CDN the
+// first time a learner opens a Python/SQL lesson, then cached for the session.
+export function runLesson(
+  code: string,
+  lesson: Lesson,
+  language: LessonLanguage,
+): Promise<RunOutcome> {
+  if (language === "py") return runPython(code, lesson.tests);
+  if (language === "sql") return runSql(code, lesson);
+  return runJs(code, lesson.tests);
+}
+
+// ── JavaScript: sandboxed Web Worker (terminable on infinite loop) ────────────
+function runJs(code: string, tests: TestCase[]): Promise<RunOutcome> {
   return new Promise((resolve) => {
     const worker = new Worker(
       new URL("../workers/codeRunner.ts", import.meta.url),
@@ -50,4 +64,180 @@ export function runCode(code: string, tests: TestCase[]): Promise<RunOutcome> {
 
     worker.postMessage({ code, tests });
   });
+}
+
+// ── Python: Pyodide (CPython compiled to WASM), loaded once from jsDelivr ──────
+const PYODIDE_VERSION = "0.26.4";
+const PYODIDE_CDN = `https://cdn.jsdelivr.net/pyodide/v${PYODIDE_VERSION}/full/`;
+
+type Pyodide = {
+  runPython: (code: string) => unknown;
+  setStdout: (opts: { batched: (s: string) => void }) => void;
+  setStderr: (opts: { batched: (s: string) => void }) => void;
+};
+
+let pyodidePromise: Promise<Pyodide> | null = null;
+
+function loadPyodide(): Promise<Pyodide> {
+  if (pyodidePromise) return pyodidePromise;
+  pyodidePromise = (async () => {
+    // Dynamic import of the ESM build straight from CDN — no bundling, no npm dep.
+    const mod = await import(/* webpackIgnore: true */ `${PYODIDE_CDN}pyodide.mjs`);
+    return (await mod.loadPyodide({ indexURL: PYODIDE_CDN })) as Pyodide;
+  })();
+  return pyodidePromise;
+}
+
+// Helpers injected before every Python test so lessons share one grading contract.
+const PY_PRELUDE = `
+def assert_equals(actual, expected, msg=None):
+    if actual != expected:
+        raise AssertionError(msg or f"Expected {expected!r} but got {actual!r}")
+`;
+
+async function runPython(code: string, tests: TestCase[]): Promise<RunOutcome> {
+  let py: Pyodide;
+  try {
+    py = await loadPyodide();
+  } catch {
+    return {
+      timedOut: false,
+      results: tests.map((t) => ({
+        name: t.name,
+        pass: false,
+        error: "Could not load the Python runtime. Check your connection.",
+        logs: [],
+      })),
+    };
+  }
+
+  const results: TestResult[] = [];
+  for (const test of tests) {
+    const logs: string[] = [];
+    py.setStdout({ batched: (s) => logs.push(s) });
+    py.setStderr({ batched: (s) => logs.push(s) });
+    try {
+      py.runPython(`${PY_PRELUDE}\n${code}\n${test.code}`);
+      results.push({ name: test.name, pass: true, logs });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      // Pyodide errors are verbose; show the final, most useful line.
+      const lines = message.trim().split("\n");
+      results.push({
+        name: test.name,
+        pass: false,
+        error: lines[lines.length - 1] || message,
+        logs,
+      });
+    }
+  }
+  return { results, timedOut: false };
+}
+
+// ── SQL: sql.js (SQLite in WASM). Grade by comparing result sets to the ───────
+//        reference solution run against the same freshly-seeded database.
+const SQLJS_VERSION = "1.12.0";
+const SQLJS_CDN = `https://cdn.jsdelivr.net/npm/sql.js@${SQLJS_VERSION}/dist/`;
+
+type SqlDb = {
+  run: (sql: string) => void;
+  exec: (sql: string) => { columns: string[]; values: unknown[][] }[];
+  close: () => void;
+};
+type SqlJs = { Database: new () => SqlDb };
+
+let sqlJsPromise: Promise<SqlJs> | null = null;
+
+function loadSqlJs(): Promise<SqlJs> {
+  if (sqlJsPromise) return sqlJsPromise;
+  sqlJsPromise = (async () => {
+    const mod = await import(/* webpackIgnore: true */ `${SQLJS_CDN}sql-wasm.js`);
+    const initSqlJs = (mod.default ?? mod) as (cfg: {
+      locateFile: (f: string) => string;
+    }) => Promise<SqlJs>;
+    return initSqlJs({ locateFile: (f: string) => `${SQLJS_CDN}${f}` });
+  })();
+  return sqlJsPromise;
+}
+
+function execToString(db: SqlDb, query: string): string {
+  return JSON.stringify(db.exec(query));
+}
+
+async function runSql(code: string, lesson: Lesson): Promise<RunOutcome> {
+  const testName = lesson.tests[0]?.name ?? "Query returns the correct rows";
+  let SQL: SqlJs;
+  try {
+    SQL = await loadSqlJs();
+  } catch {
+    return {
+      timedOut: false,
+      results: [
+        {
+          name: testName,
+          pass: false,
+          error: "Could not load the SQL runtime. Check your connection.",
+          logs: [],
+        },
+      ],
+    };
+  }
+
+  const setup = lesson.setup ?? "";
+  // Reference result: solution query on a fresh, seeded DB.
+  let expected: string;
+  {
+    const db = new SQL.Database();
+    try {
+      db.run(setup);
+      expected = execToString(db, lesson.solution);
+    } catch (err) {
+      return {
+        timedOut: false,
+        results: [
+          {
+            name: testName,
+            pass: false,
+            error: `Lesson setup error: ${err instanceof Error ? err.message : String(err)}`,
+            logs: [],
+          },
+        ],
+      };
+    } finally {
+      db.close();
+    }
+  }
+
+  // Student result on an identical fresh DB.
+  const db = new SQL.Database();
+  try {
+    db.run(setup);
+    const actual = execToString(db, code);
+    const pass = actual === expected;
+    return {
+      timedOut: false,
+      results: [
+        {
+          name: testName,
+          pass,
+          error: pass ? undefined : "Your query's result doesn't match the expected rows.",
+          logs: [],
+        },
+      ],
+    };
+  } catch (err) {
+    return {
+      timedOut: false,
+      results: [
+        {
+          name: testName,
+          pass: false,
+          error: err instanceof Error ? err.message : String(err),
+          logs: [],
+        },
+      ],
+    };
+  } finally {
+    db.close();
+  }
 }

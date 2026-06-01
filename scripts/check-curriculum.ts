@@ -76,6 +76,19 @@ function checkLesson(mod: Module, lesson: Lesson, seen: Set<string>) {
 
   if (!lesson.tests?.length) return;
 
+  const language = lesson.language ?? mod.language ?? "js";
+
+  // Non-JS lessons (Python via Pyodide, SQL via sql.js) execute in a browser WASM
+  // runtime that we can't spin up under Node here, so we validate them
+  // structurally instead of grading them. Browser-side runs do the real grading.
+  if (language !== "js") {
+    if (language === "sql" && (!lesson.setup || !lesson.setup.trim()))
+      errors.push(`${where}: SQL lesson needs a "setup" (schema + seed data)`);
+    if (lesson.starterCode.trim() === lesson.solution.trim())
+      errors.push(`${where}: starterCode is identical to the solution (lesson is pre-solved)`);
+    return;
+  }
+
   // ── grading: solution must pass ALL tests ──
   for (const t of lesson.tests) {
     if (!testPasses(lesson.solution, t))

@@ -8,7 +8,8 @@ import { motion } from "framer-motion";
 import { Play, RotateCcw, Eye, ArrowRight, CheckCircle2, Loader2, Lock } from "lucide-react";
 import type { Lesson, Module } from "@/lib/curriculum/types";
 import { lessonId } from "@/lib/curriculum";
-import { runCode, type RunOutcome } from "@/lib/runner";
+import { lessonLanguage, langMeta } from "@/lib/curriculum/lang";
+import { runLesson, type RunOutcome } from "@/lib/runner";
 import { useGameStore } from "@/store/useGameStore";
 import { useAccess } from "@/hooks/useAccess";
 import { useMounted } from "@/hooks/useMounted";
@@ -27,6 +28,8 @@ export function LessonView({
   nextHref: string | null;
 }) {
   const id = lessonId(module.slug, lesson.slug);
+  const language = lessonLanguage(lesson, module);
+  const lang = langMeta(language);
   const [code, setCode] = useState(lesson.starterCode);
   const [outcome, setOutcome] = useState<RunOutcome | null>(null);
   const [running, setRunning] = useState(false);
@@ -50,7 +53,7 @@ export function LessonView({
   async function handleRun() {
     if (gated) return; // paywalled — run is disabled
     setRunning(true);
-    const result = await runCode(code, lesson.tests);
+    const result = await runLesson(code, lesson, language);
     setOutcome(result);
     setRunning(false);
 
@@ -85,8 +88,11 @@ export function LessonView({
       <section className="flex flex-col gap-3">
         <div className="card flex flex-col p-0">
           <div className="flex items-center justify-between border-b border-line px-4 py-2">
-            <span className="font-mono text-xs text-gray-400">
-              solution.js
+            <span className="flex items-center gap-2 font-mono text-xs text-gray-400">
+              {lang.filename}
+              <span className="rounded bg-white/5 px-1.5 py-0.5 text-[10px] not-italic text-gray-500">
+                {lang.runtime}
+              </span>
             </span>
             <div className="flex items-center gap-2">
               <button
@@ -111,7 +117,7 @@ export function LessonView({
             </div>
           </div>
           <div className="h-[340px]">
-            <CodeEditor value={code} onChange={setCode} />
+            <CodeEditor value={code} onChange={setCode} language={lang.monaco} />
           </div>
           <div className="flex items-center gap-3 border-t border-line p-3">
             {gated ? (
