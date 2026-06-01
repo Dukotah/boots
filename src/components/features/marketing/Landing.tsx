@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { MODULES, totalLessons } from "@/lib/curriculum";
 import { MascotBoots } from "@/components/MascotBoots";
+import { PathQuiz } from "./PathQuiz";
 
 // Mount-triggered entrance (not scroll-triggered): reliable for users, SEO/no-JS,
 // and screenshots. Below-the-fold sections finish animating off-screen, so they're
@@ -37,6 +38,7 @@ export function Landing() {
       <HowItWorks />
       <Features />
       <Paths />
+      <PathQuiz />
       <PricingTeaser />
       <FinalCta />
     </div>

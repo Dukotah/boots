@@ -5,6 +5,7 @@ import { Share2, Check } from "lucide-react";
 import { useGameStore } from "@/store/useGameStore";
 import { useMounted } from "@/hooks/useMounted";
 import { ProfileCard } from "@/components/features/profile/ProfileCard";
+import { PathProgressList } from "@/components/features/certificate/PathProgressList";
 import { SITE } from "@/lib/site";
 
 export default function ProfilePage() {
@@ -50,6 +51,13 @@ export default function ProfilePage() {
           achievements,
         }}
       />
+
+      <div className="mt-8">
+        <h2 className="mb-3 text-lg font-semibold text-white">
+          Paths &amp; certificates
+        </h2>
+        <PathProgressList />
+      </div>
 
       <p className="mt-4 text-center text-xs text-gray-500">
         Your public profile lives at{" "}

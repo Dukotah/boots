@@ -50,6 +50,7 @@ export const PATHS: Path[] = [
       "async",
       "json",
       "regex",
+      "git-github",
     ],
   },
   {
@@ -71,10 +72,12 @@ export const PATHS: Path[] = [
     moduleSlugs: [
       "javascript",
       "javascript-next",
+      "git-github",
       "async",
       "web-apis",
       "error-handling",
       "json",
+      "data-formats",
       "oop",
       "sql",
       "sql-joins",
@@ -164,7 +167,14 @@ export const PATHS: Path[] = [
       "Join data across multiple tables",
       "Analyze datasets in Python",
     ],
-    moduleSlugs: ["sql", "sql-joins", "python-data"],
+    moduleSlugs: [
+      "sql",
+      "sql-joins",
+      "sql-aggregations",
+      "sql-subqueries",
+      "data-formats",
+      "python-data",
+    ],
   },
   {
     slug: "cs-fundamentals",
@@ -223,4 +233,37 @@ export function pathStats(path: Path): {
 /** Which paths include a given module (for cross-linking from a course page). */
 export function pathsForModule(moduleSlug: string): Path[] {
   return PATHS.filter((p) => p.moduleSlugs.includes(moduleSlug));
+}
+
+/** Every "moduleSlug/lessonSlug" id in a path, in order. */
+export function pathLessonIds(path: Path): string[] {
+  return pathModules(path).flatMap((m) =>
+    m.lessons.map((l) => `${m.slug}/${l.slug}`),
+  );
+}
+
+export type PathProgress = {
+  done: number;
+  total: number;
+  pct: number;
+  complete: boolean;
+};
+
+/** A path's completion given the learner's set of completed lesson ids. */
+export function pathProgress(path: Path, completed: string[]): PathProgress {
+  const ids = pathLessonIds(path);
+  const completedSet = new Set(completed);
+  const done = ids.filter((id) => completedSet.has(id)).length;
+  const total = ids.length;
+  return {
+    done,
+    total,
+    pct: total ? Math.round((done / total) * 100) : 0,
+    complete: total > 0 && done === total,
+  };
+}
+
+/** Paths the learner has fully finished (earned a certificate for). */
+export function completedPaths(completed: string[]): Path[] {
+  return PATHS.filter((p) => pathProgress(p, completed).complete);
 }

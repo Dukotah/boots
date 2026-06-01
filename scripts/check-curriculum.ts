@@ -18,6 +18,8 @@ import { recursion } from "../src/lib/curriculum/recursion.ts";
 import { regex } from "../src/lib/curriculum/regex.ts";
 import { errorHandling } from "../src/lib/curriculum/error-handling.ts";
 import { json } from "../src/lib/curriculum/json.ts";
+import { dataFormats } from "../src/lib/curriculum/data-formats.ts";
+import { gitGithub } from "../src/lib/curriculum/git-github.ts";
 import { math } from "../src/lib/curriculum/math.ts";
 import { algorithms } from "../src/lib/curriculum/algorithms.ts";
 import { dataStructures } from "../src/lib/curriculum/data-structures.ts";
@@ -33,6 +35,8 @@ import { pythonAlgorithms } from "../src/lib/curriculum/python-algorithms.ts";
 import { pythonData } from "../src/lib/curriculum/python-data.ts";
 import { sql } from "../src/lib/curriculum/sql.ts";
 import { sqlJoins } from "../src/lib/curriculum/sql-joins.ts";
+import { sqlAggregations } from "../src/lib/curriculum/sql-aggregations.ts";
+import { sqlSubqueries } from "../src/lib/curriculum/sql-subqueries.ts";
 import { aiLlms } from "../src/lib/curriculum/ai-llms.ts";
 import type { Lesson, Module } from "../src/lib/curriculum/types.ts";
 
@@ -51,6 +55,8 @@ const MODULES: Module[] = [
   regex,
   errorHandling,
   json,
+  dataFormats,
+  gitGithub,
   math,
   algorithms,
   dataStructures,
@@ -66,6 +72,8 @@ const MODULES: Module[] = [
   pythonData,
   sql,
   sqlJoins,
+  sqlAggregations,
+  sqlSubqueries,
   aiLlms,
 ];
 

@@ -8,6 +8,7 @@ import { levelFromXp } from "@/lib/levels";
 import { MODULES, totalLessons, totalXpAvailable, lessonId } from "@/lib/curriculum";
 import { XPBar } from "@/components/XPBar";
 import { DailyQuests } from "@/components/features/quests/DailyQuests";
+import { PathProgressList } from "@/components/features/certificate/PathProgressList";
 
 export default function Dashboard() {
   const [mounted, setMounted] = useState(false);
@@ -76,6 +77,19 @@ export default function Dashboard() {
       {/* Daily quests */}
       <div className="mt-8">
         <DailyQuests />
+      </div>
+
+      {/* Paths & certificates */}
+      <div className="mt-8">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-xl font-semibold text-white">
+            Paths &amp; certificates
+          </h2>
+          <Link href="/paths" className="text-sm text-accent-soft hover:underline">
+            Browse paths →
+          </Link>
+        </div>
+        <PathProgressList />
       </div>
 
       {/* Course progress */}

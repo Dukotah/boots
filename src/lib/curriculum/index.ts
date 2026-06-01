@@ -12,6 +12,8 @@ import { recursion } from "./recursion";
 import { regex } from "./regex";
 import { errorHandling } from "./error-handling";
 import { json } from "./json";
+import { dataFormats } from "./data-formats";
+import { gitGithub } from "./git-github";
 import { math } from "./math";
 import { algorithms } from "./algorithms";
 import { dataStructures } from "./data-structures";
@@ -27,6 +29,8 @@ import { pythonAlgorithms } from "./python-algorithms";
 import { pythonData } from "./python-data";
 import { sql } from "./sql";
 import { sqlJoins } from "./sql-joins";
+import { sqlAggregations } from "./sql-aggregations";
+import { sqlSubqueries } from "./sql-subqueries";
 import { aiLlms } from "./ai-llms";
 
 // The whole curriculum. Add a module here and it shows up everywhere.
@@ -45,7 +49,9 @@ export const MODULES: Module[] = [
   regex,
   errorHandling,
   json,
+  dataFormats,
   webApis,
+  gitGithub,
   math,
   algorithms,
   dataStructures,
@@ -63,6 +69,8 @@ export const MODULES: Module[] = [
   // SQL track
   sql,
   sqlJoins,
+  sqlAggregations,
+  sqlSubqueries,
   // AI track
   aiLlms,
 ];
