@@ -1,11 +1,21 @@
 import type { Lesson, Module } from "./types";
 import { javascript } from "./javascript";
 import { javascriptNext } from "./javascript-next";
+import { functional } from "./functional";
+import { algorithms } from "./algorithms";
+import { dataStructures } from "./data-structures";
 import { aiLlms } from "./ai-llms";
 
 // The whole curriculum. Add a module here and it shows up everywhere.
-// Order defines the Campaign Map progression (sequential unlock).
-export const MODULES: Module[] = [javascript, javascriptNext, aiLlms];
+// Order defines the Campaign Map progression (sequential unlock) — a difficulty ramp.
+export const MODULES: Module[] = [
+  javascript,
+  javascriptNext,
+  functional,
+  algorithms,
+  dataStructures,
+  aiLlms,
+];
 
 export function getModule(slug: string): Module | undefined {
   return MODULES.find((m) => m.slug === slug);

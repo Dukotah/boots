@@ -304,5 +304,166 @@ Create a class \`Stack\` (last-in, first-out) with:
         },
       ],
     },
+    {
+      slug: "array-search",
+      title: "Searching Arrays",
+      blurb: "find, some, and every.",
+      xp: 30,
+      content: `# Searching Arrays
+
+Three array methods answer common questions:
+- \`find\` — the first matching element
+- \`some\` — does **any** element match?
+- \`every\` — do **all** elements match?
+
+\`\`\`js
+[1, 2, 3].some((n) => n > 2);  // true
+[1, 2, 3].every((n) => n > 0); // true
+\`\`\`
+
+## Your task
+Write \`allPositive(nums)\` that returns \`true\` if **every** number is greater
+than 0. An empty array returns \`true\`.`,
+      starterCode: `function allPositive(nums) {
+  // true if every number is > 0
+}
+`,
+      solution: `function allPositive(nums) {
+  return nums.every((n) => n > 0);
+}`,
+      tests: [
+        { name: "all positive", code: `assertEquals(allPositive([1, 2, 3]), true);` },
+        { name: "has a negative", code: `assertEquals(allPositive([1, -2]), false);` },
+        { name: "empty → true", code: `assertEquals(allPositive([]), true);` },
+      ],
+    },
+    {
+      slug: "sorting",
+      title: "Sorting with a Comparator",
+      blurb: "sort() needs a compare function for numbers.",
+      xp: 35,
+      content: `# Sorting with a Comparator
+
+\`.sort()\` sorts as **strings** by default (so \`[10, 2]\` becomes \`[10, 2]\`
+wrong!). For numbers, pass a comparator: return negative to keep order, positive
+to swap.
+
+\`\`\`js
+[3, 1, 2].sort((a, b) => a - b); // ascending
+\`\`\`
+
+\`sort\` mutates, so copy first with \`[...arr]\`.
+
+## Your task
+Write \`sortDesc(nums)\` returning a **new** array sorted in **descending** order.`,
+      starterCode: `function sortDesc(nums) {
+  // return a new array sorted high to low
+}
+`,
+      solution: `function sortDesc(nums) {
+  return [...nums].sort((a, b) => b - a);
+}`,
+      tests: [
+        { name: "sorts descending", code: `assertEquals(sortDesc([3, 1, 2]), [3, 2, 1]);` },
+        { name: "empty", code: `assertEquals(sortDesc([]), []);` },
+        { name: "with duplicates", code: `assertEquals(sortDesc([5, 5, 1]), [5, 5, 1]);` },
+      ],
+    },
+    {
+      slug: "object-iteration",
+      title: "Iterating Objects",
+      blurb: "Object.keys, values, and entries.",
+      xp: 35,
+      content: `# Iterating Objects
+
+To loop over an object, turn it into arrays:
+- \`Object.keys(obj)\` → the keys
+- \`Object.values(obj)\` → the values
+- \`Object.entries(obj)\` → \`[key, value]\` pairs
+
+\`\`\`js
+Object.values({ a: 1, b: 2 }); // [1, 2]
+\`\`\`
+
+## Your task
+Write \`sumValues(obj)\` returning the sum of all the (numeric) values in the
+object. An empty object sums to \`0\`.`,
+      starterCode: `function sumValues(obj) {
+  // sum all the values of obj
+}
+`,
+      solution: `function sumValues(obj) {
+  return Object.values(obj).reduce((total, v) => total + v, 0);
+}`,
+      tests: [
+        { name: "three values", code: `assertEquals(sumValues({ a: 1, b: 2, c: 3 }), 6);` },
+        { name: "empty → 0", code: `assertEquals(sumValues({}), 0);` },
+        { name: "single", code: `assertEquals(sumValues({ x: 10 }), 10);` },
+      ],
+    },
+    {
+      slug: "optional-chaining",
+      title: "Optional Chaining & Nullish",
+      blurb: "Safely reach into nested data.",
+      xp: 35,
+      content: `# Optional Chaining & Nullish
+
+Reaching into nested objects can crash if something is missing. \`?.\` short-
+circuits to \`undefined\` instead of throwing, and \`??\` supplies a fallback for
+\`null\`/\`undefined\`.
+
+\`\`\`js
+user?.address?.city ?? "Unknown";
+\`\`\`
+
+## Your task
+Write \`getCity(user)\` that returns \`user.address.city\` if present, otherwise
+\`"Unknown"\` — without crashing on missing data.`,
+      starterCode: `function getCity(user) {
+  // return the city, or "Unknown" if it's missing
+}
+`,
+      solution: `function getCity(user) {
+  return user?.address?.city ?? "Unknown";
+}`,
+      tests: [
+        {
+          name: "nested city",
+          code: `assertEquals(getCity({ address: { city: "NYC" } }), "NYC");`,
+        },
+        { name: "missing address", code: `assertEquals(getCity({}), "Unknown");` },
+        { name: "null user", code: `assertEquals(getCity(null), "Unknown");` },
+      ],
+    },
+    {
+      slug: "map-set-basics",
+      title: "Map & Set",
+      blurb: "Built-in collections for keys and uniqueness.",
+      xp: 35,
+      content: `# Map & Set
+
+\`Set\` stores **unique** values; \`Map\` stores key→value pairs (with any key
+type). \`new Set(array).size\` is the quickest way to count distinct items.
+
+\`\`\`js
+new Set([1, 1, 2]).size; // 2
+\`\`\`
+
+## Your task
+Write \`countUnique(arr)\` returning how many **distinct** values the array
+contains.`,
+      starterCode: `function countUnique(arr) {
+  // how many distinct values are in arr?
+}
+`,
+      solution: `function countUnique(arr) {
+  return new Set(arr).size;
+}`,
+      tests: [
+        { name: "some duplicates", code: `assertEquals(countUnique([1, 2, 2, 3]), 3);` },
+        { name: "empty → 0", code: `assertEquals(countUnique([]), 0);` },
+        { name: "all same", code: `assertEquals(countUnique(["a", "a"]), 1);` },
+      ],
+    },
   ],
 };

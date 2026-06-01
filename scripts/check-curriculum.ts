@@ -7,11 +7,21 @@
 // Node's type-stripping without a bundler. The app uses src/lib/curriculum/index.ts.
 import { javascript } from "../src/lib/curriculum/javascript.ts";
 import { javascriptNext } from "../src/lib/curriculum/javascript-next.ts";
+import { functional } from "../src/lib/curriculum/functional.ts";
+import { algorithms } from "../src/lib/curriculum/algorithms.ts";
+import { dataStructures } from "../src/lib/curriculum/data-structures.ts";
 import { aiLlms } from "../src/lib/curriculum/ai-llms.ts";
 import type { Lesson, Module } from "../src/lib/curriculum/types.ts";
 
 // Keep in sync with src/lib/curriculum/index.ts. (New module? Add it here too.)
-const MODULES: Module[] = [javascript, javascriptNext, aiLlms];
+const MODULES: Module[] = [
+  javascript,
+  javascriptNext,
+  functional,
+  algorithms,
+  dataStructures,
+  aiLlms,
+];
 
 function stringify(v: unknown): string {
   if (typeof v === "string") return v;

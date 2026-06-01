@@ -375,5 +375,106 @@ Order matters — check the "both" case first!`,
         { name: "1 → 1", code: `assertEquals(fizzbuzz(1), 1);` },
       ],
     },
+    {
+      slug: "math-basics",
+      title: "Numbers & Math",
+      blurb: "Clamp, round, and the Math object.",
+      xp: 25,
+      content: `# Numbers & Math
+
+JavaScript's \`Math\` object has handy helpers: \`Math.min\`, \`Math.max\`,
+\`Math.round\`, \`Math.floor\`. A common need is to **clamp** a value into a
+range — never below a minimum, never above a maximum.
+
+\`\`\`js
+Math.max(0, Math.min(10, value)); // keep value within 0..10
+\`\`\`
+
+## Your task
+Write \`clamp(n, min, max)\` that returns \`n\` limited to the range
+\`[min, max]\`.`,
+      starterCode: `function clamp(n, min, max) {
+  // keep n within [min, max]
+}
+`,
+      solution: `function clamp(n, min, max) {
+  return Math.max(min, Math.min(max, n));
+}`,
+      tests: [
+        { name: "in range", code: `assertEquals(clamp(5, 0, 10), 5);` },
+        { name: "below min", code: `assertEquals(clamp(-3, 0, 10), 0);` },
+        { name: "above max", code: `assertEquals(clamp(99, 0, 10), 10);` },
+      ],
+    },
+    {
+      slug: "logic",
+      title: "Boolean Logic",
+      blurb: "Combine conditions with && and ||.",
+      xp: 25,
+      content: `# Boolean Logic
+
+Combine true/false values with logical operators: \`&&\` (and — both must be
+true), \`||\` (or — either), and \`!\` (not). Comparisons like \`>=\` produce
+booleans you can combine.
+
+\`\`\`js
+age >= 18 && hasTicket; // true only if both hold
+\`\`\`
+
+## Your task
+Write \`canVote(age, isCitizen)\` that returns \`true\` only when \`age\` is at
+least 18 **and** \`isCitizen\` is true.`,
+      starterCode: `function canVote(age, isCitizen) {
+  // true only if age >= 18 AND isCitizen
+}
+`,
+      solution: `function canVote(age, isCitizen) {
+  return age >= 18 && isCitizen;
+}`,
+      tests: [
+        { name: "adult citizen", code: `assertEquals(canVote(20, true), true);` },
+        { name: "too young", code: `assertEquals(canVote(16, true), false);` },
+        { name: "not a citizen", code: `assertEquals(canVote(40, false), false);` },
+      ],
+    },
+    {
+      slug: "while-loops",
+      title: "While Loops",
+      blurb: "Repeat until a condition fails.",
+      xp: 30,
+      content: `# While Loops
+
+A \`while\` loop repeats as long as its condition is true. Make sure something
+changes each pass or it'll loop forever!
+
+\`\`\`js
+let i = 3;
+while (i > 0) {
+  i--; // moves toward the exit
+}
+\`\`\`
+
+## Your task
+Write \`countdown(n)\` that returns an array \`[n, n-1, …, 1]\` using a while
+loop. If \`n\` is 0 or less, return \`[]\`.`,
+      starterCode: `function countdown(n) {
+  // build [n, n-1, ..., 1] with a while loop
+}
+`,
+      solution: `function countdown(n) {
+  const out = [];
+  let i = n;
+  while (i > 0) {
+    out.push(i);
+    i--;
+  }
+  return out;
+}`,
+      tests: [
+        { name: "countdown(3)", code: `assertEquals(countdown(3), [3, 2, 1]);` },
+        { name: "countdown(0)", code: `assertEquals(countdown(0), []);` },
+        { name: "countdown(1)", code: `assertEquals(countdown(1), [1]);` },
+      ],
+    },
   ],
 };
