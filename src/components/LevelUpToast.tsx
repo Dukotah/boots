@@ -1,14 +1,14 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useProgress } from "@/lib/progress";
+import { useGameStore } from "@/store/useGameStore";
 import { rankForLevel } from "@/lib/levels";
 import { useEffect } from "react";
 
 // Listens for a level-up flag set by the store and shows a celebratory toast.
 export function LevelUpToast() {
-  const level = useProgress((s) => s.lastLevelUp);
-  const clear = useProgress((s) => s.clearLevelUp);
+  const level = useGameStore((s) => s.lastLevelUp);
+  const clear = useGameStore((s) => s.clearLevelUp);
 
   useEffect(() => {
     if (level !== null) {

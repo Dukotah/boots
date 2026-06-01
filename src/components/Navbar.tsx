@@ -1,19 +1,29 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Flame, Zap } from "lucide-react";
-import { useProgress } from "@/lib/progress";
+import { useGameStore } from "@/store/useGameStore";
 import { levelFromXp } from "@/lib/levels";
 import { MascotBoots } from "./MascotBoots";
 import { useEffect, useState } from "react";
+
+// Routes that render their own AppShell chrome (sidebar) — hide the top Navbar there.
+const APP_SHELL_ROUTES = ["/map"];
 
 export function Navbar() {
   // Avoid hydration mismatch: store is persisted/client-only.
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  const xp = useProgress((s) => s.xp);
-  const streak = useProgress((s) => s.streak);
+  const pathname = usePathname();
+  const hidden = APP_SHELL_ROUTES.some(
+    (r) => pathname === r || pathname.startsWith(r + "/"),
+  );
+  if (hidden) return null;
+
+  const xp = useGameStore((s) => s.xp);
+  const streak = useGameStore((s) => s.streak);
   const info = levelFromXp(xp);
 
   return (

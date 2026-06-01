@@ -5,14 +5,17 @@ import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { motion } from "framer-motion";
-import { Play, RotateCcw, Eye, ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
+import { Play, RotateCcw, Eye, ArrowRight, CheckCircle2, Loader2, Lock } from "lucide-react";
 import type { Lesson, Module } from "@/lib/curriculum/types";
 import { lessonId } from "@/lib/curriculum";
 import { runCode, type RunOutcome } from "@/lib/runner";
-import { useProgress } from "@/lib/progress";
+import { useGameStore } from "@/store/useGameStore";
+import { useAccess } from "@/hooks/useAccess";
+import { useMounted } from "@/hooks/useMounted";
 import { CodeEditor } from "./CodeEditor";
 import { TestResults } from "./TestResults";
 import { LevelUpToast } from "./LevelUpToast";
+import { ProGate } from "./features/billing/ProGate";
 
 export function LessonView({
   module,
@@ -29,8 +32,15 @@ export function LessonView({
   const [running, setRunning] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
 
-  const completeLesson = useProgress((s) => s.completeLesson);
-  const alreadyDone = useProgress((s) => s.completed.includes(id));
+  const completeLesson = useGameStore((s) => s.completeLesson);
+  const alreadyDone = useGameStore((s) => s.completed.includes(id));
+
+  // Paywall: interactivity is gated past the free preview lessons (lib/access).
+  const lessonIndex = module.lessons.findIndex((l) => l.slug === lesson.slug);
+  const mounted = useMounted();
+  const { locked } = useAccess(lessonIndex);
+  // Avoid hydration flash: only enforce the gate after the client store hydrates.
+  const gated = mounted && locked;
 
   const allPass = useMemo(
     () => outcome !== null && outcome.results.every((r) => r.pass),
@@ -38,6 +48,7 @@ export function LessonView({
   );
 
   async function handleRun() {
+    if (gated) return; // paywalled — run is disabled
     setRunning(true);
     const result = await runCode(code, lesson.tests);
     setOutcome(result);
@@ -103,19 +114,25 @@ export function LessonView({
             <CodeEditor value={code} onChange={setCode} />
           </div>
           <div className="flex items-center gap-3 border-t border-line p-3">
-            <button
-              onClick={handleRun}
-              disabled={running}
-              className="btn-primary disabled:opacity-60"
-            >
-              {running ? (
-                <Loader2 size={16} className="animate-spin" />
-              ) : (
-                <Play size={16} />
-              )}
-              {running ? "Running…" : "Run & Test"}
-            </button>
-            {allPass && nextHref && (
+            {gated ? (
+              <Link href="/pricing" className="btn-primary">
+                <Lock size={15} /> Unlock to run tests
+              </Link>
+            ) : (
+              <button
+                onClick={handleRun}
+                disabled={running}
+                className="btn-primary disabled:opacity-60"
+              >
+                {running ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <Play size={16} />
+                )}
+                {running ? "Running…" : "Run & Test"}
+              </button>
+            )}
+            {!gated && allPass && nextHref && (
               <Link href={nextHref} className="btn-ghost">
                 Next lesson <ArrowRight size={15} />
               </Link>
@@ -153,12 +170,16 @@ export function LessonView({
           </motion.div>
         )}
 
-        <div className="card min-h-[140px] p-0">
-          <TestResults
-            results={outcome?.results ?? []}
-            hasRun={outcome !== null}
-          />
-        </div>
+        {gated ? (
+          <ProGate />
+        ) : (
+          <div className="card min-h-[140px] p-0">
+            <TestResults
+              results={outcome?.results ?? []}
+              hasRun={outcome !== null}
+            />
+          </div>
+        )}
       </section>
     </div>
   );

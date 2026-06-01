@@ -1,13 +1,17 @@
-// Verifies that every lesson's reference `solution` passes its own `tests`,
-// using the same grading logic as the in-browser worker. Run with:
-//   node --experimental-strip-types scripts/check-curriculum.ts
+// Curriculum quality gate. Validates every lesson against the same grading logic
+// the in-browser worker uses, plus structural/quality checks. Run with:
+//   npm run check
+// (which calls: node --experimental-strip-types scripts/check-curriculum.ts)
+//
 // NB: import module files directly (with .ts extensions) so this runs under
-// Node's type-stripping without a bundler. The app itself uses the registry in
-// src/lib/curriculum/index.ts.
+// Node's type-stripping without a bundler. The app uses src/lib/curriculum/index.ts.
 import { javascript } from "../src/lib/curriculum/javascript.ts";
+import { javascriptNext } from "../src/lib/curriculum/javascript-next.ts";
 import { aiLlms } from "../src/lib/curriculum/ai-llms.ts";
+import type { Lesson, Module } from "../src/lib/curriculum/types.ts";
 
-const MODULES = [javascript, aiLlms];
+// Keep in sync with src/lib/curriculum/index.ts. (New module? Add it here too.)
+const MODULES: Module[] = [javascript, javascriptNext, aiLlms];
 
 function stringify(v: unknown): string {
   if (typeof v === "string") return v;
@@ -18,7 +22,8 @@ function stringify(v: unknown): string {
   }
 }
 
-function runOne(code: string, test: { name: string; code: string }): void {
+/** Run a single test against code; return true if it passes (no throw). */
+function testPasses(code: string, test: { code: string }): boolean {
   const assertEquals = (a: unknown, b: unknown, m?: string) => {
     if (stringify(a) !== stringify(b))
       throw new Error(m ?? `Expected ${stringify(b)} but got ${stringify(a)}`);
@@ -27,32 +32,71 @@ function runOne(code: string, test: { name: string; code: string }): void {
     if (!c) throw new Error(m ?? "Assertion failed");
   };
   const fakeConsole = { log() {}, info() {}, warn() {}, error() {} };
-  const fn = new Function(
-    "console",
-    "assertEquals",
-    "assert",
-    `"use strict";\n${code}\n;\n${test.code}`,
-  );
-  fn(fakeConsole, assertEquals, assert);
-}
-
-let pass = 0;
-let fail = 0;
-for (const mod of MODULES) {
-  for (const lesson of mod.lessons) {
-    for (const t of lesson.tests) {
-      try {
-        runOne(lesson.solution, t);
-        pass++;
-      } catch (e) {
-        fail++;
-        console.log(
-          `FAIL ${mod.slug}/${lesson.slug} :: ${t.name} :: ${(e as Error).message}`,
-        );
-      }
-    }
+  try {
+    const fn = new Function(
+      "console",
+      "assertEquals",
+      "assert",
+      `"use strict";\n${code}\n;\n${test.code}`,
+    );
+    fn(fakeConsole, assertEquals, assert);
+    return true;
+  } catch {
+    return false;
   }
 }
 
-console.log(`\n${pass} passed, ${fail} failed`);
-process.exit(fail ? 1 : 0);
+const errors: string[] = [];
+
+function checkLesson(mod: Module, lesson: Lesson, seen: Set<string>) {
+  const where = `${mod.slug}/${lesson.slug}`;
+
+  // ── structure ──
+  if (!lesson.slug) errors.push(`${mod.slug}: a lesson is missing a slug`);
+  if (seen.has(lesson.slug)) errors.push(`${where}: duplicate slug within module`);
+  seen.add(lesson.slug);
+
+  for (const field of ["title", "blurb", "content", "starterCode", "solution"] as const) {
+    if (!lesson[field] || String(lesson[field]).trim() === "")
+      errors.push(`${where}: empty "${field}"`);
+  }
+  if (!(lesson.xp > 0)) errors.push(`${where}: xp must be > 0 (got ${lesson.xp})`);
+  if (!lesson.tests || lesson.tests.length === 0)
+    errors.push(`${where}: needs at least one test`);
+
+  if (!lesson.tests?.length) return;
+
+  // ── grading: solution must pass ALL tests ──
+  for (const t of lesson.tests) {
+    if (!testPasses(lesson.solution, t))
+      errors.push(`${where}: solution FAILS test "${t.name}"`);
+  }
+
+  // ── quality: starter must NOT already pass every test (no pre-solved lessons) ──
+  const starterPassesAll = lesson.tests.every((t) => testPasses(lesson.starterCode, t));
+  if (starterPassesAll)
+    errors.push(`${where}: starterCode already passes all tests (lesson is pre-solved)`);
+}
+
+let lessonCount = 0;
+let testCount = 0;
+for (const mod of MODULES) {
+  const seen = new Set<string>();
+  if (!mod.lessons.length) errors.push(`${mod.slug}: module has no lessons`);
+  for (const lesson of mod.lessons) {
+    lessonCount++;
+    testCount += lesson.tests?.length ?? 0;
+    checkLesson(mod, lesson, seen);
+  }
+}
+
+if (errors.length) {
+  console.log("❌ Curriculum check failed:\n");
+  for (const e of errors) console.log("  • " + e);
+  console.log(`\n${errors.length} problem(s) across ${lessonCount} lessons.`);
+  process.exit(1);
+}
+
+console.log(
+  `✅ Curriculum OK — ${MODULES.length} modules, ${lessonCount} lessons, ${testCount} tests all green.`,
+);

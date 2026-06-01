@@ -5,12 +5,12 @@ import { useEffect, useState } from "react";
 import { CheckCircle2, Circle, Lock } from "lucide-react";
 import type { Module } from "@/lib/curriculum/types";
 import { lessonId } from "@/lib/curriculum";
-import { useProgress } from "@/lib/progress";
+import { useGameStore } from "@/store/useGameStore";
 
 export function LessonList({ module }: { module: Module }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
-  const completed = useProgress((s) => s.completed);
+  const completed = useGameStore((s) => s.completed);
 
   return (
     <ol className="mt-8 space-y-2">

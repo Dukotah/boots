@@ -7,10 +7,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "check": "node --experimental-strip-types scripts/check-curriculum.ts",
+    "new:lesson": "node --experimental-strip-types scripts/new-lesson.ts"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.6.0",
+    "@supabase/ssr": "^0.10.3",
+    "@supabase/supabase-js": "^2.106.2",
     "clsx": "^2.1.1",
     "framer-motion": "^11.11.17",
     "lucide-react": "^0.460.0",

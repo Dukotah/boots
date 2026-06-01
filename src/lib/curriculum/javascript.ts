@@ -180,5 +180,200 @@ object with exactly those two keys: \`{ name, level }\`.`,
         },
       ],
     },
+    {
+      slug: "strings",
+      title: "Strings",
+      blurb: "Text is data you can transform.",
+      xp: 25,
+      content: `# Strings
+
+A **string** is text. JavaScript gives strings handy built-in methods like
+\`.toUpperCase()\`, \`.toLowerCase()\`, \`.length\`, and \`.includes()\`.
+
+\`\`\`js
+"boots".toUpperCase(); // "BOOTS"
+"boots".length;        // 5
+\`\`\`
+
+## Your task
+Write a function \`shout\` that takes a string and returns it in **UPPERCASE**
+with a single \`"!"\` added to the end.`,
+      starterCode: `function shout(text) {
+  // return text uppercased, with "!" on the end
+}
+`,
+      solution: `function shout(text) {
+  return text.toUpperCase() + "!";
+}`,
+      tests: [
+        { name: 'shout("hi") === "HI!"', code: `assertEquals(shout("hi"), "HI!");` },
+        { name: 'shout("boots") === "BOOTS!"', code: `assertEquals(shout("boots"), "BOOTS!");` },
+      ],
+    },
+    {
+      slug: "template-literals",
+      title: "Template Literals",
+      blurb: "Build strings with embedded values.",
+      xp: 25,
+      content: `# Template Literals
+
+**Template literals** are strings written with backticks instead of quotes. They
+let you drop values straight into the text, which is cleaner than joining strings
+with \`+\`.
+
+\`\`\`js
+const name = "Boots";
+\`Hi \${name}!\`; // "Hi Boots!"
+\`\`\`
+
+## Your task
+Write \`greet(name, level)\` that returns exactly this string:
+
+\`Hello {name}, you are level {level}!\`
+
+For example, \`greet("Boots", 7)\` returns \`Hello Boots, you are level 7!\`.`,
+      starterCode: `function greet(name, level) {
+  // return "Hello {name}, you are level {level}!"
+}
+`,
+      solution: `function greet(name, level) {
+  return \`Hello \${name}, you are level \${level}!\`;
+}`,
+      tests: [
+        {
+          name: "greet formats correctly",
+          code: `assertEquals(greet("Boots", 7), "Hello Boots, you are level 7!");`,
+        },
+        {
+          name: "works with other values",
+          code: `assertEquals(greet("Ada", 1), "Hello Ada, you are level 1!");`,
+        },
+      ],
+    },
+    {
+      slug: "array-map",
+      title: "Transform with map()",
+      blurb: "Make a new array from an old one.",
+      xp: 30,
+      content: `# Transform with map()
+
+\`.map()\` builds a **new** array by running a function on every item — the
+original array is left untouched.
+
+\`\`\`js
+[1, 2, 3].map((n) => n + 1); // [2, 3, 4]
+\`\`\`
+
+## Your task
+Write \`doubleAll\` that takes an array of numbers and returns a new array with
+every number doubled. An empty array returns \`[]\`.`,
+      starterCode: `function doubleAll(numbers) {
+  // return a new array with each number doubled
+}
+`,
+      solution: `function doubleAll(numbers) {
+  return numbers.map((n) => n * 2);
+}`,
+      tests: [
+        { name: "doubleAll([1,2,3]) → [2,4,6]", code: `assertEquals(doubleAll([1, 2, 3]), [2, 4, 6]);` },
+        { name: "doubleAll([]) → []", code: `assertEquals(doubleAll([]), []);` },
+        { name: "handles negatives", code: `assertEquals(doubleAll([-2, 5]), [-4, 10]);` },
+      ],
+    },
+    {
+      slug: "array-filter",
+      title: "Select with filter()",
+      blurb: "Keep only the items you want.",
+      xp: 30,
+      content: `# Select with filter()
+
+\`.filter()\` returns a new array containing only the items for which your
+function returns \`true\`.
+
+\`\`\`js
+[1, 2, 3, 4].filter((n) => n > 2); // [3, 4]
+\`\`\`
+
+## Your task
+Write \`onlyEvens\` that returns a new array containing only the even numbers, in
+their original order.`,
+      starterCode: `function onlyEvens(numbers) {
+  // return only the even numbers
+}
+`,
+      solution: `function onlyEvens(numbers) {
+  return numbers.filter((n) => n % 2 === 0);
+}`,
+      tests: [
+        { name: "[1,2,3,4] → [2,4]", code: `assertEquals(onlyEvens([1, 2, 3, 4]), [2, 4]);` },
+        { name: "no evens → []", code: `assertEquals(onlyEvens([1, 3, 5]), []);` },
+        { name: "[] → []", code: `assertEquals(onlyEvens([]), []);` },
+      ],
+    },
+    {
+      slug: "reduce",
+      title: "Boil it down with reduce()",
+      blurb: "Collapse a list into a single value.",
+      xp: 35,
+      content: `# Boil it down with reduce()
+
+\`.reduce()\` walks the array carrying an **accumulator**, returning one final
+value — a sum, a max, a joined string, anything.
+
+\`\`\`js
+[1, 2, 3].reduce((acc, n) => acc + n, 0); // 6
+\`\`\`
+
+## Your task
+Write \`max\` that returns the **largest** number in a non-empty array. (You can use
+\`reduce\`, \`Math.max\`, or a loop — only the result is graded.)`,
+      starterCode: `function max(numbers) {
+  // return the largest number
+}
+`,
+      solution: `function max(numbers) {
+  return numbers.reduce((m, n) => (n > m ? n : m));
+}`,
+      tests: [
+        { name: "max([1,5,3]) === 5", code: `assertEquals(max([1, 5, 3]), 5);` },
+        { name: "all negative", code: `assertEquals(max([-2, -9, -4]), -2);` },
+        { name: "single item", code: `assertEquals(max([42]), 42);` },
+      ],
+    },
+    {
+      slug: "fizzbuzz",
+      title: "Capstone: FizzBuzz",
+      blurb: "The classic interview warm-up.",
+      xp: 40,
+      content: `# Capstone: FizzBuzz
+
+Time to combine conditionals with the modulo operator. **FizzBuzz** is a
+programming rite of passage.
+
+## Your task
+Write \`fizzbuzz(n)\` that returns:
+- \`"FizzBuzz"\` if \`n\` is divisible by **both** 3 and 5
+- \`"Fizz"\` if divisible by 3
+- \`"Buzz"\` if divisible by 5
+- otherwise the number \`n\` itself
+
+Order matters — check the "both" case first!`,
+      starterCode: `function fizzbuzz(n) {
+  // return "Fizz", "Buzz", "FizzBuzz", or n
+}
+`,
+      solution: `function fizzbuzz(n) {
+  if (n % 15 === 0) return "FizzBuzz";
+  if (n % 3 === 0) return "Fizz";
+  if (n % 5 === 0) return "Buzz";
+  return n;
+}`,
+      tests: [
+        { name: "3 → Fizz", code: `assertEquals(fizzbuzz(3), "Fizz");` },
+        { name: "5 → Buzz", code: `assertEquals(fizzbuzz(5), "Buzz");` },
+        { name: "15 → FizzBuzz", code: `assertEquals(fizzbuzz(15), "FizzBuzz");` },
+        { name: "1 → 1", code: `assertEquals(fizzbuzz(1), 1);` },
+      ],
+    },
   ],
 };

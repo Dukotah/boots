@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Flame, Zap, Trophy, Target, RotateCcw } from "lucide-react";
-import { useProgress } from "@/lib/progress";
+import { useGameStore } from "@/store/useGameStore";
 import { levelFromXp } from "@/lib/levels";
 import { MODULES, totalLessons, totalXpAvailable, lessonId } from "@/lib/curriculum";
 import { XPBar } from "@/components/XPBar";
@@ -12,10 +12,10 @@ export default function Dashboard() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  const xp = useProgress((s) => s.xp);
-  const streak = useProgress((s) => s.streak);
-  const completed = useProgress((s) => s.completed);
-  const reset = useProgress((s) => s.reset);
+  const xp = useGameStore((s) => s.xp);
+  const streak = useGameStore((s) => s.streak);
+  const completed = useGameStore((s) => s.completed);
+  const reset = useGameStore((s) => s.reset);
 
   const info = levelFromXp(xp);
   const doneCount = completed.length;
