@@ -59,9 +59,53 @@ A living list of implementable features. Complements `GAMEPLAN.md` (strategy) an
 29. **Accessibility pass** (WCAG 2.1 AA) + full keyboard navigation in the editor flow.
 30. **i18n** — translatable UI + localized landing pages for international SEO.
 
+### G. Competitor-inspired systems (HTB · TryHackMe · Codewars · LeetCode · Exercism · Duolingo)
+Features the leading practice platforms have that we don't yet — adapted to Boots.
+
+**Competition & seasons**
+31. **Seasons** — 13-week competitive seasons with a tiered ladder, season-only challenges, and end-of-season prizes/badges (HTB Seasons). Distinct from our standing leagues.
+32. **Timed contests** — weekly/biweekly live contests with real-time ranking (LeetCode contests).
+33. **Seasonal narrative event** — an annual story-driven event (e.g. an "Advent of Code"-style December calendar) for a big re-engagement spike (THM Advent of Cyber).
+
+**Practice & mastery**
+34. **Practice mode** — train by **topic tag + difficulty** outside the linear paths (Codewars "train", LeetCode filters).
+35. **Study plans** — short, goal-based curated collections ("30 Days of JS", "Top Interview 75") layered on top of paths (LeetCode study plans).
+36. **Company-tagged interview problems** — tag interview-track problems by company (Google/Amazon/Meta) (LeetCode).
+37. **Concept vs practice split** — separate "learn the concept" exercises from "practice the skill" reps (Exercism).
+38. **Difficulty + community pass-rate** — show each lesson's difficulty and a live acceptance/pass-rate stat (LeetCode/Codewars).
+39. **Submission history & percentile** — keep past submissions; show a performance/clarity percentile vs other learners (LeetCode).
+
+**Guidance & community**
+40. **Guided vs Challenge mode** — per-lesson toggle: step-by-step scaffolding, or a bare prompt for the confident (HTB guided mode).
+41. **Community solutions + voting** — after solving, browse others' solutions and upvote "clever"/"best practices" (Codewars; extends #19).
+42. **Mentorship / code review** — request human or AI review of a passing solution for idioms & quality (Exercism mentoring; extends #4).
+43. **Official walkthroughs** — unlock an official text/video walkthrough after completing (or paying for) a lesson (HTB writeups).
+44. **Honor & contributor privileges** — earn the right to author, curate, and moderate content as your honor grows (Codewars; pairs with #10).
+
+**Social & groups**
+45. **Clans / study groups** — join a clan; a combined clan leaderboard and group streaks (Codewars clans, Duolingo friends quests).
+46. **Classrooms for educators** — teacher dashboards, assigned paths, due dates, and per-student progress (THM for Education; deeper than #22 Teams).
+
+**Environment & rewards**
+47. **Persistent cloud workspace** — a saved, full multi-file IDE/sandbox per learner, not just the per-lesson editor (HTB Pwnbox analog; extends #5).
+48. **Real-world rewards / swag** — mail a coin/sticker at top ranks; a gold-funded swag store (HTB prizes; gameplan §4).
+
 ---
 
 ## Suggested next 3 (highest leverage)
 1. **#16 Certificates on public profiles** — cheap, makes the certs we built visible & shareable.
 2. **#24 + #25 Analytics + lifecycle email** — the retention/measurement foundation everything else compounds on.
 3. **#1 Hint system** — strong learning-UX win that also creates a gold sink for the economy.
+
+From the competitor set, the highest-leverage adaptations are **#31 Seasons**,
+**#34 Practice mode**, and **#41 Community solutions** — they directly mirror what
+keeps HTB / TryHackMe / Codewars users coming back daily.
+
+---
+
+### Sources (competitor research)
+- [HTB Seasons](https://www.hackthebox.com/hacker/seasons) · [HTB XP / progression](https://www.hackthebox.com/blog/XP-Points) · [HTB VIP perks](https://www.hackthebox.com/blog/new-additions-for-vip-users)
+- [TryHackMe overview & paths](https://hackerdna.com/blog/what-is-tryhackme) · [TryHackMe pricing/features](https://hackerdna.com/blog/tryhackme-pricing)
+- [Codewars kata ranking (kyu/dan, honor)](https://www.codewars.com/topics/kata-ranking)
+- [LeetCode vs Codewars vs HackerRank (contests, company tags, daily)](https://www.coursefacts.com/guides/leetcode-vs-hackerrank-vs-codewars-2026)
+- Exercism mentoring & tracks (concept vs practice exercises)
