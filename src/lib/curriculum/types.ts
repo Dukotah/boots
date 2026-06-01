@@ -1,8 +1,9 @@
 // The language a lesson is authored and graded in. Drives which runtime executes
-// the student's code: `js` → in-browser Web Worker (zero infra), `py` → Pyodide
+// the student's code: `js` → in-browser Web Worker (zero infra), `ts` →
+// transpiled to JS with sucrase then run in the same Worker, `py` → Pyodide
 // (Python compiled to WASM, loaded lazily from CDN), `sql` → sql.js (SQLite in
-// WASM). All three run entirely client-side, so there is still no server sandbox.
-export type LessonLanguage = "js" | "py" | "sql";
+// WASM). All run entirely client-side, so there is still no server sandbox.
+export type LessonLanguage = "js" | "ts" | "py" | "sql";
 
 // A test that runs against the student's code in a sandboxed runtime.
 //

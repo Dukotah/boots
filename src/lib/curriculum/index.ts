@@ -1,6 +1,7 @@
 import type { Lesson, Module } from "./types";
 import { javascript } from "./javascript";
 import { javascriptNext } from "./javascript-next";
+import { typescript } from "./typescript";
 import { asyncJs } from "./async";
 import { webApis } from "./web-apis";
 import { strings } from "./strings";
@@ -39,6 +40,7 @@ export const MODULES: Module[] = [
   // JavaScript track
   javascript,
   javascriptNext,
+  typescript,
   asyncJs,
   strings,
   functional,

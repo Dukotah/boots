@@ -44,6 +44,7 @@ export const PATHS: Path[] = [
     moduleSlugs: [
       "javascript",
       "javascript-next",
+      "typescript",
       "strings",
       "functional",
       "closures",
@@ -72,6 +73,7 @@ export const PATHS: Path[] = [
     moduleSlugs: [
       "javascript",
       "javascript-next",
+      "typescript",
       "git-github",
       "async",
       "web-apis",

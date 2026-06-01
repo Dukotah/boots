@@ -1,3 +1,4 @@
+import { transform } from "sucrase";
 import type { Lesson, TestCase, LessonLanguage } from "./curriculum/types";
 import type { TestResult } from "@/workers/codeRunner";
 
@@ -19,6 +20,26 @@ export function runLesson(
 ): Promise<RunOutcome> {
   if (language === "py") return runPython(code, lesson.tests);
   if (language === "sql") return runSql(code, lesson);
+  if (language === "ts") {
+    // Strip the types to JS, then run through the very same Worker as JS. A
+    // type/syntax error surfaces as a failing run rather than a crash.
+    let js: string;
+    try {
+      js = transform(code, { transforms: ["typescript"] }).code;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      return Promise.resolve({
+        timedOut: false,
+        results: lesson.tests.map((t) => ({
+          name: t.name,
+          pass: false,
+          error: `TypeScript error: ${message}`,
+          logs: [],
+        })),
+      });
+    }
+    return runJs(js, lesson.tests);
+  }
   return runJs(code, lesson.tests);
 }
 

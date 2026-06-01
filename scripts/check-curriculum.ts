@@ -5,8 +5,10 @@
 //
 // NB: import module files directly (with .ts extensions) so this runs under
 // Node's type-stripping without a bundler. The app uses src/lib/curriculum/index.ts.
+import { transform } from "sucrase";
 import { javascript } from "../src/lib/curriculum/javascript.ts";
 import { javascriptNext } from "../src/lib/curriculum/javascript-next.ts";
+import { typescript } from "../src/lib/curriculum/typescript.ts";
 import { asyncJs } from "../src/lib/curriculum/async.ts";
 import { webApis } from "../src/lib/curriculum/web-apis.ts";
 import { strings } from "../src/lib/curriculum/strings.ts";
@@ -44,6 +46,7 @@ import type { Lesson, Module } from "../src/lib/curriculum/types.ts";
 const MODULES: Module[] = [
   javascript,
   javascriptNext,
+  typescript,
   asyncJs,
   webApis,
   strings,
@@ -138,10 +141,10 @@ async function checkLesson(mod: Module, lesson: Lesson, seen: Set<string>) {
 
   const language = lesson.language ?? mod.language ?? "js";
 
-  // Non-JS lessons (Python via Pyodide, SQL via sql.js) execute in a browser WASM
-  // runtime that we can't spin up under Node here, so we validate them
-  // structurally instead of grading them. Browser-side runs do the real grading.
-  if (language !== "js") {
+  // Python (Pyodide) and SQL (sql.js) execute in a browser WASM runtime we can't
+  // spin up under Node, so validate them structurally. JS and TS *are* graded
+  // here — TS is transpiled to JS first (mirroring the in-browser runner).
+  if (language !== "js" && language !== "ts") {
     if (language === "sql" && (!lesson.setup || !lesson.setup.trim()))
       errors.push(`${where}: SQL lesson needs a "setup" (schema + seed data)`);
     if (lesson.starterCode.trim() === lesson.solution.trim())
@@ -149,16 +152,24 @@ async function checkLesson(mod: Module, lesson: Lesson, seen: Set<string>) {
     return;
   }
 
+  const toJs = (code: string): string =>
+    language === "ts"
+      ? transform(code, { transforms: ["typescript"] }).code
+      : code;
+
+  const solutionJs = toJs(lesson.solution);
+  const starterJs = toJs(lesson.starterCode);
+
   // ── grading: solution must pass ALL tests ──
   for (const t of lesson.tests) {
-    if (!(await testPasses(lesson.solution, t)))
+    if (!(await testPasses(solutionJs, t)))
       errors.push(`${where}: solution FAILS test "${t.name}"`);
   }
 
   // ── quality: starter must NOT already pass every test (no pre-solved lessons) ──
   let starterPassesAll = true;
   for (const t of lesson.tests) {
-    if (!(await testPasses(lesson.starterCode, t))) {
+    if (!(await testPasses(starterJs, t))) {
       starterPassesAll = false;
       break;
     }
