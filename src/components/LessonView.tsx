@@ -17,6 +17,7 @@ import { CodeEditor } from "./CodeEditor";
 import { TestResults } from "./TestResults";
 import { LevelUpToast } from "./LevelUpToast";
 import { ProGate } from "./features/billing/ProGate";
+import { AskBoots } from "./features/tutor/AskBoots";
 
 export function LessonView({
   module,
@@ -186,6 +187,9 @@ export function LessonView({
             />
           </div>
         )}
+
+        {/* Socratic AI tutor — hints, never the answer (Pro) */}
+        <AskBoots module={module} lesson={lesson} language={language} code={code} />
       </section>
     </div>
   );
