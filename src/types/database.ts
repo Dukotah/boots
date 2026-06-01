@@ -21,6 +21,9 @@ export type Database = {
           gold: number;
           streak: number;
           last_active_day: string | null;
+          completed: string[];
+          achievements: string[];
+          active_quest: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -33,8 +36,12 @@ export type Database = {
           gold?: number;
           streak?: number;
           last_active_day?: string | null;
+          completed?: string[];
+          achievements?: string[];
+          active_quest?: string | null;
         };
         Update: Partial<Database["public"]["Tables"]["profiles"]["Insert"]>;
+        Relationships: [];
       };
       courses: {
         Row: {
@@ -61,6 +68,7 @@ export type Database = {
           is_published?: boolean;
         };
         Update: Partial<Database["public"]["Tables"]["courses"]["Insert"]>;
+        Relationships: [];
       };
       lessons: {
         Row: {
@@ -87,6 +95,7 @@ export type Database = {
           content?: string | null;
         };
         Update: Partial<Database["public"]["Tables"]["lessons"]["Insert"]>;
+        Relationships: [];
       };
       user_progress: {
         Row: {
@@ -111,6 +120,7 @@ export type Database = {
           completed_at?: string | null;
         };
         Update: Partial<Database["public"]["Tables"]["user_progress"]["Insert"]>;
+        Relationships: [];
       };
       achievements: {
         Row: {
@@ -136,6 +146,7 @@ export type Database = {
           sort_order?: number;
         };
         Update: Partial<Database["public"]["Tables"]["achievements"]["Insert"]>;
+        Relationships: [];
       };
       user_achievements: {
         Row: {
@@ -151,11 +162,21 @@ export type Database = {
         Update: Partial<
           Database["public"]["Tables"]["user_achievements"]["Insert"]
         >;
+        Relationships: [];
       };
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      [_ in never]: never;
     };
     Enums: {
       lesson_status: LessonStatus;
       achievement_rarity: AchievementRarity;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
     };
   };
 };

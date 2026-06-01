@@ -50,6 +50,11 @@ create table if not exists public.profiles (
   gold           integer not null default 0 check (gold >= 0),
   streak         integer not null default 0 check (streak >= 0),
   last_active_day date,
+  -- denormalized live snapshot the client syncs in one upsert (useGameStore).
+  -- The relational tables below remain for analytics / SEO queries.
+  completed      text[] not null default '{}',
+  achievements   text[] not null default '{}',
+  active_quest   text,
   created_at     timestamptz not null default now(),
   updated_at     timestamptz not null default now()
 );
