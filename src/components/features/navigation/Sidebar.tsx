@@ -9,6 +9,7 @@ import {
   BookOpen,
   Trophy,
   Swords,
+  ShoppingBag,
   Flame,
   Coins,
   X,
@@ -31,7 +32,8 @@ const NAV: NavItem[] = [
   { href: "/map", label: "Campaign Map", icon: MapIcon },
   { href: "/learn", label: "Courses", icon: BookOpen },
   { href: "/achievements", label: "Achievements", icon: Trophy },
-  { href: "/leagues", label: "Leagues", icon: Swords, badge: "Soon" },
+  { href: "/leagues", label: "Leagues", icon: Swords },
+  { href: "/shop", label: "Shop", icon: ShoppingBag },
 ];
 
 export function Sidebar({

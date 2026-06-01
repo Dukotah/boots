@@ -19,6 +19,8 @@ import { persist } from "zustand/middleware";
 import type { User, Session } from "@supabase/supabase-js";
 import { levelFromXp } from "@/lib/levels";
 import { newlyUnlocked, getAchievement } from "@/lib/achievements";
+import { getQuest, isQuestComplete, type DailySnapshot } from "@/lib/quests";
+import { getShopItem, CHEST_MIN, CHEST_MAX } from "@/lib/shop";
 import { getSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import type { PlayerStats } from "@/types/game";
 
@@ -58,6 +60,13 @@ export type GameState = {
   // ── streak ──
   streak: number;
   lastActiveDay: string | null;
+  // ── streak protection (bought in the shop, auto-consumed on a missed day) ──
+  streakFreezes: number;
+  // ── daily activity (resets each local day) — powers Daily Quests ──
+  dailyDay: string | null;
+  dailyXp: number;
+  dailyLessons: number;
+  claimedQuests: string[]; // quest ids claimed *today*
   // ── active quest ──
   activeQuest: string | null;
   // ── transient UI signals (not persisted) ──
@@ -71,12 +80,18 @@ export type GameState = {
   // ── selectors ──
   isComplete: (id: string) => boolean;
   stats: () => PlayerStats;
+  /** Today's activity, normalized (returns zeros if the stored day is stale). */
+  today: () => DailySnapshot;
 
   // ── game actions ──
   completeLesson: (id: string, xp: number) => CompletionResult;
   setActiveQuest: (id: string | null) => void;
   addGold: (amount: number) => void;
   spendGold: (amount: number) => boolean;
+  /** Claim a completed daily quest's reward (once per day). Returns true if claimed. */
+  claimQuest: (questId: string) => boolean;
+  /** Buy a shop item. Returns a result describing the outcome (e.g. chest payout). */
+  buyItem: (itemId: string) => { ok: boolean; chestGold?: number };
   clearLevelUp: () => void;
   clearRecentAchievement: () => void;
   reset: () => void;
@@ -95,6 +110,11 @@ const INITIAL = {
   achievements: [] as string[],
   streak: 0,
   lastActiveDay: null as string | null,
+  streakFreezes: 0,
+  dailyDay: null as string | null,
+  dailyXp: 0,
+  dailyLessons: 0,
+  claimedQuests: [] as string[],
   activeQuest: null as string | null,
   lastLevelUp: null as number | null,
   recentAchievement: null as string | null,
@@ -151,24 +171,53 @@ export const useGameStore = create<GameState>()(
         };
       },
 
+      today: () => {
+        const s = get();
+        const fresh = s.dailyDay === todayKey();
+        return {
+          xp: fresh ? s.dailyXp : 0,
+          lessons: fresh ? s.dailyLessons : 0,
+          streak: s.streak,
+        };
+      },
+
       completeLesson: (id, xp) => {
         const state = get();
         const today = todayKey();
 
-        // Streak: same day = unchanged, yesterday = +1, gap = reset to 1.
+        // Roll the daily counters over if the stored day is not today.
+        const sameDay = state.dailyDay === today;
+        const baseDailyXp = sameDay ? state.dailyXp : 0;
+        const baseDailyLessons = sameDay ? state.dailyLessons : 0;
+        const claimedQuests = sameDay ? state.claimedQuests : [];
+
+        // Streak: same day = unchanged, yesterday = +1, gap = reset (unless a
+        // Streak Freeze is in inventory, which is auto-consumed to save it).
         let streak = state.streak;
+        let streakFreezes = state.streakFreezes;
         if (state.lastActiveDay === null) {
           streak = 1;
         } else {
           const diff = dayDiff(state.lastActiveDay, today);
           if (diff === 0) streak = state.streak || 1;
           else if (diff === 1) streak = state.streak + 1;
-          else streak = 1;
+          else if (streakFreezes > 0) {
+            streak = state.streak + 1; // freeze saves the streak
+            streakFreezes -= 1;
+          } else streak = 1;
         }
 
         // Re-completing refreshes the streak but never re-awards rewards.
         if (state.completed.includes(id)) {
-          set({ streak, lastActiveDay: today });
+          set({
+            streak,
+            streakFreezes,
+            lastActiveDay: today,
+            dailyDay: today,
+            dailyXp: baseDailyXp,
+            dailyLessons: baseDailyLessons,
+            claimedQuests,
+          });
           const unlocked = grantAchievements(get, set);
           get().syncToServer();
           return {
@@ -191,7 +240,12 @@ export const useGameStore = create<GameState>()(
           gold: state.gold + gainedGold,
           completed: [...state.completed, id],
           streak,
+          streakFreezes,
           lastActiveDay: today,
+          dailyDay: today,
+          dailyXp: baseDailyXp + xp,
+          dailyLessons: baseDailyLessons + 1,
+          claimedQuests,
           lastLevelUp: leveledUp ? newLevel : state.lastLevelUp,
           activeQuest: state.activeQuest === id ? null : state.activeQuest,
         });
@@ -224,6 +278,44 @@ export const useGameStore = create<GameState>()(
         set({ gold: gold - amount });
         get().syncToServer();
         return true;
+      },
+
+      claimQuest: (questId) => {
+        const quest = getQuest(questId);
+        if (!quest) return false;
+        const snap = get().today();
+        const claimed = get().dailyDay === todayKey() ? get().claimedQuests : [];
+        if (claimed.includes(questId)) return false; // already claimed today
+        if (!isQuestComplete(quest, snap)) return false; // not done yet
+        set((s) => ({
+          gold: s.gold + quest.rewardGold,
+          xp: s.xp + (quest.rewardXp ?? 0),
+          dailyDay: todayKey(),
+          claimedQuests: [...claimed, questId],
+        }));
+        grantAchievements(get, set);
+        get().syncToServer();
+        return true;
+      },
+
+      buyItem: (itemId) => {
+        const item = getShopItem(itemId);
+        if (!item) return { ok: false };
+        const { gold } = get();
+        if (gold < item.cost) return { ok: false };
+
+        if (item.kind === "streak-freeze") {
+          set((s) => ({ gold: s.gold - item.cost, streakFreezes: s.streakFreezes + 1 }));
+          get().syncToServer();
+          return { ok: true };
+        }
+
+        // Mystery chest: pay the cost, win a random gold payout. Vary by current
+        // gold so it isn't a static value (Math.random is fine client-side).
+        const roll = CHEST_MIN + Math.floor(Math.random() * (CHEST_MAX - CHEST_MIN + 1));
+        set((s) => ({ gold: s.gold - item.cost + roll }));
+        get().syncToServer();
+        return { ok: true, chestGold: roll };
       },
 
       clearLevelUp: () => set({ lastLevelUp: null }),
@@ -296,6 +388,11 @@ export const useGameStore = create<GameState>()(
         achievements: s.achievements,
         streak: s.streak,
         lastActiveDay: s.lastActiveDay,
+        streakFreezes: s.streakFreezes,
+        dailyDay: s.dailyDay,
+        dailyXp: s.dailyXp,
+        dailyLessons: s.dailyLessons,
+        claimedQuests: s.claimedQuests,
         activeQuest: s.activeQuest,
       }),
       merge: (persisted, current) => ({

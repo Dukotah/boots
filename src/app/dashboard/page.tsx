@@ -7,6 +7,7 @@ import { useGameStore } from "@/store/useGameStore";
 import { levelFromXp } from "@/lib/levels";
 import { MODULES, totalLessons, totalXpAvailable, lessonId } from "@/lib/curriculum";
 import { XPBar } from "@/components/XPBar";
+import { DailyQuests } from "@/components/features/quests/DailyQuests";
 
 export default function Dashboard() {
   const [mounted, setMounted] = useState(false);
@@ -70,6 +71,11 @@ export default function Dashboard() {
       {/* Level progress */}
       <div className="card mt-4">
         <XPBar info={info} />
+      </div>
+
+      {/* Daily quests */}
+      <div className="mt-8">
+        <DailyQuests />
       </div>
 
       {/* Course progress */}
