@@ -16,6 +16,13 @@ This is the working proof of concept. The product strategy lives in
   checked against test cases. No backend, no infra, fully in-browser.
 - **Gamification** — XP, levels, named ranks, daily **streaks** (with forgiving
   logic), level-up celebrations. Progress persists in `localStorage`.
+- **Boots AI tutor** — a Socratic chat tutor that won't hand over the answer.
+  Two backends, both **client-side so the platform owner spends zero tokens**:
+  - **Bring your own key (BYOK):** the learner's Anthropic key calls Claude
+    directly from the browser (streaming). Key is stored only locally.
+  - **In-browser local model:** runs a small open model on the learner's own
+    device via WebGPU/WebLLM — real AI, no API cost to anyone.
+  - Plus a free, instant **heuristic quick-hint** that needs no AI at all.
 - **Two modules:**
   - 🟨 **JavaScript Foundations** — variables → functions → conditionals → arrays → objects
   - 🤖 **Learn AI: Build with LLMs** — tokens, prompt engineering, chat messages,

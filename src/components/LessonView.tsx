@@ -5,7 +5,7 @@ import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { motion } from "framer-motion";
-import { Play, RotateCcw, Eye, ArrowRight, CheckCircle2, Loader2, Lock } from "lucide-react";
+import { Play, RotateCcw, Eye, ArrowRight, CheckCircle2, Loader2, Lock, Bot } from "lucide-react";
 import type { Lesson, Module } from "@/lib/curriculum/types";
 import { lessonId } from "@/lib/curriculum";
 import { lessonLanguage, langMeta } from "@/lib/curriculum/lang";
@@ -17,6 +17,9 @@ import { CodeEditor } from "./CodeEditor";
 import { TestResults } from "./TestResults";
 import { LevelUpToast } from "./LevelUpToast";
 import { ProGate } from "./features/billing/ProGate";
+import { TutorPanel } from "./TutorPanel";
+import { summarizeLesson } from "@/lib/tutor/prompt";
+import type { TutorContext } from "@/lib/tutor/types";
 
 export function LessonView({
   module,
@@ -34,6 +37,7 @@ export function LessonView({
   const [outcome, setOutcome] = useState<RunOutcome | null>(null);
   const [running, setRunning] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
+  const [tutorOpen, setTutorOpen] = useState(false);
 
   const completeLesson = useGameStore((s) => s.completeLesson);
   const alreadyDone = useGameStore((s) => s.completed.includes(id));
@@ -49,6 +53,25 @@ export function LessonView({
     () => outcome !== null && outcome.results.every((r) => r.pass),
     [outcome],
   );
+
+  // Live context handed to the AI tutor on each message (reads current code).
+  const testSummary = useMemo(() => {
+    if (!outcome) return "not run yet";
+    return outcome.results
+      .map((r) =>
+        r.pass
+          ? `PASS: ${r.name}`
+          : `FAIL: ${r.name}${r.error ? ` — ${r.error}` : ""}`,
+      )
+      .join("\n");
+  }, [outcome]);
+
+  const tutorContext: TutorContext = {
+    lessonTitle: lesson.title,
+    lessonGoal: summarizeLesson(lesson.content),
+    code,
+    testSummary,
+  };
 
   async function handleRun() {
     if (gated) return; // paywalled — run is disabled
@@ -187,6 +210,22 @@ export function LessonView({
           </div>
         )}
       </section>
+
+      {/* Ask Boots — floating tutor launcher */}
+      {!tutorOpen && (
+        <button
+          onClick={() => setTutorOpen(true)}
+          className="fixed bottom-6 right-6 z-30 flex items-center gap-2 rounded-full bg-accent px-4 py-3 font-medium text-white shadow-glow transition-transform hover:scale-105 active:scale-95"
+        >
+          <Bot size={18} /> Ask Boots
+        </button>
+      )}
+
+      <TutorPanel
+        open={tutorOpen}
+        onClose={() => setTutorOpen(false)}
+        context={tutorContext}
+      />
     </div>
   );
 }
