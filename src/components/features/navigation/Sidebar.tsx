@@ -134,8 +134,12 @@ export function Sidebar({
           })}
         </nav>
 
-        {/* Player panel */}
-        <div className="m-3 rounded-2xl border border-line bg-canvas/60 p-4">
+        {/* Player panel → public profile */}
+        <Link
+          href="/profile"
+          onClick={onClose}
+          className="m-3 block rounded-2xl border border-line bg-canvas/60 p-4 transition-colors hover:border-accent/50"
+        >
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/15 text-xl">
               {mounted ? info.rank.emoji : "🌱"}
@@ -177,7 +181,7 @@ export function Sidebar({
               <Flame size={15} /> {mounted ? streak : 0}
             </div>
           </div>
-        </div>
+        </Link>
       </aside>
     </>
   );
