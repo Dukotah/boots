@@ -31,6 +31,21 @@ npm run dev      # http://localhost:3000
 npm run build    # production build (also typechecks everything)
 ```
 
+## ▲ Deploy on Vercel (work fully online)
+
+This repo deploys to Vercel with **zero config** (Next.js is auto-detected, no
+env vars required yet). One-time setup:
+
+1. Go to **[vercel.com/new](https://vercel.com/new)** and sign in with GitHub.
+2. **Import** the `dukotah/boots` repository.
+3. Leave everything default (Framework: Next.js) and click **Deploy**.
+
+Vercel deploys the repo's **default branch** as production — which is the branch
+this project lives on. After that, **every push auto-deploys**: pushes to the
+default branch ship to production, and any other branch gets a preview URL. So
+all further work can happen online (e.g. in Claude Code on the web) and go live
+automatically.
+
 ## 🧱 Tech stack
 
 | Layer | Choice |
