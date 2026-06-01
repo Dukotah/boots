@@ -1,19 +1,49 @@
 import type { Lesson, Module } from "./types";
 import { javascript } from "./javascript";
 import { javascriptNext } from "./javascript-next";
+import { strings } from "./strings";
 import { functional } from "./functional";
+import { oop } from "./oop";
+import { recursion } from "./recursion";
+import { regex } from "./regex";
+import { errorHandling } from "./error-handling";
+import { json } from "./json";
+import { math } from "./math";
 import { algorithms } from "./algorithms";
 import { dataStructures } from "./data-structures";
+import { dynamicProgramming } from "./dynamic-programming";
+import { interview } from "./interview";
+import { python } from "./python";
+import { pythonData } from "./python-data";
+import { sql } from "./sql";
+import { sqlJoins } from "./sql-joins";
 import { aiLlms } from "./ai-llms";
 
 // The whole curriculum. Add a module here and it shows up everywhere.
 // Order defines the Campaign Map progression (sequential unlock) — a difficulty ramp.
 export const MODULES: Module[] = [
+  // JavaScript track
   javascript,
   javascriptNext,
+  strings,
   functional,
+  oop,
+  recursion,
+  regex,
+  errorHandling,
+  json,
+  math,
   algorithms,
   dataStructures,
+  dynamicProgramming,
+  interview,
+  // Python track
+  python,
+  pythonData,
+  // SQL track
+  sql,
+  sqlJoins,
+  // AI track
   aiLlms,
 ];
 

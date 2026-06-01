@@ -7,9 +7,22 @@
 // Node's type-stripping without a bundler. The app uses src/lib/curriculum/index.ts.
 import { javascript } from "../src/lib/curriculum/javascript.ts";
 import { javascriptNext } from "../src/lib/curriculum/javascript-next.ts";
+import { strings } from "../src/lib/curriculum/strings.ts";
 import { functional } from "../src/lib/curriculum/functional.ts";
+import { oop } from "../src/lib/curriculum/oop.ts";
+import { recursion } from "../src/lib/curriculum/recursion.ts";
+import { regex } from "../src/lib/curriculum/regex.ts";
+import { errorHandling } from "../src/lib/curriculum/error-handling.ts";
+import { json } from "../src/lib/curriculum/json.ts";
+import { math } from "../src/lib/curriculum/math.ts";
 import { algorithms } from "../src/lib/curriculum/algorithms.ts";
 import { dataStructures } from "../src/lib/curriculum/data-structures.ts";
+import { dynamicProgramming } from "../src/lib/curriculum/dynamic-programming.ts";
+import { interview } from "../src/lib/curriculum/interview.ts";
+import { python } from "../src/lib/curriculum/python.ts";
+import { pythonData } from "../src/lib/curriculum/python-data.ts";
+import { sql } from "../src/lib/curriculum/sql.ts";
+import { sqlJoins } from "../src/lib/curriculum/sql-joins.ts";
 import { aiLlms } from "../src/lib/curriculum/ai-llms.ts";
 import type { Lesson, Module } from "../src/lib/curriculum/types.ts";
 
@@ -17,9 +30,22 @@ import type { Lesson, Module } from "../src/lib/curriculum/types.ts";
 const MODULES: Module[] = [
   javascript,
   javascriptNext,
+  strings,
   functional,
+  oop,
+  recursion,
+  regex,
+  errorHandling,
+  json,
+  math,
   algorithms,
   dataStructures,
+  dynamicProgramming,
+  interview,
+  python,
+  pythonData,
+  sql,
+  sqlJoins,
   aiLlms,
 ];
 
