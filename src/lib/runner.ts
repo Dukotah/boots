@@ -148,15 +148,29 @@ type SqlJs = { Database: new () => SqlDb };
 
 let sqlJsPromise: Promise<SqlJs> | null = null;
 
+// sql.js ships a UMD bundle (not ESM), so a dynamic import() can't load it.
+// Inject it as a <script>, which defines the global `initSqlJs`, then call it.
 function loadSqlJs(): Promise<SqlJs> {
   if (sqlJsPromise) return sqlJsPromise;
-  sqlJsPromise = (async () => {
-    const mod = await import(/* webpackIgnore: true */ `${SQLJS_CDN}sql-wasm.js`);
-    const initSqlJs = (mod.default ?? mod) as (cfg: {
-      locateFile: (f: string) => string;
-    }) => Promise<SqlJs>;
-    return initSqlJs({ locateFile: (f: string) => `${SQLJS_CDN}${f}` });
-  })();
+  sqlJsPromise = new Promise<SqlJs>((resolve, reject) => {
+    type InitSqlJs = (cfg: { locateFile: (f: string) => string }) => Promise<SqlJs>;
+    const w = window as unknown as { initSqlJs?: InitSqlJs };
+    const start = () =>
+      w
+        .initSqlJs!({ locateFile: (f: string) => `${SQLJS_CDN}${f}` })
+        .then(resolve, reject);
+
+    if (w.initSqlJs) {
+      start();
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = `${SQLJS_CDN}sql-wasm.js`;
+    script.async = true;
+    script.onload = () => start();
+    script.onerror = () => reject(new Error("Failed to load sql.js"));
+    document.head.appendChild(script);
+  });
   return sqlJsPromise;
 }
 
