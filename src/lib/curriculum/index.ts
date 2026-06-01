@@ -16,9 +16,11 @@ import { math } from "./math";
 import { algorithms } from "./algorithms";
 import { dataStructures } from "./data-structures";
 import { bitManipulation } from "./bit-manipulation";
+import { twoPointers } from "./two-pointers";
 import { dynamicProgramming } from "./dynamic-programming";
 import { interview } from "./interview";
 import { python } from "./python";
+import { pythonStrings } from "./python-strings";
 import { pythonOop } from "./python-oop";
 import { pythonData } from "./python-data";
 import { sql } from "./sql";
@@ -46,10 +48,12 @@ export const MODULES: Module[] = [
   algorithms,
   dataStructures,
   bitManipulation,
+  twoPointers,
   dynamicProgramming,
   interview,
   // Python track
   python,
+  pythonStrings,
   pythonOop,
   pythonData,
   // SQL track

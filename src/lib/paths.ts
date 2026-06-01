@@ -119,6 +119,7 @@ export const PATHS: Path[] = [
       "algorithms",
       "data-structures",
       "collections",
+      "two-pointers",
       "bit-manipulation",
       "dynamic-programming",
       "interview",
@@ -139,7 +140,7 @@ export const PATHS: Path[] = [
       "Work with lists, dicts, and comprehensions",
       "Manipulate and analyze data in Python",
     ],
-    moduleSlugs: ["python", "python-oop", "python-data"],
+    moduleSlugs: ["python", "python-strings", "python-oop", "python-data"],
   },
   {
     slug: "data-sql",

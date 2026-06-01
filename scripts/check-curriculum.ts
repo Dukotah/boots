@@ -22,9 +22,11 @@ import { math } from "../src/lib/curriculum/math.ts";
 import { algorithms } from "../src/lib/curriculum/algorithms.ts";
 import { dataStructures } from "../src/lib/curriculum/data-structures.ts";
 import { bitManipulation } from "../src/lib/curriculum/bit-manipulation.ts";
+import { twoPointers } from "../src/lib/curriculum/two-pointers.ts";
 import { dynamicProgramming } from "../src/lib/curriculum/dynamic-programming.ts";
 import { interview } from "../src/lib/curriculum/interview.ts";
 import { python } from "../src/lib/curriculum/python.ts";
+import { pythonStrings } from "../src/lib/curriculum/python-strings.ts";
 import { pythonOop } from "../src/lib/curriculum/python-oop.ts";
 import { pythonData } from "../src/lib/curriculum/python-data.ts";
 import { sql } from "../src/lib/curriculum/sql.ts";
@@ -51,9 +53,11 @@ const MODULES: Module[] = [
   algorithms,
   dataStructures,
   bitManipulation,
+  twoPointers,
   dynamicProgramming,
   interview,
   python,
+  pythonStrings,
   pythonOop,
   pythonData,
   sql,
