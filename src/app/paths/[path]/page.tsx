@@ -101,7 +101,7 @@ export default function PathPage({ params }: { params: { path: string } }) {
       {/* Roadmap */}
       <section className="mt-8">
         <h2 className="mb-4 text-lg font-semibold text-white">The roadmap</h2>
-        <PathRoadmap modules={roadmap} />
+        <PathRoadmap modules={roadmap} pathSlug={path.slug} />
       </section>
     </div>
   );

@@ -21,7 +21,9 @@ import { dynamicProgramming } from "./dynamic-programming";
 import { interview } from "./interview";
 import { python } from "./python";
 import { pythonStrings } from "./python-strings";
+import { pythonComprehensions } from "./python-comprehensions";
 import { pythonOop } from "./python-oop";
+import { pythonAlgorithms } from "./python-algorithms";
 import { pythonData } from "./python-data";
 import { sql } from "./sql";
 import { sqlJoins } from "./sql-joins";
@@ -54,7 +56,9 @@ export const MODULES: Module[] = [
   // Python track
   python,
   pythonStrings,
+  pythonComprehensions,
   pythonOop,
+  pythonAlgorithms,
   pythonData,
   // SQL track
   sql,

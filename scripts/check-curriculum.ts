@@ -27,7 +27,9 @@ import { dynamicProgramming } from "../src/lib/curriculum/dynamic-programming.ts
 import { interview } from "../src/lib/curriculum/interview.ts";
 import { python } from "../src/lib/curriculum/python.ts";
 import { pythonStrings } from "../src/lib/curriculum/python-strings.ts";
+import { pythonComprehensions } from "../src/lib/curriculum/python-comprehensions.ts";
 import { pythonOop } from "../src/lib/curriculum/python-oop.ts";
+import { pythonAlgorithms } from "../src/lib/curriculum/python-algorithms.ts";
 import { pythonData } from "../src/lib/curriculum/python-data.ts";
 import { sql } from "../src/lib/curriculum/sql.ts";
 import { sqlJoins } from "../src/lib/curriculum/sql-joins.ts";
@@ -58,7 +60,9 @@ const MODULES: Module[] = [
   interview,
   python,
   pythonStrings,
+  pythonComprehensions,
   pythonOop,
+  pythonAlgorithms,
   pythonData,
   sql,
   sqlJoins,

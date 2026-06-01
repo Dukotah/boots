@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CheckCircle2, ArrowRight } from "lucide-react";
+import { CheckCircle2, ArrowRight, Award } from "lucide-react";
 import { useGameStore } from "@/store/useGameStore";
 import { useMounted } from "@/hooks/useMounted";
 
@@ -16,7 +16,13 @@ export type RoadmapModule = {
 
 // The vertical, numbered "roadmap" of a path's modules, with live progress
 // pulled from the game store (à la a TryHackMe path layout).
-export function PathRoadmap({ modules }: { modules: RoadmapModule[] }) {
+export function PathRoadmap({
+  modules,
+  pathSlug,
+}: {
+  modules: RoadmapModule[];
+  pathSlug: string;
+}) {
   const mounted = useMounted();
   const completed = useGameStore((s) => s.completed);
 
@@ -49,13 +55,23 @@ export function PathRoadmap({ modules }: { modules: RoadmapModule[] }) {
             style={{ width: `${overall}%` }}
           />
         </div>
-        {nextModule && (
+        {overall === 100 ? (
           <Link
-            href={`/learn/${nextModule.slug}`}
-            className="btn-primary mt-4 w-full sm:w-auto"
+            href={`/certificate/${pathSlug}`}
+            className="btn-primary mt-4 w-full bg-gold text-canvas hover:bg-gold/90 sm:w-auto"
           >
-            {overall === 0 ? "Start path" : "Continue"} <ArrowRight size={16} />
+            <Award size={16} /> Claim your certificate
           </Link>
+        ) : (
+          nextModule && (
+            <Link
+              href={`/learn/${nextModule.slug}`}
+              className="btn-primary mt-4 w-full sm:w-auto"
+            >
+              {overall === 0 ? "Start path" : "Continue"}{" "}
+              <ArrowRight size={16} />
+            </Link>
+          )
         )}
       </div>
 

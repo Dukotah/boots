@@ -140,7 +140,14 @@ export const PATHS: Path[] = [
       "Work with lists, dicts, and comprehensions",
       "Manipulate and analyze data in Python",
     ],
-    moduleSlugs: ["python", "python-strings", "python-oop", "python-data"],
+    moduleSlugs: [
+      "python",
+      "python-strings",
+      "python-comprehensions",
+      "python-oop",
+      "python-algorithms",
+      "python-data",
+    ],
   },
   {
     slug: "data-sql",
