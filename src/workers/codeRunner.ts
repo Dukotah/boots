@@ -16,7 +16,14 @@ export type TestResult = {
   logs: string[];
 };
 
-function runOne(code: string, test: TestCase): TestResult {
+// Compile test bodies as *async* functions so lessons can use `await` (Promises,
+// async/await). Plain synchronous lessons run through it unchanged.
+const AsyncFunction = Object.getPrototypeOf(async function () {})
+  .constructor as new (
+  ...args: string[]
+) => (...fnArgs: unknown[]) => Promise<unknown>;
+
+async function runOne(code: string, test: TestCase): Promise<TestResult> {
   const logs: string[] = [];
 
   const fakeConsole = {
@@ -40,13 +47,13 @@ function runOne(code: string, test: TestCase): TestResult {
 
   try {
     // Student code + test code share one scope. "use strict" keeps things sane.
-    const fn = new Function(
+    const fn = new AsyncFunction(
       "console",
       "assertEquals",
       "assert",
       `"use strict";\n${code}\n;\n${test.code}`,
     );
-    fn(fakeConsole, assertEquals, assert);
+    await fn(fakeConsole, assertEquals, assert);
     return { name: test.name, pass: true, logs };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
@@ -63,8 +70,9 @@ function stringify(value: unknown): string {
   }
 }
 
-self.onmessage = (e: MessageEvent<IncomingMessage>) => {
+self.onmessage = async (e: MessageEvent<IncomingMessage>) => {
   const { code, tests } = e.data;
-  const results = tests.map((t) => runOne(code, t));
+  const results: TestResult[] = [];
+  for (const t of tests) results.push(await runOne(code, t));
   (self as unknown as Worker).postMessage({ results });
 };

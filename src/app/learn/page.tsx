@@ -50,6 +50,26 @@ export default function LearnIndex() {
         auto-grades right in your browser. Free to start, no setup.
       </p>
 
+      {/* Pathways nudge — most learners want a guided track, not a course list. */}
+      <Link
+        href="/paths"
+        className="card mt-6 flex items-center justify-between gap-4 bg-gradient-to-br from-accent/15 to-transparent transition-transform hover:-translate-y-0.5"
+      >
+        <div className="flex items-center gap-3">
+          <span className="text-3xl">🧭</span>
+          <div>
+            <p className="font-semibold text-white">
+              Not sure where to start? Follow a path.
+            </p>
+            <p className="text-sm text-gray-400">
+              Guided, role-based tracks — Front-End, Back-End, AI, Interview prep
+              &amp; more.
+            </p>
+          </div>
+        </div>
+        <ArrowRight className="shrink-0 text-accent-soft" />
+      </Link>
+
       {groups.map(({ lang, modules }) => {
         const meta = langMeta(lang);
         return (

@@ -1,6 +1,8 @@
 import type { Lesson, Module } from "./types";
 import { javascript } from "./javascript";
 import { javascriptNext } from "./javascript-next";
+import { asyncJs } from "./async";
+import { webApis } from "./web-apis";
 import { strings } from "./strings";
 import { functional } from "./functional";
 import { oop } from "./oop";
@@ -25,6 +27,7 @@ export const MODULES: Module[] = [
   // JavaScript track
   javascript,
   javascriptNext,
+  asyncJs,
   strings,
   functional,
   oop,
@@ -32,6 +35,7 @@ export const MODULES: Module[] = [
   regex,
   errorHandling,
   json,
+  webApis,
   math,
   algorithms,
   dataStructures,

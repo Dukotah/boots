@@ -7,6 +7,8 @@
 // Node's type-stripping without a bundler. The app uses src/lib/curriculum/index.ts.
 import { javascript } from "../src/lib/curriculum/javascript.ts";
 import { javascriptNext } from "../src/lib/curriculum/javascript-next.ts";
+import { asyncJs } from "../src/lib/curriculum/async.ts";
+import { webApis } from "../src/lib/curriculum/web-apis.ts";
 import { strings } from "../src/lib/curriculum/strings.ts";
 import { functional } from "../src/lib/curriculum/functional.ts";
 import { oop } from "../src/lib/curriculum/oop.ts";
@@ -30,6 +32,8 @@ import type { Lesson, Module } from "../src/lib/curriculum/types.ts";
 const MODULES: Module[] = [
   javascript,
   javascriptNext,
+  asyncJs,
+  webApis,
   strings,
   functional,
   oop,
@@ -58,8 +62,14 @@ function stringify(v: unknown): string {
   }
 }
 
-/** Run a single test against code; return true if it passes (no throw). */
-function testPasses(code: string, test: { code: string }): boolean {
+// Mirror the worker: compile as an async function so lessons using `await` work.
+const AsyncFunction = Object.getPrototypeOf(async function () {})
+  .constructor as new (
+  ...args: string[]
+) => (...fnArgs: unknown[]) => Promise<unknown>;
+
+/** Run a single test against code; resolve true if it passes (no throw). */
+async function testPasses(code: string, test: { code: string }): Promise<boolean> {
   const assertEquals = (a: unknown, b: unknown, m?: string) => {
     if (stringify(a) !== stringify(b))
       throw new Error(m ?? `Expected ${stringify(b)} but got ${stringify(a)}`);
@@ -69,13 +79,13 @@ function testPasses(code: string, test: { code: string }): boolean {
   };
   const fakeConsole = { log() {}, info() {}, warn() {}, error() {} };
   try {
-    const fn = new Function(
+    const fn = new AsyncFunction(
       "console",
       "assertEquals",
       "assert",
       `"use strict";\n${code}\n;\n${test.code}`,
     );
-    fn(fakeConsole, assertEquals, assert);
+    await fn(fakeConsole, assertEquals, assert);
     return true;
   } catch {
     return false;
@@ -84,7 +94,7 @@ function testPasses(code: string, test: { code: string }): boolean {
 
 const errors: string[] = [];
 
-function checkLesson(mod: Module, lesson: Lesson, seen: Set<string>) {
+async function checkLesson(mod: Module, lesson: Lesson, seen: Set<string>) {
   const where = `${mod.slug}/${lesson.slug}`;
 
   // ── structure ──
@@ -117,12 +127,18 @@ function checkLesson(mod: Module, lesson: Lesson, seen: Set<string>) {
 
   // ── grading: solution must pass ALL tests ──
   for (const t of lesson.tests) {
-    if (!testPasses(lesson.solution, t))
+    if (!(await testPasses(lesson.solution, t)))
       errors.push(`${where}: solution FAILS test "${t.name}"`);
   }
 
   // ── quality: starter must NOT already pass every test (no pre-solved lessons) ──
-  const starterPassesAll = lesson.tests.every((t) => testPasses(lesson.starterCode, t));
+  let starterPassesAll = true;
+  for (const t of lesson.tests) {
+    if (!(await testPasses(lesson.starterCode, t))) {
+      starterPassesAll = false;
+      break;
+    }
+  }
   if (starterPassesAll)
     errors.push(`${where}: starterCode already passes all tests (lesson is pre-solved)`);
 }
@@ -135,7 +151,7 @@ for (const mod of MODULES) {
   for (const lesson of mod.lessons) {
     lessonCount++;
     testCount += lesson.tests?.length ?? 0;
-    checkLesson(mod, lesson, seen);
+    await checkLesson(mod, lesson, seen);
   }
 }
 
