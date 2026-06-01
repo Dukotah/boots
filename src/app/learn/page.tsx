@@ -2,8 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { ArrowRight } from "lucide-react";
 import { MODULES, totalLessons } from "@/lib/curriculum";
-import { langMeta } from "@/lib/curriculum/lang";
-import type { LessonLanguage, Module } from "@/lib/curriculum/types";
+import { groupByTrack } from "@/lib/curriculum/tracks";
 
 export const metadata: Metadata = {
   title: "All Courses — Learn JavaScript, Python, SQL & AI",
@@ -20,24 +19,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/learn" },
 };
 
-// Section order controls how the catalog reads top-to-bottom.
-const LANG_ORDER: LessonLanguage[] = ["js", "py", "sql"];
-
-function groupByLanguage(): { lang: LessonLanguage; modules: Module[] }[] {
-  const groups = new Map<LessonLanguage, Module[]>();
-  for (const m of MODULES) {
-    const lang = m.language ?? "js";
-    if (!groups.has(lang)) groups.set(lang, []);
-    groups.get(lang)!.push(m);
-  }
-  return LANG_ORDER.filter((l) => groups.has(l)).map((lang) => ({
-    lang,
-    modules: groups.get(lang)!,
-  }));
-}
-
 export default function LearnIndex() {
-  const groups = groupByLanguage();
+  const groups = groupByTrack(MODULES);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
@@ -50,37 +33,57 @@ export default function LearnIndex() {
         auto-grades right in your browser. Free to start, no setup.
       </p>
 
-      {groups.map(({ lang, modules }) => {
-        const meta = langMeta(lang);
-        return (
-          <section key={lang} className="mt-10">
-            <h2 className="text-xl font-bold text-white">
-              {meta.label} courses
-            </h2>
-            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+      {/*
+        LEARNING PASS SLOT — reserved, intentionally empty for now.
+        The seasonal learning pass banner will mount here, between the page
+        header and the track list, so it's the first thing learners see without
+        pushing the catalog far down the page. Drop a <LearningPassBanner /> in
+        when the feature ships; nothing else on this page needs to move.
+      */}
+
+      <div className="mt-10 space-y-12">
+        {groups.map(({ track, modules }) => (
+          <section key={track.id} aria-labelledby={`track-${track.id}`}>
+            <div className="flex items-baseline gap-2">
+              <span aria-hidden className="text-xl">
+                {track.emoji}
+              </span>
+              <h2
+                id={`track-${track.id}`}
+                className="text-xl font-bold text-white"
+              >
+                {track.label}
+              </h2>
+              <span className="text-sm text-gray-500">{modules.length} courses</span>
+            </div>
+            <p className="mt-1 text-sm text-gray-400">{track.blurb}</p>
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {modules.map((m) => (
                 <Link
                   key={m.slug}
                   href={`/learn/${m.slug}`}
-                  className={`card group bg-gradient-to-br ${m.gradient} transition-transform hover:-translate-y-1`}
+                  className={`card group flex flex-col gap-2 bg-gradient-to-br p-4 ${m.gradient} transition-transform hover:-translate-y-1`}
                 >
-                  <div className="flex items-start justify-between">
-                    <span className="text-4xl">{m.emoji}</span>
-                    <span className="rounded-full bg-black/30 px-2 py-1 text-xs text-gray-300">
+                  <div className="flex items-center justify-between">
+                    <span className="text-2xl">{m.emoji}</span>
+                    <span className="rounded-full bg-black/30 px-2 py-0.5 text-xs text-gray-300">
                       {m.lessons.length} lessons
                     </span>
                   </div>
-                  <h3 className="mt-4 text-lg font-bold text-white">{m.title}</h3>
-                  <p className="mt-1 text-sm text-gray-300">{m.description}</p>
-                  <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-white">
-                    Open course <ArrowRight size={15} />
+                  <h3 className="text-base font-bold text-white">{m.title}</h3>
+                  <p className="line-clamp-2 text-sm text-gray-300">
+                    {m.description}
+                  </p>
+                  <span className="mt-auto inline-flex items-center gap-1 pt-1 text-sm font-medium text-white opacity-0 transition-opacity group-hover:opacity-100">
+                    Open course <ArrowRight size={14} />
                   </span>
                 </Link>
               ))}
             </div>
           </section>
-        );
-      })}
+        ))}
+      </div>
     </div>
   );
 }
