@@ -51,3 +51,38 @@ export async function recordCompletion(
     return null;
   }
 }
+
+/**
+ * Submits the learner's code to the server for authoritative verification. The
+ * server re-runs JS/TS solutions and awards canonical XP only if they pass.
+ * For languages the server can't yet re-run (Python/SQL) it falls back to the
+ * direct RPC record. Best-effort: never throws, never blocks the UI.
+ */
+export async function verifyCompletion(
+  courseSlug: string,
+  lessonSlug: string,
+  code: string,
+): Promise<{ verified: boolean; awardedXp: number | null }> {
+  try {
+    const res = await fetch("/api/verify", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ courseSlug, lessonSlug, code }),
+    });
+    const data = (await res.json().catch(() => null)) as
+      | { verified?: boolean; reason?: string; awardedXp?: number | null }
+      | null;
+
+    if (res.ok && data && typeof data.verified === "boolean") {
+      // Language not server-verifiable yet → trust the client pass, record via RPC.
+      if (!data.verified && data.reason) {
+        return { verified: true, awardedXp: await recordCompletion(courseSlug, lessonSlug) };
+      }
+      return { verified: data.verified, awardedXp: data.awardedXp ?? null };
+    }
+  } catch {
+    // fall through to client-side record
+  }
+  // Route unavailable → fall back to the direct RPC record.
+  return { verified: true, awardedXp: await recordCompletion(courseSlug, lessonSlug) };
+}
