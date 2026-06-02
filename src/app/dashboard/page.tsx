@@ -8,6 +8,8 @@ import { levelFromXp } from "@/lib/levels";
 import { MODULES, totalLessons, totalXpAvailable, lessonId } from "@/lib/curriculum";
 import { XPBar } from "@/components/XPBar";
 import { DailyQuests } from "@/components/features/quests/DailyQuests";
+import { DailyChallenge } from "@/components/features/retention/DailyChallenge";
+import { StreakHeatmap } from "@/components/features/retention/StreakHeatmap";
 
 export default function Dashboard() {
   const [mounted, setMounted] = useState(false);
@@ -73,9 +75,19 @@ export default function Dashboard() {
         <XPBar info={info} />
       </div>
 
+      {/* Challenge of the day */}
+      <div className="mt-4">
+        <DailyChallenge />
+      </div>
+
       {/* Daily quests */}
       <div className="mt-8">
         <DailyQuests />
+      </div>
+
+      {/* Activity heatmap */}
+      <div className="mt-4">
+        <StreakHeatmap />
       </div>
 
       {/* Course progress */}

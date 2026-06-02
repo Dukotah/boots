@@ -60,6 +60,8 @@ export type GameState = {
   // ── streak ──
   streak: number;
   lastActiveDay: string | null;
+  // Every local day the player completed at least one lesson — powers the heatmap.
+  activeDays: string[];
   // ── streak protection (bought in the shop, auto-consumed on a missed day) ──
   streakFreezes: number;
   // ── daily activity (resets each local day) — powers Daily Quests ──
@@ -110,6 +112,7 @@ const INITIAL = {
   achievements: [] as string[],
   streak: 0,
   lastActiveDay: null as string | null,
+  activeDays: [] as string[],
   streakFreezes: 0,
   dailyDay: null as string | null,
   dailyXp: 0,
@@ -213,6 +216,9 @@ export const useGameStore = create<GameState>()(
             streak,
             streakFreezes,
             lastActiveDay: today,
+            activeDays: state.activeDays.includes(today)
+              ? state.activeDays
+              : [...state.activeDays, today],
             dailyDay: today,
             dailyXp: baseDailyXp,
             dailyLessons: baseDailyLessons,
@@ -242,6 +248,9 @@ export const useGameStore = create<GameState>()(
           streak,
           streakFreezes,
           lastActiveDay: today,
+          activeDays: state.activeDays.includes(today)
+            ? state.activeDays
+            : [...state.activeDays, today],
           dailyDay: today,
           dailyXp: baseDailyXp + xp,
           dailyLessons: baseDailyLessons + 1,
@@ -388,6 +397,7 @@ export const useGameStore = create<GameState>()(
         achievements: s.achievements,
         streak: s.streak,
         lastActiveDay: s.lastActiveDay,
+        activeDays: s.activeDays,
         streakFreezes: s.streakFreezes,
         dailyDay: s.dailyDay,
         dailyXp: s.dailyXp,
