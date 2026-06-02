@@ -69,7 +69,7 @@ export function PricingPlans() {
           <Features
             items={[
               "Every interactive, auto-graded lesson",
-              "Boots AI tutor (Socratic mode)",
+              "Cantrip AI tutor (Socratic mode)",
               "Leagues & boss battles",
               "Loot chests & streak freezes",
               "All languages & future courses",
@@ -90,7 +90,7 @@ export function PricingPlans() {
               "For bootcamps, schools & companies",
             ]}
           />
-          <a href="mailto:sales@boots.dev" className="btn-ghost mt-6 w-full">
+          <a href="mailto:hello@cantrip.dev" className="btn-ghost mt-6 w-full">
             Contact us
           </a>
         </Tier>

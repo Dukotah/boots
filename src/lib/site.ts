@@ -2,13 +2,14 @@
 // robots, and JSON-LD. Set NEXT_PUBLIC_SITE_URL in the environment once a domain
 // is live; until then this placeholder keeps absolute URLs well-formed.
 export const SITE = {
-  name: "Boots",
+  name: "Cantrip",
   // The full product name used in titles/structured data.
-  longName: "Boots — Gamified Coding Academy",
-  url: (process.env.NEXT_PUBLIC_SITE_URL ?? "https://boots.academy").replace(/\/$/, ""),
+  longName: "Cantrip — Gamified Coding Academy",
+  tagline: "Learn to code, one spell at a time.",
+  url: (process.env.NEXT_PUBLIC_SITE_URL ?? "https://cantrip.dev").replace(/\/$/, ""),
   description:
     "Learn to code the fun way. Interactive, auto-graded lessons in JavaScript, Python, SQL, and AI/LLMs — earn XP, keep your streak, and level up from Intern to Archmage.",
-  twitter: "@bootsacademy",
+  twitter: "@cantripdev",
 } as const;
 
 /** Build an absolute URL from a site-relative path. */

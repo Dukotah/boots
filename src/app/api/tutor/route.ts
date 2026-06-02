@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { getSupabaseServerClient, isSupabaseConfigured } from "@/lib/supabase/server";
 
-// "Ask Boots" — the Socratic AI tutor. Server-side so the API key never reaches
+// "Ask Cantrip" — the Socratic AI tutor. Server-side so the API key never reaches
 // the browser. Streams hints back as plain text. Pro-gated and token-capped.
 //
 // Cost control (gameplan §6 — the tutor is the main ongoing cost):
@@ -19,7 +19,7 @@ const MAX_TOKENS = 1024;
 const MAX_HISTORY = 12; // keep the transcript bounded
 
 // Frozen, byte-identical across every request → one shared cache entry app-wide.
-const SOCRATIC_SYSTEM = `You are "Boots", the friendly mascot and AI tutor for the Boots coding academy. You help students learn to code through the Socratic method.
+const SOCRATIC_SYSTEM = `You are "Cantrip", the friendly mascot and AI tutor for the Cantrip coding academy. You help students learn to code through the Socratic method.
 
 Your rules — follow them strictly:
 1. NEVER write the full solution or hand over working code that completes the student's task. This is the most important rule.

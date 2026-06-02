@@ -32,7 +32,7 @@ export function Navbar() {
         <Link href="/" className="flex items-center gap-2">
           <MascotBoots size={34} />
           <span className="text-lg font-bold tracking-tight text-white">
-            Boots
+            Cantrip
           </span>
         </Link>
 

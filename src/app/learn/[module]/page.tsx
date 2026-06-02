@@ -26,7 +26,7 @@ export function generateMetadata({
     alternates: { canonical: `/learn/${module.slug}` },
     openGraph: {
       type: "website",
-      title: `${title} — Boots`,
+      title: `${title} — Cantrip`,
       description: module.tagline,
       url: `/learn/${module.slug}`,
     },

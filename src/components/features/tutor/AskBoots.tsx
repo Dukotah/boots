@@ -14,7 +14,7 @@ type ChatMessage = { role: "user" | "assistant"; content: string };
 
 // The Socratic tutor panel. Gated behind Pro in the UI; the /api/tutor route
 // re-checks server-side. Streams hints token-by-token. `code` is the student's
-// live editor contents, passed through so Boots can reference their attempt.
+// live editor contents, passed through so Cantrip can reference their attempt.
 export function AskBoots({
   module,
   lesson,
@@ -63,7 +63,7 @@ export function AskBoots({
       if (!res.ok || !res.body) {
         const msg =
           (await res.json().catch(() => null))?.error ??
-          "Boots is unavailable right now.";
+          "Cantrip is unavailable right now.";
         setMessages((m) => updateLast(m, msg));
         setBusy(false);
         return;
@@ -93,7 +93,7 @@ export function AskBoots({
         className="flex w-full items-center gap-2 px-4 py-3 text-left"
       >
         <MascotBoots size={24} />
-        <span className="font-semibold text-white">Ask Boots</span>
+        <span className="font-semibold text-white">Ask Cantrip</span>
         <Sparkles size={14} className="text-accent-soft" />
         <span className="ml-auto text-xs text-gray-500">
           {open ? "Hide" : "Socratic AI tutor"}
@@ -112,7 +112,7 @@ export function AskBoots({
               <div className="p-5 text-center">
                 <Lock className="mx-auto text-gray-500" size={20} />
                 <p className="mt-2 text-sm text-gray-300">
-                  Boots gives Socratic hints — never the answer — to help you
+                  Cantrip gives Socratic hints — never the answer — to help you
                   get unstuck.
                 </p>
                 <Link href="/pricing" className="btn-primary mx-auto mt-3 w-fit">
@@ -127,8 +127,8 @@ export function AskBoots({
                 >
                   {messages.length === 0 && (
                     <p className="text-sm text-gray-500">
-                      Stuck? Ask Boots for a nudge — e.g. “Why does my loop never
-                      stop?” Boots won’t hand over the answer, but will help you
+                      Stuck? Ask Cantrip for a nudge — e.g. “Why does my loop never
+                      stop?” Cantrip won’t hand over the answer, but will help you
                       find it.
                     </p>
                   )}

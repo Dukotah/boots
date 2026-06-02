@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { PricingPlans } from "@/components/features/billing/PricingPlans";
 
 export const metadata: Metadata = {
-  title: "Pricing | Boots",
+  title: "Pricing | Cantrip",
   description:
     "Start free. Go Pro for the full game: every interactive lesson, the AI tutor, leagues, and boss battles. From $9/mo billed annually.",
 };

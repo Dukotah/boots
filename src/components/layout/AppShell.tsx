@@ -33,7 +33,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </button>
         <div className="flex items-center gap-2">
           <MascotBoots size={26} />
-          <span className="font-bold tracking-tight text-white">Boots</span>
+          <span className="font-bold tracking-tight text-white">Cantrip</span>
         </div>
       </header>
 

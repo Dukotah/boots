@@ -27,7 +27,7 @@ export function generateMetadata({
     alternates: { canonical: path },
     openGraph: {
       type: "article",
-      title: `${title} | Boots`,
+      title: `${title} | Cantrip`,
       description: lesson.blurb,
       url: path,
     },

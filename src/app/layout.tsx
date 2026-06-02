@@ -7,9 +7,9 @@ import { SITE } from "@/lib/site";
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
   title: {
-    default: "Boots — Learn to Code & Build with AI, Gamified",
+    default: "Cantrip — Learn to Code & Build with AI, Gamified",
     // Child pages set just their own title; this appends the brand.
-    template: "%s | Boots",
+    template: "%s | Cantrip",
   },
   description:
     "A gamified, multi-language coding academy. Learn JavaScript, Python, SQL, AI/LLMs, and more through interactive, auto-graded lessons. Earn XP, keep your streak, level up.",
@@ -31,14 +31,14 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: SITE.name,
-    title: "Boots — Learn to Code & Build with AI, Gamified",
+    title: "Cantrip — Learn to Code & Build with AI, Gamified",
     description: SITE.description,
     url: SITE.url,
   },
   twitter: {
     card: "summary_large_image",
     site: SITE.twitter,
-    title: "Boots — Learn to Code & Build with AI, Gamified",
+    title: "Cantrip — Learn to Code & Build with AI, Gamified",
     description: SITE.description,
   },
   robots: { index: true, follow: true },

@@ -235,7 +235,7 @@ function Features() {
     { icon: Zap, title: "XP & ranks", body: "Climb from Intern to Archmage on a real RPG curve." },
     { icon: Flame, title: "Streaks", body: "Daily practice with freezes that forgive an off day." },
     { icon: Swords, title: "Leagues", body: "Compete fairly with learners who started when you did." },
-    { icon: Bot, title: "AI tutor", body: "Boots mentors you Socratically — it won't just hand over the answer." },
+    { icon: Bot, title: "AI tutor", body: "Cantrip mentors you Socratically — it won't just hand over the answer." },
     { icon: Trophy, title: "Achievements", body: "Loot, badges and milestones reward breadth, not grind." },
     { icon: Languages, title: "Multi-language", body: "JavaScript, AI/LLMs, and more — learn the path you actually want." },
   ];
