@@ -35,6 +35,10 @@ export type Lesson = {
   language?: LessonLanguage;
   // SQL only: schema + seed data executed before the student's query runs.
   setup?: string;
+  // Optional progressive hints, revealed one at a time (free, no AI needed).
+  hints?: string[];
+  // Optional Markdown shown after all tests pass — why the solution works.
+  explanation?: string;
 };
 
 export type Module = {

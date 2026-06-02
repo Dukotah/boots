@@ -40,6 +40,11 @@ Declare a variable called \`greeting\` and set it to the string \`"hello world"\
           code: `assertEquals(greeting, "hello world");`,
         },
       ],
+      hints: [
+        "Start the line with `const`, then the name you want: `const greeting`.",
+        "Use `=` to assign, and wrap the text in quotes: `\"hello world\"`. End with a semicolon.",
+      ],
+      explanation: `\`const greeting = "hello world";\` creates a constant named \`greeting\` and binds it to the string \`"hello world"\`. Because it's a \`const\`, that binding can't be reassigned later — perfect for a value that never changes.`,
     },
     {
       slug: "functions",
@@ -72,6 +77,11 @@ Write a function \`add\` that takes two numbers and **returns** their sum.`,
         { name: "add(-1, 1) === 0", code: `assertEquals(add(-1, 1), 0);` },
         { name: "add(10, 20) === 30", code: `assertEquals(add(10, 20), 30);` },
       ],
+      hints: [
+        "The two inputs arrive as the parameters `a` and `b`.",
+        "Use the `return` keyword — without it the function gives back `undefined`. Return `a + b`.",
+      ],
+      explanation: `The function receives its two inputs as the parameters \`a\` and \`b\`, then \`return a + b\` hands the sum back to whoever called it. Returning (not just computing) is what lets \`add(2, 3)\` evaluate to \`5\`.`,
     },
     {
       slug: "conditionals",

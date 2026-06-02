@@ -35,6 +35,8 @@ export function LessonView({
   const [outcome, setOutcome] = useState<RunOutcome | null>(null);
   const [running, setRunning] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
+  const [hintsShown, setHintsShown] = useState(0);
+  const hints = lesson.hints ?? [];
 
   const completeLesson = useGameStore((s) => s.completeLesson);
   const alreadyDone = useGameStore((s) => s.completed.includes(id));
@@ -83,6 +85,37 @@ export function LessonView({
         <div className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-accent/15 px-3 py-1 text-xs font-semibold text-accent-soft">
           ⚡ {lesson.xp} XP
         </div>
+
+        {/* Progressive hints — free, no AI needed */}
+        {hints.length > 0 && (
+          <div className="mt-5 border-t border-line pt-4">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+              Hints
+            </p>
+            <div className="space-y-2">
+              {hints.slice(0, hintsShown).map((h, i) => (
+                <div
+                  key={i}
+                  className="rounded-lg border border-line bg-canvas/40 px-3 py-2 text-sm text-gray-300"
+                >
+                  <span className="mr-1.5 font-semibold text-gold">{i + 1}.</span>
+                  {h}
+                </div>
+              ))}
+            </div>
+            {hintsShown < hints.length && (
+              <button
+                onClick={() => setHintsShown((n) => n + 1)}
+                className="btn-ghost mt-2 text-xs"
+              >
+                💡 {hintsShown === 0 ? "Show a hint" : "Show another hint"}
+                <span className="text-gray-500">
+                  ({hints.length - hintsShown} left)
+                </span>
+              </button>
+            )}
+          </div>
+        )}
       </section>
 
       {/* Right: editor + results */}
@@ -173,6 +206,24 @@ export function LessonView({
                   Back to dashboard →
                 </Link>
               )}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Why the solution works — revealed once tests pass */}
+        {allPass && lesson.explanation && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="card"
+          >
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+              How it works
+            </p>
+            <div className="prose-lesson">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {lesson.explanation}
+              </ReactMarkdown>
             </div>
           </motion.div>
         )}
