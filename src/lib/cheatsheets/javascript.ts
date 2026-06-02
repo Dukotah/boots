@@ -1,0 +1,141 @@
+import type { CheatSheet } from "./types";
+
+export const javascriptCheatsheet: CheatSheet = {
+  slug: "javascript",
+  title: "JavaScript Cheat Sheet",
+  language: "JavaScript",
+  emoji: "📜",
+  description:
+    "A quick-reference JavaScript cheat sheet covering variables, arrays, objects, functions, and more.",
+  keywords: [
+    "javascript cheat sheet",
+    "js cheatsheet",
+    "javascript syntax reference",
+    "javascript basics",
+  ],
+  sections: [
+    {
+      title: "Variables & Types",
+      items: [
+        { code: "let count = 0;", desc: "Block-scoped, reassignable variable." },
+        { code: "const PI = 3.14;", desc: "Block-scoped constant; cannot be reassigned." },
+        { code: "typeof value", desc: "Returns the type as a string, e.g. 'number'." },
+        { code: "let x = null;", desc: "Intentional absence of any value." },
+        { code: "let y;", desc: "Declared but unassigned: value is undefined." },
+        { code: "Array.isArray(value)", desc: "True if value is an array." },
+        { code: "Number.isNaN(value)", desc: "Reliable check for NaN." },
+      ],
+    },
+    {
+      title: "Strings",
+      items: [
+        { code: "'Hello, ' + name", desc: "Concatenate strings with the + operator." },
+        { code: "str.length", desc: "Number of characters in the string." },
+        { code: "str.toUpperCase()", desc: "Returns an uppercased copy." },
+        { code: "str.includes('foo')", desc: "True if the substring is present." },
+        { code: "str.slice(0, 5)", desc: "Extract a substring by index range." },
+        { code: "str.split(',')", desc: "Split a string into an array by a separator." },
+        { code: "str.trim()", desc: "Remove whitespace from both ends." },
+        { code: "str.replace('a', 'b')", desc: "Replace the first match with a new value." },
+      ],
+    },
+    {
+      title: "Numbers & Math",
+      items: [
+        { code: "parseInt('42', 10)", desc: "Parse an integer from a string in base 10." },
+        { code: "parseFloat('3.14')", desc: "Parse a floating-point number from a string." },
+        { code: "(1.005).toFixed(2)", desc: "Format a number to a fixed number of decimals." },
+        { code: "Math.round(4.6)", desc: "Round to the nearest integer." },
+        { code: "Math.max(1, 2, 3)", desc: "Largest of the given numbers." },
+        { code: "Math.floor(Math.random() * 10)", desc: "Random integer from 0 to 9." },
+        { code: "Math.abs(-5)", desc: "Absolute value of a number." },
+        { code: "10 % 3", desc: "Modulo: remainder of a division (1)." },
+      ],
+    },
+    {
+      title: "Arrays",
+      items: [
+        { code: "const arr = [1, 2, 3];", desc: "Create an array literal." },
+        { code: "arr.length", desc: "Number of elements in the array." },
+        { code: "arr.push(4)", desc: "Append an item to the end; returns new length." },
+        { code: "arr.pop()", desc: "Remove and return the last item." },
+        { code: "arr.indexOf(2)", desc: "Index of the first matching element, or -1." },
+        { code: "arr.includes(2)", desc: "True if the array contains the value." },
+        { code: "arr.slice(1, 3)", desc: "Shallow copy of a portion of the array." },
+        { code: "arr.join('-')", desc: "Combine elements into a string." },
+      ],
+    },
+    {
+      title: "Array Methods",
+      items: [
+        { code: "arr.map(x => x * 2)", desc: "Transform each element into a new array." },
+        { code: "arr.filter(x => x > 2)", desc: "Keep only elements that pass the test." },
+        { code: "arr.reduce((sum, x) => sum + x, 0)", desc: "Reduce to a single accumulated value." },
+        { code: "arr.forEach(x => console.log(x))", desc: "Run a function for each element." },
+        { code: "arr.find(x => x > 2)", desc: "First element matching the test, or undefined." },
+        { code: "arr.some(x => x > 2)", desc: "True if at least one element passes." },
+        { code: "arr.every(x => x > 0)", desc: "True if all elements pass the test." },
+        { code: "arr.sort((a, b) => a - b)", desc: "Sort numbers in ascending order." },
+      ],
+    },
+    {
+      title: "Objects",
+      items: [
+        { code: "const user = { name: 'Ada', age: 36 };", desc: "Create an object literal." },
+        { code: "user.name", desc: "Access a property with dot notation." },
+        { code: "user['age']", desc: "Access a property with bracket notation." },
+        { code: "Object.keys(user)", desc: "Array of the object's own keys." },
+        { code: "Object.values(user)", desc: "Array of the object's own values." },
+        { code: "Object.entries(user)", desc: "Array of [key, value] pairs." },
+        { code: "'name' in user", desc: "True if the property exists on the object." },
+        { code: "user?.address?.city", desc: "Optional chaining: safely access nested values." },
+      ],
+    },
+    {
+      title: "Functions & Arrow Functions",
+      items: [
+        { code: "function add(a, b) { return a + b; }", desc: "Standard function declaration." },
+        { code: "const add = (a, b) => a + b;", desc: "Arrow function with implicit return." },
+        { code: "const square = x => x * x;", desc: "Single parameter needs no parentheses." },
+        { code: "const greet = (name = 'world') => name;", desc: "Default parameter value." },
+        { code: "const sum = (...nums) => nums.length;", desc: "Rest parameters collect args into an array." },
+        { code: "(() => { /* ... */ })()", desc: "Immediately invoked function expression (IIFE)." },
+      ],
+    },
+    {
+      title: "Conditionals & Loops",
+      items: [
+        { code: "if (x > 0) { /* ... */ } else { /* ... */ }", desc: "Basic if/else branching." },
+        { code: "x > 0 ? 'pos' : 'neg'", desc: "Ternary operator for inline conditions." },
+        { code: "switch (x) { case 1: break; default: }", desc: "Branch on multiple discrete values." },
+        { code: "for (let i = 0; i < 5; i++) { }", desc: "Classic counting loop." },
+        { code: "for (const item of arr) { }", desc: "Iterate over array values." },
+        { code: "for (const key in obj) { }", desc: "Iterate over an object's keys." },
+        { code: "while (condition) { }", desc: "Loop while the condition stays true." },
+        { code: "const flag = a ?? b;", desc: "Nullish coalescing: use b if a is null/undefined." },
+      ],
+    },
+    {
+      title: "Destructuring & Spread",
+      items: [
+        { code: "const [a, b] = [1, 2];", desc: "Destructure values from an array." },
+        { code: "const { name, age } = user;", desc: "Destructure properties from an object." },
+        { code: "const { id = 0 } = obj;", desc: "Provide a default when the value is undefined." },
+        { code: "const copy = [...arr];", desc: "Spread to clone an array." },
+        { code: "const merged = { ...a, ...b };", desc: "Spread to merge objects (b wins on conflicts)." },
+        { code: "const [first, ...rest] = arr;", desc: "Collect remaining elements with rest." },
+      ],
+    },
+    {
+      title: "Promises & Async",
+      items: [
+        { code: "fetch(url).then(res => res.json())", desc: "Chain promise handlers with .then()." },
+        { code: "promise.catch(err => console.error(err))", desc: "Handle a rejected promise." },
+        { code: "async function load() { /* ... */ }", desc: "Declare an async function returning a promise." },
+        { code: "const data = await fetch(url);", desc: "Pause until the promise resolves (inside async)." },
+        { code: "await Promise.all([p1, p2])", desc: "Wait for all promises to resolve." },
+        { code: "try { await fn(); } catch (e) { }", desc: "Handle errors from awaited code." },
+      ],
+    },
+  ],
+};
