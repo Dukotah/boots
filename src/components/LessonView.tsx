@@ -21,6 +21,7 @@ import { LevelUpToast } from "./LevelUpToast";
 import { ProGate } from "./features/billing/ProGate";
 import { AskBoots } from "./features/tutor/AskBoots";
 import { TutorPanel } from "./TutorPanel";
+import { CodeReview } from "./quality/CodeReview";
 import { summarizeLesson } from "@/lib/tutor/prompt";
 import type { TutorContext } from "@/lib/tutor/types";
 
@@ -240,6 +241,9 @@ export function LessonView({
             </div>
           </motion.div>
         )}
+
+        {/* Static code review — JS solutions only (the analyzer parses JS) */}
+        {allPass && language === "js" && <CodeReview code={code} />}
 
         {/* Why the solution works — revealed once tests pass */}
         {allPass && lesson.explanation && (
