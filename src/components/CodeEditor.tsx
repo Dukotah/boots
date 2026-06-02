@@ -11,6 +11,11 @@ export function CodeEditor({
   onChange: (value: string) => void;
   language?: string;
 }) {
+  // Respect users who prefer reduced motion (photosensitivity, focus).
+  const reduced =
+    typeof window !== "undefined" &&
+    window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
   return (
     <Editor
       height="100%"
@@ -27,11 +32,15 @@ export function CodeEditor({
         lineNumbersMinChars: 3,
         tabSize: 2,
         automaticLayout: true,
-        smoothScrolling: true,
-        cursorBlinking: "smooth",
+        smoothScrolling: !reduced,
+        cursorBlinking: reduced ? "solid" : "smooth",
       }}
       loading={
-        <div className="flex h-full items-center justify-center text-sm text-gray-500">
+        <div
+          role="status"
+          aria-label="Loading code editor"
+          className="flex h-full items-center justify-center text-sm text-gray-500"
+        >
           Loading editor…
         </div>
       }

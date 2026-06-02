@@ -9,6 +9,7 @@ import { CheckCircle2, XCircle, ArrowRight } from "lucide-react";
 import type { Lesson, Module } from "@/lib/curriculum/types";
 import { lessonId } from "@/lib/curriculum";
 import { useGameStore } from "@/store/useGameStore";
+import { celebrate } from "@/lib/celebrate";
 import { useAccess } from "@/hooks/useAccess";
 import { useMounted } from "@/hooks/useMounted";
 import { LevelUpToast } from "./LevelUpToast";
@@ -59,6 +60,7 @@ export function QuizView({
       if (!awarded && next.every((p, i) => p === questions[i].answer)) {
         setAwarded(true);
         completeLesson(id, lesson.xp);
+        celebrate();
       }
       return next;
     });
@@ -103,6 +105,8 @@ export function QuizView({
                         key={oi}
                         onClick={() => choose(qi, oi)}
                         disabled={correct}
+                        aria-label={`Answer ${String.fromCharCode(65 + oi)}: ${opt}`}
+                        aria-pressed={isPick}
                         className={[
                           "flex w-full items-center gap-2 rounded-xl border px-3 py-2 text-left text-sm transition",
                           showCorrect

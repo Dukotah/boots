@@ -10,6 +10,7 @@ import type { Lesson, Module } from "@/lib/curriculum/types";
 import { lessonId } from "@/lib/curriculum";
 import { lessonLanguage, langMeta } from "@/lib/curriculum/lang";
 import { runLesson, type RunOutcome } from "@/lib/runner";
+import { celebrate } from "@/lib/celebrate";
 import { useGameStore } from "@/store/useGameStore";
 import { useAccess } from "@/hooks/useAccess";
 import { useMounted } from "@/hooks/useMounted";
@@ -64,6 +65,7 @@ export function LessonView({
 
     if (result.results.every((r) => r.pass)) {
       completeLesson(id, lesson.xp);
+      celebrate();
     }
   }
 

@@ -47,8 +47,13 @@ export function Playground({ initial = "js" }: { initial?: LessonLanguage }) {
 
   async function run() {
     setRunning(true);
-    setResult(await runScratch(code, lang));
-    setRunning(false);
+    try {
+      setResult(await runScratch(code, lang));
+    } catch {
+      setResult({ logs: [], error: "Something went wrong running your code. Try again." });
+    } finally {
+      setRunning(false);
+    }
   }
 
   return (
