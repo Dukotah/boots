@@ -60,6 +60,11 @@ export function runHtml(code: string, tests: TestCase[]): Promise<RunOutcome> {
     iframe.onload = () => {
       try {
         const doc = iframe.contentDocument;
+        // Ignore the premature about:blank load that can fire before srcdoc
+        // parses — wait for the load that actually has the student's markup.
+        if (doc && doc.body && doc.body.innerHTML.trim() === "" && code.trim() !== "") {
+          return;
+        }
         if (!doc) {
           finish({
             timedOut: false,
@@ -124,9 +129,10 @@ export function runHtml(code: string, tests: TestCase[]): Promise<RunOutcome> {
       }
     };
 
-    document.body.appendChild(iframe);
-    // Render the student's markup. srcdoc triggers `onload` once parsed.
+    // Set srcdoc BEFORE attaching so the iframe loads the markup directly,
+    // rather than firing an initial about:blank load first.
     iframe.srcdoc = code;
+    document.body.appendChild(iframe);
   });
 }
 
