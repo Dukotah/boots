@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { MODULES } from "@/lib/curriculum";
+import { ROOMS } from "@/lib/rooms";
 import { CHEATSHEETS } from "@/lib/cheatsheets";
 import { PATHS } from "@/lib/paths";
 import { TOOLS } from "@/lib/tools";
@@ -13,6 +14,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const staticPages: MetadataRoute.Sitemap = [
     { url: absoluteUrl("/"), changeFrequency: "weekly", priority: 1 },
     { url: absoluteUrl("/learn"), changeFrequency: "weekly", priority: 0.9 },
+    { url: absoluteUrl("/rooms"), changeFrequency: "weekly", priority: 0.8 },
     { url: absoluteUrl("/paths"), changeFrequency: "weekly", priority: 0.8 },
     { url: absoluteUrl("/playground"), changeFrequency: "monthly", priority: 0.8 },
     { url: absoluteUrl("/blog"), changeFrequency: "weekly", priority: 0.8 },
@@ -74,6 +76,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     })),
   );
 
+  const roomPages: MetadataRoute.Sitemap = ROOMS.map((r) => ({
+    url: absoluteUrl(`/rooms/${r.slug}`),
+    changeFrequency: "monthly",
+    priority: 0.7,
+  }));
+
   return [
     ...staticPages,
     ...pathPages,
@@ -84,5 +92,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...certificatePages,
     ...modulePages,
     ...lessonPages,
+    ...roomPages,
   ];
 }
