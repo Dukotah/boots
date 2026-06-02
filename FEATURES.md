@@ -90,6 +90,45 @@ Features the leading practice platforms have that we don't yet — adapted to Bo
 47. **Persistent cloud workspace** — a saved, full multi-file IDE/sandbox per learner, not just the per-lesson editor (HTB Pwnbox analog; extends #5).
 48. **Real-world rewards / swag** — mail a coin/sticker at top ranks; a gold-funded swag store (HTB prizes; gameplan §4).
 
+### H. HTB / TryHackMe systems v2 (net-new)
+The pieces that most define the HTB/THM *feel* and aren't yet captured above.
+49. **"Capture the output" flags** — clear a challenge by submitting the program's output/return value as a *flag*, THM-style, not only by passing hidden tests. Cheap to add, instantly CTF-flavored.
+50. **Rooms / self-contained challenge boxes** — a single page: intro → ordered tasks → answer fields, separate from the linear course path (THM "rooms").
+51. **Hack-the-bug debugging challenges** — ship intentionally broken code; the goal is to *find and fix the flaw* (maps onto HTB's "find the vuln" loop).
+52. **Beginner cybersecurity track** — in-browser web-security / OWASP / crypto / regex-forensics puzzles. The most literal HTB/THM borrow and a fresh SEO wedge ("learn ethical hacking").
+53. **First-blood bonuses** — extra XP + a badge for the *first* solver of each new challenge. The strongest CTF re-engagement hook.
+54. **King-of-the-Hill / 1v1 code duels** — timed head-to-head with live ranking (HTB Battlegrounds). Distinct from scheduled contests (#32).
+55. **Skill assessments / placement tests** — graded checkpoints that certify a level and *unlock* harder content (HTB skill assessments); doubles as onboarding.
+56. **Rank tiers that gate content** — named ranks (Script Kiddie → … → Elite) where rank unlocks tougher "machines," not just cosmetic XP.
+57. **Per-challenge + global leaderboards** — weekly/all-time and per-room boards (extends leaderboard filters #14; pairs with #53).
+58. **VIP tier (above Pro)** — early access to seasonal challenges, exclusive rooms, cosmetic flair (HTB VIP/VIP+); a second monetization rung.
+
+### I. Round-2 upgrades (depth, habit, integrity)
+A second pass beyond the competitor mirror — leaning on our on-device/BYOK AI and the editor as differentiators.
+
+**Learning depth**
+59. **Adaptive / mastery-based difficulty** — tune the next lesson's difficulty to recent performance instead of a fixed ramp (Khan/DreamBox pattern).
+60. **Step-through code visualizer** — animate execution line-by-line for loops, recursion, and data structures (Python Tutor style). A standout learning aid.
+61. **Code-quality & complexity feedback** — go beyond pass/fail: score style, name a solution's Big-O, and suggest refactors (extends #38/#39).
+62. **AI-generated personalized practice** — use the on-device/BYOK tutor to generate extra reps targeting the exact concepts a learner failed (builds on the tutor we shipped).
+63. **Interview simulator** — a timed mock interview where the AI plays interviewer (coding + behavioral) with a post-mortem (extends the interview track + #4).
+
+**Habit & feel**
+64. **Full offline PWA** — cache lessons *and* the on-device model so a learner can practice with AI help on a plane (compounds the local tutor).
+65. **Focus / study-session mode** — built-in Pomodoro + "lo-fi study" ambience and session goals, with anti-burnout caps (Duolingo-style, but kinder).
+66. **Sound design & juice** — SFX on a passing test, level-up stings, optional music. Gameplan §5 "juice" — cheap, huge on *feel*, and great short-form marketing.
+67. **Skill-tree / knowledge-graph map** — a visual mastery map of concepts and how they connect, showing strengths and gaps (HTB skill tree).
+
+**Social & collaborative**
+68. **Real-time pair programming** — a shared CRDT (Yjs) editor for study buddies or mentor sessions.
+69. **Regional / school leaderboards & study squads** — country/university/company tags and small private squads with group streaks (THM university boards; extends #45).
+70. **Self-serve challenge creator** — an in-app builder so learners author and share their own challenges (the UGC engine behind #10/#44).
+
+**Credibility & integrity**
+71. **Auto-generated dev portfolio** — assemble completed projects + certs into a shareable `/u/[username]` portfolio with "Add to LinkedIn" (closes the job loop; extends #6/#16).
+72. **Plagiarism / anti-cheat on solutions** — similarity + paste-burst detection to keep leaderboards and certs credible (depends on server-side scoring #7).
+73. **Integrations & API** — outbound webhooks, Discord role sync on rank-up, and a read-only public progress API (turns achievements into status elsewhere).
+
 ---
 
 ## Suggested next 3 (highest leverage)
@@ -101,6 +140,11 @@ From the competitor set, the highest-leverage adaptations are **#31 Seasons**,
 **#34 Practice mode**, and **#41 Community solutions** — they directly mirror what
 keeps HTB / TryHackMe / Codewars users coming back daily.
 
+From the v2 / round-2 sets, the highest-leverage are **#49 Capture-the-output flags**
+and **#50 Rooms** (small build, big format shift toward the HTB/THM feel),
+**#53 First-blood** (cheap, addictive), **#60 Step-through visualizer** (a genuine
+learning edge), and **#62 AI-generated practice** (compounds the tutor we just shipped).
+
 ---
 
 ### Sources (competitor research)
@@ -109,3 +153,5 @@ keeps HTB / TryHackMe / Codewars users coming back daily.
 - [Codewars kata ranking (kyu/dan, honor)](https://www.codewars.com/topics/kata-ranking)
 - [LeetCode vs Codewars vs HackerRank (contests, company tags, daily)](https://www.coursefacts.com/guides/leetcode-vs-hackerrank-vs-codewars-2026)
 - Exercism mentoring & tracks (concept vs practice exercises)
+- [HTB Battlegrounds (PvP / KotH)](https://www.hackthebox.com/blog/battlegrounds-overview) · [HTB skill assessments](https://help.hackthebox.com/en/articles/6457719-academy-skill-assessments)
+- [Python Tutor — step-through code visualization](https://pythontutor.com/) · [Yjs — CRDT for collaborative editing](https://github.com/yjs/yjs)
