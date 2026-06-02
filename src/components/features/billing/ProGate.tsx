@@ -28,7 +28,8 @@ export function ProGate() {
         {[
           "Every interactive, auto-graded lesson",
           "All courses & future languages",
-          "Cantrip AI tutor + leagues (coming soon)",
+          "The Cantrip AI tutor — Socratic hints, never the answer",
+          "Leagues, certificates & the full game",
         ].map((f) => (
           <li key={f} className="flex items-start gap-2">
             <Check size={15} className="mt-0.5 shrink-0 text-success" />

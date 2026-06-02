@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/layout/Footer";
 import { AuthProvider } from "@/components/AuthProvider";
 import { SITE } from "@/lib/site";
+
+// Default social-share card (branded). Per-page metadata overrides this.
+const DEFAULT_OG = `/api/og?title=${encodeURIComponent(SITE.name)}&subtitle=${encodeURIComponent(SITE.tagline)}`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
@@ -34,12 +38,14 @@ export const metadata: Metadata = {
     title: "Cantrip — Learn to Code & Build with AI, Gamified",
     description: SITE.description,
     url: SITE.url,
+    images: [{ url: DEFAULT_OG, width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
     site: SITE.twitter,
     title: "Cantrip — Learn to Code & Build with AI, Gamified",
     description: SITE.description,
+    images: [DEFAULT_OG],
   },
   robots: { index: true, follow: true },
 };
@@ -54,7 +60,8 @@ export default function RootLayout({
       <body className="min-h-screen">
         <AuthProvider>
           <Navbar />
-          <main>{children}</main>
+          <main className="min-h-[60vh]">{children}</main>
+          <Footer />
         </AuthProvider>
       </body>
     </html>
