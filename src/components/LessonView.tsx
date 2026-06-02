@@ -5,7 +5,7 @@ import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { motion } from "framer-motion";
-import { Play, RotateCcw, Eye, ArrowRight, CheckCircle2, Loader2, Lock } from "lucide-react";
+import { Play, RotateCcw, Eye, ArrowRight, CheckCircle2, Loader2, Lock, Cpu } from "lucide-react";
 import type { Lesson, Module } from "@/lib/curriculum/types";
 import { lessonId } from "@/lib/curriculum";
 import { lessonLanguage, langMeta } from "@/lib/curriculum/lang";
@@ -20,6 +20,9 @@ import { TestResults } from "./TestResults";
 import { LevelUpToast } from "./LevelUpToast";
 import { ProGate } from "./features/billing/ProGate";
 import { AskBoots } from "./features/tutor/AskBoots";
+import { TutorPanel } from "./TutorPanel";
+import { summarizeLesson } from "@/lib/tutor/prompt";
+import type { TutorContext } from "@/lib/tutor/types";
 
 export function LessonView({
   module,
@@ -44,6 +47,26 @@ export function LessonView({
 
   const completeLesson = useGameStore((s) => s.completeLesson);
   const alreadyDone = useGameStore((s) => s.completed.includes(id));
+
+  // On-device / BYOK tutor (free, runs in the learner's browser) — separate from
+  // the Pro "Ask Cantrip" server tutor below.
+  const [tutorOpen, setTutorOpen] = useState(false);
+  const tutorContext: TutorContext = useMemo(() => {
+    let testSummary = "not run yet";
+    if (outcome) {
+      const passed = outcome.results.filter((r) => r.pass).length;
+      const lines = outcome.results.map(
+        (r) => `${r.pass ? "PASS" : "FAIL"} ${r.name}${r.error ? `: ${r.error}` : ""}`,
+      );
+      testSummary = `${passed}/${outcome.results.length} tests passing.\n${lines.join("\n")}`.slice(0, 800);
+    }
+    return {
+      lessonTitle: lesson.title,
+      lessonGoal: summarizeLesson(lesson.content ?? lesson.explanation ?? ""),
+      code,
+      testSummary,
+    };
+  }, [lesson.title, lesson.content, lesson.explanation, code, outcome]);
 
   // Paywall: interactivity is gated past the free preview lessons (lib/access).
   const lessonIndex = module.lessons.findIndex((l) => l.slug === lesson.slug);
@@ -249,6 +272,21 @@ export function LessonView({
 
         {/* Socratic AI tutor — hints, never the answer (Pro) */}
         <AskBoots module={module} lesson={lesson} language={language} code={code} />
+
+        {/* Free on-device tutor — runs in the learner's browser, $0 to the platform */}
+        <button
+          onClick={() => setTutorOpen(true)}
+          className="card flex w-full items-center gap-2 px-4 py-3 text-left transition-colors hover:border-accent/60"
+        >
+          <Cpu size={18} className="text-accent-soft" />
+          <span className="font-semibold text-white">Tutor on-device</span>
+          <span className="ml-auto text-xs text-gray-500">Free · runs in your browser</span>
+        </button>
+        <TutorPanel
+          open={tutorOpen}
+          onClose={() => setTutorOpen(false)}
+          context={tutorContext}
+        />
       </section>
     </div>
   );
