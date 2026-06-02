@@ -23,21 +23,35 @@ export const metadata: Metadata = {
 // Section order controls how the catalog reads top-to-bottom.
 const LANG_ORDER: LessonLanguage[] = ["js", "py", "sql"];
 
-function groupByLanguage(): { lang: LessonLanguage; modules: Module[] }[] {
-  const groups = new Map<LessonLanguage, Module[]>();
+// A course with no code (e.g. Digital Safety) shouldn't sit under a language.
+function isQuizOnly(m: Module): boolean {
+  return m.lessons.length > 0 && m.lessons.every((l) => l.kind === "quiz");
+}
+
+function sections(): { label: string; modules: Module[] }[] {
+  const byLang = new Map<LessonLanguage, Module[]>();
+  const nonCode: Module[] = [];
   for (const m of MODULES) {
+    if (isQuizOnly(m)) {
+      nonCode.push(m);
+      continue;
+    }
     const lang = m.language ?? "js";
-    if (!groups.has(lang)) groups.set(lang, []);
-    groups.get(lang)!.push(m);
+    if (!byLang.has(lang)) byLang.set(lang, []);
+    byLang.get(lang)!.push(m);
   }
-  return LANG_ORDER.filter((l) => groups.has(l)).map((lang) => ({
-    lang,
-    modules: groups.get(lang)!,
+  const out = LANG_ORDER.filter((l) => byLang.has(l)).map((l) => ({
+    label: `${langMeta(l).label} courses`,
+    modules: byLang.get(l)!,
   }));
+  if (nonCode.length) {
+    out.push({ label: "Digital safety & life skills", modules: nonCode });
+  }
+  return out;
 }
 
 export default function LearnIndex() {
-  const groups = groupByLanguage();
+  const groups = sections();
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
@@ -50,13 +64,10 @@ export default function LearnIndex() {
         auto-grades right in your browser. Free to start, no setup.
       </p>
 
-      {groups.map(({ lang, modules }) => {
-        const meta = langMeta(lang);
+      {groups.map(({ label, modules }) => {
         return (
-          <section key={lang} className="mt-10">
-            <h2 className="text-xl font-bold text-white">
-              {meta.label} courses
-            </h2>
+          <section key={label} className="mt-10">
+            <h2 className="text-xl font-bold text-white">{label}</h2>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               {modules.map((m) => (
                 <Link

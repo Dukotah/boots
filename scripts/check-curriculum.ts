@@ -5,6 +5,9 @@
 //
 // NB: import module files directly (with .ts extensions) so this runs under
 // Node's type-stripping without a bundler. The app uses src/lib/curriculum/index.ts.
+import { beginner } from "../src/lib/curriculum/beginner.ts";
+import { kids } from "../src/lib/curriculum/kids.ts";
+import { digitalSafety } from "../src/lib/curriculum/digital-safety.ts";
 import { javascript } from "../src/lib/curriculum/javascript.ts";
 import { javascriptNext } from "../src/lib/curriculum/javascript-next.ts";
 import { strings } from "../src/lib/curriculum/strings.ts";
@@ -28,6 +31,9 @@ import type { Lesson, Module } from "../src/lib/curriculum/types.ts";
 
 // Keep in sync with src/lib/curriculum/index.ts. (New module? Add it here too.)
 const MODULES: Module[] = [
+  beginner,
+  kids,
+  digitalSafety,
   javascript,
   javascriptNext,
   strings,

@@ -1,4 +1,6 @@
 import type { Lesson, Module } from "./types";
+import { beginner } from "./beginner";
+import { kids } from "./kids";
 import { javascript } from "./javascript";
 import { javascriptNext } from "./javascript-next";
 import { strings } from "./strings";
@@ -18,10 +20,14 @@ import { pythonData } from "./python-data";
 import { sql } from "./sql";
 import { sqlJoins } from "./sql-joins";
 import { aiLlms } from "./ai-llms";
+import { digitalSafety } from "./digital-safety";
 
 // The whole curriculum. Add a module here and it shows up everywhere.
 // Order defines the Campaign Map progression (sequential unlock) — a difficulty ramp.
 export const MODULES: Module[] = [
+  // Beginner on-ramps
+  beginner,
+  kids,
   // JavaScript track
   javascript,
   javascriptNext,
@@ -45,6 +51,8 @@ export const MODULES: Module[] = [
   sqlJoins,
   // AI track
   aiLlms,
+  // Public-good track (free)
+  digitalSafety,
 ];
 
 export function getModule(slug: string): Module | undefined {

@@ -42,6 +42,7 @@ export default function ModulePage({
   if (!module) notFound();
 
   const lang = langMeta(module.language ?? "js");
+  const quizOnly = module.lessons.every((l) => l.kind === "quiz");
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
@@ -61,9 +62,15 @@ export default function ModulePage({
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-3xl font-bold text-white">{module.title}</h1>
-            <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs font-medium text-gray-300">
-              {lang.label}
-            </span>
+            {module.free ? (
+              <span className="rounded-full bg-success/20 px-2 py-0.5 text-xs font-medium text-success">
+                Free
+              </span>
+            ) : !quizOnly ? (
+              <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs font-medium text-gray-300">
+                {lang.label}
+              </span>
+            ) : null}
           </div>
           <p className="mt-1 text-gray-400">{module.description}</p>
         </div>
