@@ -44,6 +44,12 @@ export function Navbar() {
             Learn
           </Link>
           <Link
+            href="/playground"
+            className="text-sm font-medium text-gray-300 hover:text-white"
+          >
+            Playground
+          </Link>
+          <Link
             href="/pricing"
             className="text-sm font-medium text-gray-300 hover:text-white"
           >

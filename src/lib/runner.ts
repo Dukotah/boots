@@ -22,6 +22,66 @@ export function runLesson(
   return runJs(code, lesson.tests);
 }
 
+// ── Playground: run code freely and capture output (no grading) ───────────────
+export type SqlTable = { columns: string[]; values: unknown[][] };
+export type ScratchResult = {
+  logs: string[];
+  error?: string;
+  tables?: SqlTable[]; // SQL result sets
+};
+
+// Powers the /playground REPL. Runs the student's code in the right runtime and
+// returns whatever it printed (JS/Python) or the rows it selected (SQL).
+export async function runScratch(
+  code: string,
+  language: LessonLanguage,
+): Promise<ScratchResult> {
+  if (language === "py") return scratchPython(code);
+  if (language === "sql") return scratchSql(code);
+  // JS: reuse the worker via a single no-op test; its logs are what `code` printed.
+  const outcome = await runJs(code, [{ name: "", code: "" }]);
+  const r = outcome.results[0];
+  return { logs: r?.logs ?? [], error: r?.pass ? undefined : r?.error };
+}
+
+async function scratchPython(code: string): Promise<ScratchResult> {
+  let py: Pyodide;
+  try {
+    py = await loadPyodide();
+  } catch {
+    return { logs: [], error: "Could not load the Python runtime. Check your connection." };
+  }
+  const logs: string[] = [];
+  py.setStdout({ batched: (s) => logs.push(s) });
+  py.setStderr({ batched: (s) => logs.push(s) });
+  try {
+    py.runPython(code);
+    return { logs };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    const lines = message.trim().split("\n");
+    return { logs, error: lines[lines.length - 1] || message };
+  }
+}
+
+async function scratchSql(code: string): Promise<ScratchResult> {
+  let SQL: SqlJs;
+  try {
+    SQL = await loadSqlJs();
+  } catch {
+    return { logs: [], error: "Could not load the SQL runtime. Check your connection." };
+  }
+  const db = new SQL.Database();
+  try {
+    const tables = db.exec(code) as SqlTable[];
+    return { logs: [], tables };
+  } catch (err) {
+    return { logs: [], error: err instanceof Error ? err.message : String(err) };
+  } finally {
+    db.close();
+  }
+}
+
 // ── JavaScript: sandboxed Web Worker (terminable on infinite loop) ────────────
 function runJs(code: string, tests: TestCase[]): Promise<RunOutcome> {
   return new Promise((resolve) => {
