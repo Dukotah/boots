@@ -5,6 +5,8 @@ import { lessonJsonLd, breadcrumbJsonLd } from "@/lib/seo";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { LessonView } from "@/components/LessonView";
 import { QuizView } from "@/components/QuizView";
+import { HtmlLessonView } from "@/components/HtmlLessonView";
+import { lessonLanguage } from "@/lib/curriculum/lang";
 
 export function generateStaticParams() {
   return MODULES.flatMap((m) =>
@@ -60,6 +62,8 @@ export default function LessonPage({
       />
       {lesson.kind === "quiz" ? (
         <QuizView module={module} lesson={lesson} nextHref={nextHref} />
+      ) : lessonLanguage(lesson, module) === "html" ? (
+        <HtmlLessonView module={module} lesson={lesson} nextHref={nextHref} />
       ) : (
         <LessonView module={module} lesson={lesson} nextHref={nextHref} />
       )}

@@ -3,6 +3,8 @@ import { MODULES } from "@/lib/curriculum";
 import { CHEATSHEETS } from "@/lib/cheatsheets";
 import { PATHS } from "@/lib/paths";
 import { TOOLS } from "@/lib/tools";
+import { getHowtos } from "@/lib/howto";
+import { POSTS } from "@/content/blog";
 import { absoluteUrl } from "@/lib/site";
 
 // Every module and lesson is an indexable page — the SEO flywheel. This emits the
@@ -13,6 +15,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: absoluteUrl("/learn"), changeFrequency: "weekly", priority: 0.9 },
     { url: absoluteUrl("/paths"), changeFrequency: "weekly", priority: 0.8 },
     { url: absoluteUrl("/playground"), changeFrequency: "monthly", priority: 0.8 },
+    { url: absoluteUrl("/blog"), changeFrequency: "weekly", priority: 0.8 },
+    { url: absoluteUrl("/how-to"), changeFrequency: "weekly", priority: 0.7 },
     { url: absoluteUrl("/tools"), changeFrequency: "monthly", priority: 0.7 },
     { url: absoluteUrl("/cheatsheet"), changeFrequency: "monthly", priority: 0.7 },
     { url: absoluteUrl("/pricing"), changeFrequency: "monthly", priority: 0.6 },
@@ -43,6 +47,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }));
 
+  const howtoPages: MetadataRoute.Sitemap = getHowtos().map((h) => ({
+    url: absoluteUrl(`/how-to/${h.slug}`),
+    changeFrequency: "monthly",
+    priority: 0.6,
+  }));
+
+  const blogPages: MetadataRoute.Sitemap = POSTS.map((p) => ({
+    url: absoluteUrl(`/blog/${p.slug}`),
+    lastModified: p.date,
+    changeFrequency: "monthly",
+    priority: 0.7,
+  }));
+
   const modulePages: MetadataRoute.Sitemap = MODULES.map((m) => ({
     url: absoluteUrl(`/learn/${m.slug}`),
     changeFrequency: "weekly",
@@ -62,6 +79,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...pathPages,
     ...cheatsheetPages,
     ...toolPages,
+    ...blogPages,
+    ...howtoPages,
     ...certificatePages,
     ...modulePages,
     ...lessonPages,

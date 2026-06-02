@@ -1,6 +1,8 @@
 import type { Lesson, Module } from "./types";
 import { beginner } from "./beginner";
 import { kids } from "./kids";
+import { html } from "./html";
+import { css } from "./css";
 import { javascript } from "./javascript";
 import { javascriptNext } from "./javascript-next";
 import { strings } from "./strings";
@@ -28,6 +30,9 @@ export const MODULES: Module[] = [
   // Beginner on-ramps
   beginner,
   kids,
+  // Web foundations (HTML/CSS — live preview)
+  html,
+  css,
   // JavaScript track
   javascript,
   javascriptNext,

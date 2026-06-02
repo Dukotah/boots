@@ -62,6 +62,12 @@ export function Navbar() {
             Tools
           </Link>
           <Link
+            href="/blog"
+            className="hidden text-sm font-medium text-gray-300 hover:text-white sm:inline"
+          >
+            Blog
+          </Link>
+          <Link
             href="/pricing"
             className="text-sm font-medium text-gray-300 hover:text-white"
           >

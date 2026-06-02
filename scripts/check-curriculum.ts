@@ -7,6 +7,8 @@
 // Node's type-stripping without a bundler. The app uses src/lib/curriculum/index.ts.
 import { beginner } from "../src/lib/curriculum/beginner.ts";
 import { kids } from "../src/lib/curriculum/kids.ts";
+import { html } from "../src/lib/curriculum/html.ts";
+import { css } from "../src/lib/curriculum/css.ts";
 import { digitalSafety } from "../src/lib/curriculum/digital-safety.ts";
 import { javascript } from "../src/lib/curriculum/javascript.ts";
 import { javascriptNext } from "../src/lib/curriculum/javascript-next.ts";
@@ -33,6 +35,8 @@ import type { Lesson, Module } from "../src/lib/curriculum/types.ts";
 const MODULES: Module[] = [
   beginner,
   kids,
+  html,
+  css,
   digitalSafety,
   javascript,
   javascriptNext,

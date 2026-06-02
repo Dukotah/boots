@@ -32,6 +32,12 @@ export const LANGUAGES: Record<LessonLanguage, LangMeta> = {
     filename: "query.sql",
     runtime: "Runs in your browser (SQLite/WASM)",
   },
+  html: {
+    label: "HTML & CSS",
+    monaco: "html",
+    filename: "index.html",
+    runtime: "Live preview in your browser",
+  },
 };
 
 /** The effective language of a lesson: its own override, else its module's, else js. */

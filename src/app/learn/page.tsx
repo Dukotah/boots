@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 };
 
 // Section order controls how the catalog reads top-to-bottom.
-const LANG_ORDER: LessonLanguage[] = ["js", "py", "sql"];
+const LANG_ORDER: LessonLanguage[] = ["html", "js", "py", "sql"];
 
 // A course with no code (e.g. Digital Safety) shouldn't sit under a language.
 function isQuizOnly(m: Module): boolean {

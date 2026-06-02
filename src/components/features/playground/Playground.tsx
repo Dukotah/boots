@@ -2,12 +2,15 @@
 
 import { useState } from "react";
 import { Play, Loader2 } from "lucide-react";
-import type { LessonLanguage } from "@/lib/curriculum/types";
 import { LANGUAGES } from "@/lib/curriculum/lang";
 import { runScratch, type ScratchResult } from "@/lib/runner";
 import { CodeEditor } from "@/components/CodeEditor";
 
-const STARTERS: Record<LessonLanguage, string> = {
+// The playground REPL supports the runnable, output-producing languages only
+// (HTML/CSS is taught via the live-preview lesson view, not this REPL).
+type PgLang = "js" | "py" | "sql";
+
+const STARTERS: Record<PgLang, string> = {
   js: `// Try some JavaScript — runs in your browser.
 console.log("Hello from Cantrip 🪄");
 
@@ -25,17 +28,17 @@ INSERT INTO spells VALUES ('Fireball', 9), ('Heal', 5), ('Bolt', 7);
 SELECT * FROM spells ORDER BY power DESC;`,
 };
 
-const ORDER: LessonLanguage[] = ["js", "py", "sql"];
+const ORDER: PgLang[] = ["js", "py", "sql"];
 
-export function Playground({ initial = "js" }: { initial?: LessonLanguage }) {
-  const [lang, setLang] = useState<LessonLanguage>(initial);
+export function Playground({ initial = "js" }: { initial?: PgLang }) {
+  const [lang, setLang] = useState<PgLang>(initial);
   const [code, setCode] = useState(STARTERS[initial]);
   const [result, setResult] = useState<ScratchResult | null>(null);
   const [running, setRunning] = useState(false);
   // Track which starters the user hasn't edited, so switching languages is safe.
   const [pristine, setPristine] = useState(true);
 
-  function switchLang(next: LessonLanguage) {
+  function switchLang(next: PgLang) {
     if (next === lang) return;
     setLang(next);
     setResult(null);
