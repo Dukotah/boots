@@ -92,11 +92,31 @@ function checkLesson(mod: Module, lesson: Lesson, seen: Set<string>) {
   if (seen.has(lesson.slug)) errors.push(`${where}: duplicate slug within module`);
   seen.add(lesson.slug);
 
-  for (const field of ["title", "blurb", "content", "starterCode", "solution"] as const) {
+  for (const field of ["title", "blurb", "content"] as const) {
     if (!lesson[field] || String(lesson[field]).trim() === "")
       errors.push(`${where}: empty "${field}"`);
   }
   if (!(lesson.xp > 0)) errors.push(`${where}: xp must be > 0 (got ${lesson.xp})`);
+
+  // ── quiz lessons: validate questions, then stop (no code to grade) ──
+  if (lesson.kind === "quiz") {
+    const qs = lesson.questions ?? [];
+    if (qs.length === 0) errors.push(`${where}: quiz lesson needs at least one question`);
+    qs.forEach((q, i) => {
+      if (!q.prompt || !q.prompt.trim()) errors.push(`${where}: question ${i + 1} has no prompt`);
+      if (!q.options || q.options.length < 2)
+        errors.push(`${where}: question ${i + 1} needs at least 2 options`);
+      if (typeof q.answer !== "number" || q.answer < 0 || q.answer >= (q.options?.length ?? 0))
+        errors.push(`${where}: question ${i + 1} has an out-of-range answer index`);
+    });
+    return;
+  }
+
+  // ── code lessons: require the code fields ──
+  for (const field of ["starterCode", "solution"] as const) {
+    if (!lesson[field] || String(lesson[field]).trim() === "")
+      errors.push(`${where}: empty "${field}"`);
+  }
   if (!lesson.tests || lesson.tests.length === 0)
     errors.push(`${where}: needs at least one test`);
 

@@ -15,10 +15,12 @@ export function isFreePreview(lessonIndex: number): boolean {
   return lessonIndex < FREE_PREVIEW_LESSONS;
 }
 
-/** Can this user run/grade this lesson? Pro unlocks everything. */
+/** Can this user run/grade this lesson? Pro unlocks everything; `free` courses
+ * (public-good / lead magnets like Digital Safety) are open to everyone. */
 export function canInteract(args: {
   isPro: boolean;
   lessonIndex: number;
+  free?: boolean;
 }): boolean {
-  return args.isPro || isFreePreview(args.lessonIndex);
+  return Boolean(args.free) || args.isPro || isFreePreview(args.lessonIndex);
 }

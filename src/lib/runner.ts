@@ -17,9 +17,10 @@ export function runLesson(
   lesson: Lesson,
   language: LessonLanguage,
 ): Promise<RunOutcome> {
-  if (language === "py") return runPython(code, lesson.tests);
+  const tests = lesson.tests ?? [];
+  if (language === "py") return runPython(code, tests);
   if (language === "sql") return runSql(code, lesson);
-  return runJs(code, lesson.tests);
+  return runJs(code, tests);
 }
 
 // ── Playground: run code freely and capture output (no grading) ───────────────
@@ -239,7 +240,7 @@ function execToString(db: SqlDb, query: string): string {
 }
 
 async function runSql(code: string, lesson: Lesson): Promise<RunOutcome> {
-  const testName = lesson.tests[0]?.name ?? "Query returns the correct rows";
+  const testName = lesson.tests?.[0]?.name ?? "Query returns the correct rows";
   let SQL: SqlJs;
   try {
     SQL = await loadSqlJs();
@@ -264,7 +265,7 @@ async function runSql(code: string, lesson: Lesson): Promise<RunOutcome> {
     const db = new SQL.Database();
     try {
       db.run(setup);
-      expected = execToString(db, lesson.solution);
+      expected = execToString(db, lesson.solution ?? "");
     } catch (err) {
       return {
         timedOut: false,

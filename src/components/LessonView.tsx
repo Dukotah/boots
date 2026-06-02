@@ -31,7 +31,9 @@ export function LessonView({
   const id = lessonId(module.slug, lesson.slug);
   const language = lessonLanguage(lesson, module);
   const lang = langMeta(language);
-  const [code, setCode] = useState(lesson.starterCode);
+  const starterCode = lesson.starterCode ?? "";
+  const solution = lesson.solution ?? "";
+  const [code, setCode] = useState(starterCode);
   const [outcome, setOutcome] = useState<RunOutcome | null>(null);
   const [running, setRunning] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
@@ -44,7 +46,7 @@ export function LessonView({
   // Paywall: interactivity is gated past the free preview lessons (lib/access).
   const lessonIndex = module.lessons.findIndex((l) => l.slug === lesson.slug);
   const mounted = useMounted();
-  const { locked } = useAccess(lessonIndex);
+  const { locked } = useAccess(lessonIndex, module.free);
   // Avoid hydration flash: only enforce the gate after the client store hydrates.
   const gated = mounted && locked;
 
@@ -131,7 +133,7 @@ export function LessonView({
             <div className="flex items-center gap-2">
               <button
                 onClick={() => {
-                  setCode(lesson.starterCode);
+                  setCode(starterCode);
                   setOutcome(null);
                   setShowSolution(false);
                 }}
@@ -142,7 +144,7 @@ export function LessonView({
               <button
                 onClick={() => {
                   setShowSolution((s) => !s);
-                  if (!showSolution) setCode(lesson.solution);
+                  if (!showSolution) setCode(solution);
                 }}
                 className="flex items-center gap-1 text-xs text-gray-400 hover:text-white"
               >

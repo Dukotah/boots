@@ -17,6 +17,18 @@ export type TestCase = {
   code: string;
 };
 
+// A multiple-choice / "spot the scam" question for quiz lessons.
+export type QuizQuestion = {
+  // The question or scenario (Markdown allowed).
+  prompt: string;
+  // Answer choices.
+  options: string[];
+  // Index into `options` of the correct answer.
+  answer: number;
+  // Shown after the learner answers — why it's right/wrong.
+  explanation?: string;
+};
+
 export type Lesson = {
   slug: string;
   title: string;
@@ -24,17 +36,25 @@ export type Lesson = {
   blurb: string;
   // XP awarded the first time the lesson is completed.
   xp: number;
-  // Markdown lesson body shown to the left of the editor.
+  // Markdown lesson body (the reading shown left of the editor, or above a quiz).
   content: string;
+  // "code" (default) → editor + auto-graded tests. "quiz" → reading + questions.
+  kind?: "code" | "quiz";
+
+  // ── code lessons (kind !== "quiz") ──
   // Code the editor is pre-filled with.
-  starterCode: string;
+  starterCode?: string;
   // Reference solution (used for "show solution" + sanity).
-  solution: string;
-  tests: TestCase[];
+  solution?: string;
+  tests?: TestCase[];
   // Defaults to "js" when omitted (keeps every existing JS lesson valid).
   language?: LessonLanguage;
   // SQL only: schema + seed data executed before the student's query runs.
   setup?: string;
+
+  // ── quiz lessons (kind === "quiz") ──
+  questions?: QuizQuestion[];
+
   // Optional progressive hints, revealed one at a time (free, no AI needed).
   hints?: string[];
   // Optional Markdown shown after all tests pass — why the solution works.
@@ -55,5 +75,8 @@ export type Module = {
   language?: LessonLanguage;
   // Extra SEO keywords for this course's pages (e.g. "learn python", "sql joins").
   keywords?: string[];
+  // When true, every lesson is fully interactive for free (no paywall). Used for
+  // public-good / lead-magnet courses like Digital Safety.
+  free?: boolean;
   lessons: Lesson[];
 };

@@ -15,11 +15,11 @@ export type Access = {
   isFreePreview: boolean;
 };
 
-export function useAccess(lessonIndex: number): Access {
+export function useAccess(lessonIndex: number, free = false): Access {
   const isPro = useEntitlements((s) => s.isPro);
   return {
     isPro,
-    locked: !canInteract({ isPro, lessonIndex }),
+    locked: !canInteract({ isPro, lessonIndex, free }),
     isFreePreview: isFreePreview(lessonIndex),
   };
 }
