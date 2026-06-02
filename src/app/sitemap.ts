@@ -29,6 +29,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }));
 
+  const certificatePages: MetadataRoute.Sitemap = MODULES.map((m) => ({
+    url: absoluteUrl(`/certificate/${m.slug}`),
+    changeFrequency: "monthly",
+    priority: 0.4,
+  }));
+
   const modulePages: MetadataRoute.Sitemap = MODULES.map((m) => ({
     url: absoluteUrl(`/learn/${m.slug}`),
     changeFrequency: "weekly",
@@ -47,6 +53,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...staticPages,
     ...pathPages,
     ...cheatsheetPages,
+    ...certificatePages,
     ...modulePages,
     ...lessonPages,
   ];

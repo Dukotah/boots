@@ -104,9 +104,10 @@ export default function Dashboard() {
               completed.includes(lessonId(m.slug, l.slug)),
             ).length;
             const mpct = Math.round((done / m.lessons.length) * 100);
+            const complete = done === m.lessons.length;
             return (
+              <div key={m.slug} className="space-y-1">
               <Link
-                key={m.slug}
                 href={`/learn/${m.slug}`}
                 className="card flex items-center gap-4 hover:border-accent/60"
               >
@@ -126,6 +127,15 @@ export default function Dashboard() {
                   </div>
                 </div>
               </Link>
+              {complete && (
+                <Link
+                  href={`/certificate/${m.slug}`}
+                  className="inline-flex items-center gap-1 px-1 text-xs font-medium text-gold hover:underline"
+                >
+                  🎓 View your certificate
+                </Link>
+              )}
+              </div>
             );
           })}
         </div>
