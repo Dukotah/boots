@@ -20,6 +20,12 @@ export const LANGUAGES: Record<LessonLanguage, LangMeta> = {
     filename: "solution.js",
     runtime: "Runs in your browser",
   },
+  ts: {
+    label: "TypeScript",
+    monaco: "typescript",
+    filename: "solution.ts",
+    runtime: "Transpiled & run in your browser",
+  },
   py: {
     label: "Python",
     monaco: "python",

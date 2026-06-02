@@ -16,7 +16,7 @@ export type TestResult = {
   logs: string[];
 };
 
-function runOne(code: string, test: TestCase): TestResult {
+async function runOne(code: string, test: TestCase): Promise<TestResult> {
   const logs: string[] = [];
 
   const fakeConsole = {
@@ -39,14 +39,16 @@ function runOne(code: string, test: TestCase): TestResult {
   };
 
   try {
-    // Student code + test code share one scope. "use strict" keeps things sane.
+    // Student code + test code share one scope, wrapped in an async IIFE so
+    // tests can `await` Promises (async/await lessons). Awaiting a non-Promise
+    // is a no-op, so synchronous lessons behave exactly as before.
     const fn = new Function(
       "console",
       "assertEquals",
       "assert",
-      `"use strict";\n${code}\n;\n${test.code}`,
+      `"use strict";\nreturn (async () => {\n${code}\n;\n${test.code}\n})();`,
     );
-    fn(fakeConsole, assertEquals, assert);
+    await fn(fakeConsole, assertEquals, assert);
     return { name: test.name, pass: true, logs };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
@@ -63,8 +65,9 @@ function stringify(value: unknown): string {
   }
 }
 
-self.onmessage = (e: MessageEvent<IncomingMessage>) => {
+self.onmessage = async (e: MessageEvent<IncomingMessage>) => {
   const { code, tests } = e.data;
-  const results = tests.map((t) => runOne(code, t));
+  const results: TestResult[] = [];
+  for (const t of tests) results.push(await runOne(code, t));
   (self as unknown as Worker).postMessage({ results });
 };

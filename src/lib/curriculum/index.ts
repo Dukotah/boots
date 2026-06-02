@@ -7,20 +7,35 @@ import { javascript } from "./javascript";
 import { javascriptNext } from "./javascript-next";
 import { strings } from "./strings";
 import { functional } from "./functional";
+import { closures } from "./closures";
 import { oop } from "./oop";
 import { recursion } from "./recursion";
 import { regex } from "./regex";
 import { errorHandling } from "./error-handling";
 import { json } from "./json";
+import { dataFormats } from "./data-formats";
+import { collections } from "./collections";
+import { asyncJs } from "./async";
+import { webApis } from "./web-apis";
 import { math } from "./math";
+import { typescript } from "./typescript";
 import { algorithms } from "./algorithms";
 import { dataStructures } from "./data-structures";
 import { dynamicProgramming } from "./dynamic-programming";
+import { twoPointers } from "./two-pointers";
+import { bitManipulation } from "./bit-manipulation";
 import { interview } from "./interview";
 import { python } from "./python";
 import { pythonData } from "./python-data";
+import { pythonStrings } from "./python-strings";
+import { pythonComprehensions } from "./python-comprehensions";
+import { pythonOop } from "./python-oop";
+import { pythonAlgorithms } from "./python-algorithms";
 import { sql } from "./sql";
 import { sqlJoins } from "./sql-joins";
+import { sqlAggregations } from "./sql-aggregations";
+import { sqlSubqueries } from "./sql-subqueries";
+import { gitGithub } from "./git-github";
 import { aiLlms } from "./ai-llms";
 import { digitalSafety } from "./digital-safety";
 
@@ -38,22 +53,40 @@ export const MODULES: Module[] = [
   javascriptNext,
   strings,
   functional,
+  closures,
   oop,
   recursion,
   regex,
   errorHandling,
   json,
+  dataFormats,
+  collections,
+  asyncJs,
+  webApis,
   math,
+  // TypeScript
+  typescript,
+  // CS fundamentals & interview
   algorithms,
   dataStructures,
   dynamicProgramming,
+  twoPointers,
+  bitManipulation,
   interview,
   // Python track
   python,
   pythonData,
+  pythonStrings,
+  pythonComprehensions,
+  pythonOop,
+  pythonAlgorithms,
   // SQL track
   sql,
   sqlJoins,
+  sqlAggregations,
+  sqlSubqueries,
+  // Tooling
+  gitGithub,
   // AI track
   aiLlms,
   // Public-good track (free)

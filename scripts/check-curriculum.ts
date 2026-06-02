@@ -29,6 +29,21 @@ import { pythonData } from "../src/lib/curriculum/python-data.ts";
 import { sql } from "../src/lib/curriculum/sql.ts";
 import { sqlJoins } from "../src/lib/curriculum/sql-joins.ts";
 import { aiLlms } from "../src/lib/curriculum/ai-llms.ts";
+import { closures } from "../src/lib/curriculum/closures.ts";
+import { dataFormats } from "../src/lib/curriculum/data-formats.ts";
+import { collections } from "../src/lib/curriculum/collections.ts";
+import { asyncJs } from "../src/lib/curriculum/async.ts";
+import { webApis } from "../src/lib/curriculum/web-apis.ts";
+import { typescript } from "../src/lib/curriculum/typescript.ts";
+import { twoPointers } from "../src/lib/curriculum/two-pointers.ts";
+import { bitManipulation } from "../src/lib/curriculum/bit-manipulation.ts";
+import { pythonStrings } from "../src/lib/curriculum/python-strings.ts";
+import { pythonComprehensions } from "../src/lib/curriculum/python-comprehensions.ts";
+import { pythonOop } from "../src/lib/curriculum/python-oop.ts";
+import { pythonAlgorithms } from "../src/lib/curriculum/python-algorithms.ts";
+import { sqlAggregations } from "../src/lib/curriculum/sql-aggregations.ts";
+import { sqlSubqueries } from "../src/lib/curriculum/sql-subqueries.ts";
+import { gitGithub } from "../src/lib/curriculum/git-github.ts";
 import type { Lesson, Module } from "../src/lib/curriculum/types.ts";
 
 // Keep in sync with src/lib/curriculum/index.ts. (New module? Add it here too.)
@@ -47,15 +62,30 @@ const MODULES: Module[] = [
   regex,
   errorHandling,
   json,
+  dataFormats,
+  collections,
+  asyncJs,
+  webApis,
+  closures,
   math,
+  typescript,
   algorithms,
   dataStructures,
   dynamicProgramming,
+  twoPointers,
+  bitManipulation,
   interview,
   python,
   pythonData,
+  pythonStrings,
+  pythonComprehensions,
+  pythonOop,
+  pythonAlgorithms,
   sql,
   sqlJoins,
+  sqlAggregations,
+  sqlSubqueries,
+  gitGithub,
   aiLlms,
 ];
 
@@ -68,8 +98,10 @@ function stringify(v: unknown): string {
   }
 }
 
-/** Run a single test against code; return true if it passes (no throw). */
-function testPasses(code: string, test: { code: string }): boolean {
+/** Run a single test against code; resolve true if it passes (no throw).
+ *  Wrapped in an async IIFE + awaited so async/await lessons grade correctly;
+ *  synchronous lessons are unaffected (awaiting a non-Promise is a no-op). */
+async function testPasses(code: string, test: { code: string }): Promise<boolean> {
   const assertEquals = (a: unknown, b: unknown, m?: string) => {
     if (stringify(a) !== stringify(b))
       throw new Error(m ?? `Expected ${stringify(b)} but got ${stringify(a)}`);
@@ -83,9 +115,9 @@ function testPasses(code: string, test: { code: string }): boolean {
       "console",
       "assertEquals",
       "assert",
-      `"use strict";\n${code}\n;\n${test.code}`,
+      `"use strict";\nreturn (async () => {\n${code}\n;\n${test.code}\n})();`,
     );
-    fn(fakeConsole, assertEquals, assert);
+    await fn(fakeConsole, assertEquals, assert);
     return true;
   } catch {
     return false;
@@ -94,7 +126,7 @@ function testPasses(code: string, test: { code: string }): boolean {
 
 const errors: string[] = [];
 
-function checkLesson(mod: Module, lesson: Lesson, seen: Set<string>) {
+async function checkLesson(mod: Module, lesson: Lesson, seen: Set<string>) {
   const where = `${mod.slug}/${lesson.slug}`;
 
   // ── structure ──
@@ -147,35 +179,46 @@ function checkLesson(mod: Module, lesson: Lesson, seen: Set<string>) {
 
   // ── grading: solution must pass ALL tests ──
   for (const t of lesson.tests) {
-    if (!testPasses(lesson.solution, t))
+    if (!(await testPasses(lesson.solution, t)))
       errors.push(`${where}: solution FAILS test "${t.name}"`);
   }
 
   // ── quality: starter must NOT already pass every test (no pre-solved lessons) ──
-  const starterPassesAll = lesson.tests.every((t) => testPasses(lesson.starterCode, t));
+  let starterPassesAll = true;
+  for (const t of lesson.tests) {
+    if (!(await testPasses(lesson.starterCode, t))) {
+      starterPassesAll = false;
+      break;
+    }
+  }
   if (starterPassesAll)
     errors.push(`${where}: starterCode already passes all tests (lesson is pre-solved)`);
 }
 
 let lessonCount = 0;
 let testCount = 0;
-for (const mod of MODULES) {
-  const seen = new Set<string>();
-  if (!mod.lessons.length) errors.push(`${mod.slug}: module has no lessons`);
-  for (const lesson of mod.lessons) {
-    lessonCount++;
-    testCount += lesson.tests?.length ?? 0;
-    checkLesson(mod, lesson, seen);
+
+async function main() {
+  for (const mod of MODULES) {
+    const seen = new Set<string>();
+    if (!mod.lessons.length) errors.push(`${mod.slug}: module has no lessons`);
+    for (const lesson of mod.lessons) {
+      lessonCount++;
+      testCount += lesson.tests?.length ?? 0;
+      await checkLesson(mod, lesson, seen);
+    }
   }
+
+  if (errors.length) {
+    console.log("❌ Curriculum check failed:\n");
+    for (const e of errors) console.log("  • " + e);
+    console.log(`\n${errors.length} problem(s) across ${lessonCount} lessons.`);
+    process.exit(1);
+  }
+
+  console.log(
+    `✅ Curriculum OK — ${MODULES.length} modules, ${lessonCount} lessons, ${testCount} tests all green.`,
+  );
 }
 
-if (errors.length) {
-  console.log("❌ Curriculum check failed:\n");
-  for (const e of errors) console.log("  • " + e);
-  console.log(`\n${errors.length} problem(s) across ${lessonCount} lessons.`);
-  process.exit(1);
-}
-
-console.log(
-  `✅ Curriculum OK — ${MODULES.length} modules, ${lessonCount} lessons, ${testCount} tests all green.`,
-);
+main();

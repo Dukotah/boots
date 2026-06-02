@@ -11,6 +11,7 @@ import { lessonId } from "@/lib/curriculum";
 import { lessonLanguage, langMeta } from "@/lib/curriculum/lang";
 import { runLesson, type RunOutcome } from "@/lib/runner";
 import { celebrate } from "@/lib/celebrate";
+import { verifyCompletion } from "@/lib/scoring";
 import { useGameStore } from "@/store/useGameStore";
 import { useAccess } from "@/hooks/useAccess";
 import { useMounted } from "@/hooks/useMounted";
@@ -66,6 +67,9 @@ export function LessonView({
     if (result.results.every((r) => r.pass)) {
       completeLesson(id, lesson.xp);
       celebrate();
+      // Server re-runs the code and awards canonical XP (best-effort; degrades
+      // gracefully when signed out / no backend / non-JS lesson).
+      void verifyCompletion(module.slug, lesson.slug, code);
     }
   }
 

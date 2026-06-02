@@ -2,7 +2,7 @@
 // the student's code: `js` → in-browser Web Worker (zero infra), `py` → Pyodide
 // (Python compiled to WASM, loaded lazily from CDN), `sql` → sql.js (SQLite in
 // WASM). All three run entirely client-side, so there is still no server sandbox.
-export type LessonLanguage = "js" | "py" | "sql" | "html";
+export type LessonLanguage = "js" | "ts" | "py" | "sql" | "html";
 
 // A test that runs against the student's code in a sandboxed runtime.
 //
