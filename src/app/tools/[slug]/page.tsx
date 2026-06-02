@@ -8,12 +8,18 @@ import { RegexTester } from "@/components/features/tools/RegexTester";
 import { JsonFormatter } from "@/components/features/tools/JsonFormatter";
 import { Base64Tool } from "@/components/features/tools/Base64Tool";
 import { UuidGenerator } from "@/components/features/tools/UuidGenerator";
+import { UrlTool } from "@/components/features/tools/UrlTool";
+import { HashTool } from "@/components/features/tools/HashTool";
+import { EpochTool } from "@/components/features/tools/EpochTool";
 
 const COMPONENTS: Record<string, () => React.ReactElement> = {
   regex: RegexTester,
   json: JsonFormatter,
   base64: Base64Tool,
   uuid: UuidGenerator,
+  url: UrlTool,
+  hash: HashTool,
+  epoch: EpochTool,
 };
 
 export function generateStaticParams() {

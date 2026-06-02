@@ -52,6 +52,36 @@ export const TOOLS: Tool[] = [
     blurb: "Generate random v4 UUIDs in bulk, copy with one click.",
     keywords: ["uuid generator", "guid generator", "generate uuid", "uuid v4 online"],
   },
+  {
+    slug: "url",
+    title: "URL Encoder & Decoder Online",
+    name: "URL Encoder",
+    emoji: "🔗",
+    description:
+      "Free online URL encoder and decoder. Percent-encode text for query strings or decode an encoded URL — instantly, in your browser.",
+    blurb: "Percent-encode and decode URLs and query strings.",
+    keywords: ["url encoder", "url decoder", "url encode online", "percent encoding"],
+  },
+  {
+    slug: "hash",
+    title: "Hash Generator — SHA-256, SHA-1, SHA-512 Online",
+    name: "Hash Generator",
+    emoji: "#️⃣",
+    description:
+      "Free online hash generator. Compute SHA-1, SHA-256, SHA-384, and SHA-512 hashes of any text right in your browser via the Web Crypto API.",
+    blurb: "Compute SHA-1/256/384/512 hashes of any text.",
+    keywords: ["hash generator", "sha256 generator", "sha512 hash", "online hash"],
+  },
+  {
+    slug: "epoch",
+    title: "Unix Timestamp Converter — Epoch to Date Online",
+    name: "Epoch Converter",
+    emoji: "🕑",
+    description:
+      "Free online Unix timestamp (epoch) converter. Convert epoch seconds or milliseconds to a human-readable UTC, local, and ISO date.",
+    blurb: "Convert Unix timestamps to UTC, local, and ISO dates.",
+    keywords: ["epoch converter", "unix timestamp converter", "timestamp to date", "epoch to date"],
+  },
 ];
 
 export function getTool(slug: string): Tool | undefined {
