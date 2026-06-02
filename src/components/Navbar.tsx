@@ -56,6 +56,12 @@ export function Navbar() {
             Playground
           </Link>
           <Link
+            href="/tools"
+            className="hidden text-sm font-medium text-gray-300 hover:text-white sm:inline"
+          >
+            Tools
+          </Link>
+          <Link
             href="/pricing"
             className="text-sm font-medium text-gray-300 hover:text-white"
           >
