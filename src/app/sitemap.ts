@@ -17,6 +17,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: absoluteUrl("/rooms"), changeFrequency: "weekly", priority: 0.8 },
     { url: absoluteUrl("/paths"), changeFrequency: "weekly", priority: 0.8 },
     { url: absoluteUrl("/playground"), changeFrequency: "monthly", priority: 0.8 },
+    { url: absoluteUrl("/visualize"), changeFrequency: "monthly", priority: 0.7 },
     { url: absoluteUrl("/blog"), changeFrequency: "weekly", priority: 0.8 },
     { url: absoluteUrl("/how-to"), changeFrequency: "weekly", priority: 0.7 },
     { url: absoluteUrl("/tools"), changeFrequency: "monthly", priority: 0.7 },

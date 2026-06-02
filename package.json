@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "next lint",
     "check": "node --experimental-strip-types scripts/check-curriculum.ts",
+    "check:viz": "node --experimental-strip-types scripts/check-visualizer.ts",
     "new:lesson": "node --experimental-strip-types scripts/new-lesson.ts"
   },
   "dependencies": {
@@ -18,6 +19,7 @@
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.106.2",
     "@types/canvas-confetti": "^1.9.0",
+    "acorn": "^8.16.0",
     "canvas-confetti": "^1.9.4",
     "clsx": "^2.1.1",
     "framer-motion": "^11.11.17",
