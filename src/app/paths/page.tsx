@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { ArrowRight } from "lucide-react";
 import { PATHS, pathModules } from "@/lib/paths";
+import { PathQuiz } from "@/components/features/marketing/PathQuiz";
 
 export const metadata: Metadata = {
   title: "Career Paths — Frontend, Backend, Data & Interview Prep",
@@ -24,6 +25,9 @@ export default function PathsIndex() {
         Not sure where to start? Pick a path and we’ll sequence the courses for
         you — no more “what do I learn next?”.
       </p>
+
+      <PathQuiz />
+
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
         {PATHS.map((p) => {
           const mods = pathModules(p);

@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { ArrowRight } from "lucide-react";
-import { getPath, pathModules, PATHS } from "@/lib/paths";
-import { langMeta } from "@/lib/curriculum/lang";
+import { Check, Layers, Clock, Target } from "lucide-react";
+import { getPath, pathModules, pathStats, PATHS } from "@/lib/paths";
+import { lessonId } from "@/lib/curriculum";
 import { breadcrumbJsonLd } from "@/lib/seo";
 import { absoluteUrl } from "@/lib/site";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { PathRoadmap, type RoadmapModule } from "@/components/PathRoadmap";
 
 export function generateStaticParams() {
   return PATHS.map((p) => ({ slug: p.slug }));
@@ -33,12 +34,19 @@ export function generateMetadata({
   };
 }
 
+const DIFF_COLOR: Record<string, string> = {
+  Beginner: "text-success",
+  Intermediate: "text-gold",
+  Advanced: "text-danger",
+};
+
 export default function PathPage({ params }: { params: { slug: string } }) {
   const path = getPath(params.slug);
   if (!path) notFound();
 
   const mods = pathModules(path);
-  const lessons = mods.reduce((s, m) => s + m.lessons.length, 0);
+  const stats = pathStats(path);
+  const estHours = Math.max(1, Math.round((stats.lessons * 12) / 60));
 
   // ItemList structured data — the ordered course sequence.
   const itemList = {
@@ -54,6 +62,16 @@ export default function PathPage({ params }: { params: { slug: string } }) {
     })),
   };
 
+  // Serializable shape for the client roadmap (progress comes from the store).
+  const roadmap: RoadmapModule[] = mods.map((m) => ({
+    slug: m.slug,
+    title: m.title,
+    emoji: m.emoji,
+    description: m.description,
+    xp: m.lessons.reduce((s, l) => s + l.xp, 0),
+    lessonIds: m.lessons.map((l) => lessonId(m.slug, l.slug)),
+  }));
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
       <JsonLd data={itemList} />
@@ -67,50 +85,55 @@ export default function PathPage({ params }: { params: { slug: string } }) {
       <Link href="/paths" className="text-sm text-accent-soft hover:underline">
         ← All paths
       </Link>
-      <div className="mt-4 flex items-center gap-4">
-        <span className="text-5xl">{path.emoji}</span>
-        <div>
-          <h1 className="text-3xl font-bold text-white">{path.title}</h1>
-          <p className="mt-1 text-gray-400">{path.description}</p>
-          <p className="mt-1 text-xs text-gray-500">
-            {mods.length} courses · {lessons} lessons
-          </p>
+
+      {/* Header */}
+      <div className={`card mt-4 bg-gradient-to-br ${path.gradient}`}>
+        <div className="flex items-start gap-4">
+          <span className="text-5xl">{path.emoji}</span>
+          <div>
+            <h1 className="text-3xl font-bold text-white">{path.title}</h1>
+            <p className="mt-1 text-gray-200">{path.description}</p>
+          </div>
+        </div>
+        <div className="mt-5 flex flex-wrap gap-4 text-sm text-gray-200">
+          <span className={`font-semibold ${DIFF_COLOR[path.difficulty]}`}>
+            {path.difficulty}
+          </span>
+          <span className="flex items-center gap-1">
+            <Layers size={14} /> {stats.modules} courses · {stats.lessons} lessons
+          </span>
+          <span className="flex items-center gap-1">
+            <Clock size={14} /> ~{estHours}h
+          </span>
+          <span className="flex items-center gap-1 text-accent-soft">
+            ⚡ {stats.xp} XP
+          </span>
         </div>
       </div>
 
-      <ol className="mt-8 space-y-3">
-        {mods.map((m, i) => (
-          <li key={m.slug}>
-            <Link
-              href={`/learn/${m.slug}`}
-              className="card flex items-center gap-4 hover:border-accent/60"
+      {/* Outcomes */}
+      <section className="mt-6">
+        <h2 className="flex items-center gap-2 text-lg font-semibold text-white">
+          <Target size={18} className="text-accent-soft" /> What you&apos;ll be able to do
+        </h2>
+        <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+          {path.outcomes.map((o) => (
+            <li
+              key={o}
+              className="flex items-start gap-2 rounded-lg border border-line bg-surface p-3 text-sm text-gray-300"
             >
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-2 text-sm font-bold text-accent-soft">
-                {i + 1}
-              </span>
-              <span className="text-2xl">{m.emoji}</span>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <p className="font-medium text-white">{m.title}</p>
-                  <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-gray-300">
-                    {langMeta(m.language ?? "js").label}
-                  </span>
-                </div>
-                <p className="truncate text-sm text-gray-400">{m.tagline}</p>
-              </div>
-              <span className="text-xs text-gray-500">{m.lessons.length}</span>
-            </Link>
-          </li>
-        ))}
-      </ol>
+              <Check size={16} className="mt-0.5 shrink-0 text-success" />
+              {o}
+            </li>
+          ))}
+        </ul>
+      </section>
 
-      <div className="mt-8 flex justify-center">
-        {mods[0] && (
-          <Link href={`/learn/${mods[0].slug}`} className="btn-primary">
-            Start the path <ArrowRight size={15} />
-          </Link>
-        )}
-      </div>
+      {/* Roadmap */}
+      <section className="mt-8">
+        <h2 className="mb-4 text-lg font-semibold text-white">The roadmap</h2>
+        <PathRoadmap modules={roadmap} pathSlug={path.slug} />
+      </section>
     </div>
   );
 }
