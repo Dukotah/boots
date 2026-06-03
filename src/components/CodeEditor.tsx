@@ -19,6 +19,7 @@ export function CodeEditor({
 }) {
   const editorRef = useRef<MonacoEditor.IStandaloneCodeEditor | null>(null);
   const monacoRef = useRef<typeof import("monaco-editor") | null>(null);
+  const lastPosRef = useRef<IPosition | null>(null);
 
   // Respect users who prefer reduced motion (photosensitivity, focus).
   const reduced =
@@ -32,7 +33,7 @@ export function CodeEditor({
     const editor = editorRef.current;
     const monaco = monacoRef.current;
     if (!editor || !monaco) return;
-    const pos = position ?? editor.getPosition();
+    const pos = position ?? lastPosRef.current ?? editor.getPosition();
     if (!pos) return;
     const range = new monaco.Range(
       pos.lineNumber,
@@ -76,6 +77,9 @@ export function CodeEditor({
         onMount={(editor, monaco) => {
           editorRef.current = editor;
           monacoRef.current = monaco;
+          editor.onDidChangeCursorPosition((e) => {
+            lastPosRef.current = e.position;
+          });
           registerInsert?.((text) => insertText(text));
         }}
         options={{
