@@ -38,7 +38,6 @@ function pet() {
 Write a function \`hero\` that **returns** any hero name you like — go wild!
 (But make sure it actually returns a name, not an empty string. 😉)`,
       starterCode: `function hero() {
-  // Return your hero's name as a string!
   return "";
 }
 `,
@@ -78,9 +77,10 @@ function addGold(gold, found) {
 ## Your task
 Write \`addPoints(score, points)\` that **returns** your new total (\`score + points\`).`,
       starterCode: `function addPoints(score, points) {
-  // Return the new total score
+
 }
 `,
+      blocks: ["return ", "score", " + ", "points", ";"],
       solution: `function addPoints(score, points) {
   return score + points;
 }`,
@@ -116,9 +116,10 @@ function triple(n) {
 ## Your task
 Write \`damage(hit)\` that **returns** double the damage (\`hit * 2\`).`,
       starterCode: `function damage(hit) {
-  // Return double the damage
+
 }
 `,
+      blocks: ["return ", "hit", " * ", "2", ";"],
       solution: `function damage(hit) {
   return hit * 2;
 }`,
@@ -154,9 +155,10 @@ function nextRound(round) {
 ## Your task
 Write \`levelUp(level)\` that **returns** the next level (\`level + 1\`).`,
       starterCode: `function levelUp(level) {
-  // Return the next level
+
 }
 `,
+      blocks: ["return ", "level", " + ", "1", ";"],
       solution: `function levelUp(level) {
   return level + 1;
 }`,
@@ -194,9 +196,10 @@ The \`>=\` means "greater than or equal to".
 ## Your task
 Write \`isWin(score)\` that **returns** \`true\` if \`score\` is 100 or more, else \`false\`.`,
       starterCode: `function isWin(score) {
-  // Return true if score is 100 or more, otherwise false
+
 }
 `,
+      blocks: ["return ", "score", " >= ", "100", ";"],
       solution: `function isWin(score) {
   return score >= 100;
 }`,
@@ -233,9 +236,10 @@ Every array knows its own size with \`.length\`.
 ## Your task
 Write \`potions(list)\` that **returns** how many items are in the array (\`list.length\`).`,
       starterCode: `function potions(list) {
-  // Return how many potions are in the list
+
 }
 `,
+      blocks: ["return ", "list", ".length", ";"],
       solution: `function potions(list) {
   return list.length;
 }`,
@@ -280,9 +284,10 @@ whisper("boo"); // "boo..."
 Write \`cry(word)\` that **returns** the word in CAPS with a \`"!"\` on the end.
 Example: \`cry("charge")\` → \`"CHARGE!"\``,
       starterCode: `function cry(word) {
-  // Return the word in CAPS followed by "!"
+
 }
 `,
+      blocks: ["return ", "word", ".toUpperCase()", " + ", '"!"', ";"],
       solution: `function cry(word) {
   return word.toUpperCase() + "!";
 }`,
@@ -322,9 +327,10 @@ Math does the \`*\` before the \`+\`, just like in school. 🧮
 Write \`loot(coins, gems)\` that **returns** the total value, where each gem is
 worth 10 (\`coins + gems * 10\`).`,
       starterCode: `function loot(coins, gems) {
-  // Return total treasure: coins plus 10 per gem
+
 }
 `,
+      blocks: ["return ", "coins", " + ", "gems", " * ", "10", ";"],
       solution: `function loot(coins, gems) {
   return coins + gems * 10;
 }`,

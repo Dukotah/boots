@@ -55,6 +55,11 @@ export type Lesson = {
   // ── quiz lessons (kind === "quiz") ──
   questions?: QuizQuestion[];
 
+  // Optional "code blocks" — bite-sized snippets shown beside the lesson that a
+  // beginner can drag (or tap) into the editor to assemble the answer, instead of
+  // typing from a blank page. Inserting them left-to-right builds the solution
+  // line. Purely an assist: never required, and they don't affect grading.
+  blocks?: string[];
   // Optional progressive hints, revealed one at a time (free, no AI needed).
   hints?: string[];
   // Optional Markdown shown after all tests pass — why the solution works.

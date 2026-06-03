@@ -41,9 +41,10 @@ function wave() {
 Write \`hello(name)\` that **returns** \`"Hello, "\` with the name and a \`"!"\` on the
 end. So \`hello("Sam")\` gives back \`"Hello, Sam!"\`.`,
       starterCode: `function hello(name) {
-  // return "Hello, " + name + "!"
+
 }
 `,
+      blocks: ["return ", '"Hello, "', " + ", "name", " + ", '"!"', ";"],
       solution: `function hello(name) {
   return "Hello, " + name + "!";
 }`,
@@ -82,7 +83,7 @@ function weather(rainy) {
 Write \`light(color)\`. If \`color\` is \`"green"\`, return \`"go"\`. Otherwise,
 return \`"stop"\`.`,
       starterCode: `function light(color) {
-  // if color is "green" return "go", otherwise return "stop"
+
 }
 `,
       solution: `function light(color) {
@@ -123,9 +124,10 @@ tool is \`%\` (called "remainder"). It tells you what's left over after dividing
 Write \`isEven(n)\` that **returns** \`true\` if \`n\` is even, and \`false\` if it's
 odd.`,
       starterCode: `function isEven(n) {
-  // return true if n is even (n % 2 is 0)
+
 }
 `,
+      blocks: ["return ", "n", " % ", "2", " === ", "0", ";"],
       solution: `function isEven(n) {
   return n % 2 === 0;
 }`,
@@ -166,7 +168,7 @@ Write \`jumps(n)\` that returns the word \`"jump "\` repeated \`n\` times (with 
 space after each). So \`jumps(2)\` → \`"jump jump "\`.`,
       starterCode: `function jumps(n) {
   let moves = "";
-  // repeat "jump " n times
+
   return moves;
 }
 `,
@@ -214,7 +216,7 @@ Write \`addUpTo(n)\` that returns the sum of all numbers from 1 to \`n\`. So
 \`addUpTo(4)\` is \`1 + 2 + 3 + 4 = 10\`.`,
       starterCode: `function addUpTo(n) {
   let total = 0;
-  // add each number from 1 up to n
+
   return total;
 }
 `,
@@ -255,9 +257,10 @@ Math.max(3, 9)  // 9
 Write \`taller(a, b)\` that returns the **bigger** of the two heights. If they're
 the same, returning that number is fine.`,
       starterCode: `function taller(a, b) {
-  // return the bigger of a and b
+
 }
 `,
+      blocks: ["return ", "Math.max(a, b)", ";"],
       solution: `function taller(a, b) {
   return Math.max(a, b);
 }`,

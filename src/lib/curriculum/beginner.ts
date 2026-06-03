@@ -45,9 +45,10 @@ Read it slowly:
 Write a function called \`answer\` that returns the number \`42\`.
 (Just change what's inside the machine — don't worry about the rest yet.)`,
       starterCode: `function answer() {
-  // Type:  return 42
+
 }
 `,
+      blocks: ["return ", "42", ";"],
       solution: `function answer() {
   return 42;
 }`,
@@ -90,9 +91,10 @@ the words from squishing together. 🙂
 Write a function \`greet\` that takes \`name\` and returns \`"Hi, "\` followed by the name.
 So \`greet("Ada")\` should give back \`"Hi, Ada"\`.`,
       starterCode: `function greet(name) {
-  // glue "Hi, " and name together with +
+
 }
 `,
+      blocks: ["return ", '"Hi, "', " + ", "name", ";"],
       solution: `function greet(name) {
   return "Hi, " + name;
 }`,
@@ -136,9 +138,10 @@ math with it, then return the result.
 Write a function \`addOne\` that takes a number \`n\` and returns that number plus one.
 So \`addOne(5)\` should give back \`6\`.`,
       starterCode: `function addOne(n) {
-  // return n plus 1
+
 }
 `,
+      blocks: ["return ", "n", " + ", "1", ";"],
       solution: `function addOne(n) {
   return n + 1;
 }`,
@@ -181,9 +184,10 @@ inputs \`a\` and \`b\`, but you could name them anything.
 Write a function \`add\` that takes two numbers, \`a\` and \`b\`, and returns their sum.
 So \`add(2, 3)\` should give back \`5\`.`,
       starterCode: `function add(a, b) {
-  // return a plus b
+
 }
 `,
+      blocks: ["return ", "a", " + ", "b", ";"],
       solution: `function add(a, b) {
   return a + b;
 }`,
@@ -227,9 +231,10 @@ trick's name — that's how you tell it to actually run.
 Write a function \`shout\` that takes a \`word\` and returns it in ALL CAPITAL letters.
 So \`shout("hello")\` should give back \`"HELLO"\`.`,
       starterCode: `function shout(word) {
-  // use word.toUpperCase()
+
 }
 `,
+      blocks: ["return ", "word", ".toUpperCase()", ";"],
       solution: `function shout(word) {
   return word.toUpperCase();
 }`,
@@ -279,7 +284,7 @@ false." The \`>\` symbol means "greater than."
 Write a function \`isBig\` that takes a number \`n\` and returns \`true\` if \`n\` is greater
 than 10, and \`false\` otherwise. So \`isBig(20)\` is \`true\` and \`isBig(3)\` is \`false\`.`,
       starterCode: `function isBig(n) {
-  // if n > 10 return true, else return false
+
 }
 `,
       solution: `function isBig(n) {
@@ -338,9 +343,10 @@ function secondPet(list) {
 Write a function \`firstItem\` that takes a list and returns its **first** item.
 So \`firstItem(["a", "b", "c"])\` should give back \`"a"\`.`,
       starterCode: `function firstItem(list) {
-  // remember: the first item is at position 0
+
 }
 `,
+      blocks: ["return ", "list", "[0]", ";"],
       solution: `function firstItem(list) {
   return list[0];
 }`,
@@ -393,7 +399,7 @@ Write a function \`ticketPrice\` that takes an \`age\` and returns the price:
 
 So \`ticketPrice(3)\` is \`0\` and \`ticketPrice(30)\` is \`10\`.`,
       starterCode: `function ticketPrice(age) {
-  // if age < 5 return 0, otherwise return 10
+
 }
 `,
       solution: `function ticketPrice(age) {

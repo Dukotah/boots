@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -17,6 +17,7 @@ import { useGameStore } from "@/store/useGameStore";
 import { useAccess } from "@/hooks/useAccess";
 import { useMounted } from "@/hooks/useMounted";
 import { CodeEditor } from "./CodeEditor";
+import { BlockTray } from "./BlockTray";
 import { TestResults } from "./TestResults";
 import { LevelUpToast } from "./LevelUpToast";
 import { ProGate } from "./features/billing/ProGate";
@@ -46,6 +47,11 @@ export function LessonView({
   const [showSolution, setShowSolution] = useState(false);
   const [hintsShown, setHintsShown] = useState(0);
   const hints = lesson.hints ?? [];
+  const blocks = lesson.blocks ?? [];
+
+  // The editor hands back an insert fn on mount; the block tray calls it to drop
+  // a snippet at the cursor on tap (drag-and-drop is handled inside the editor).
+  const insertRef = useRef<((text: string) => void) | null>(null);
 
   const completeLesson = useGameStore((s) => s.completeLesson);
   const alreadyDone = useGameStore((s) => s.completed.includes(id));
@@ -158,6 +164,14 @@ export function LessonView({
             )}
           </div>
         )}
+
+        {/* Beginner code blocks — drag or tap them into the editor */}
+        {blocks.length > 0 && (
+          <BlockTray
+            blocks={blocks}
+            onInsert={(text) => insertRef.current?.(text)}
+          />
+        )}
       </section>
 
       {/* Right: editor + results */}
@@ -193,7 +207,14 @@ export function LessonView({
             </div>
           </div>
           <div className="h-[340px]">
-            <CodeEditor value={code} onChange={setCode} language={lang.monaco} />
+            <CodeEditor
+              value={code}
+              onChange={setCode}
+              language={lang.monaco}
+              registerInsert={(fn) => {
+                insertRef.current = fn;
+              }}
+            />
           </div>
           <div className="flex items-center gap-3 border-t border-line p-3">
             {gated ? (

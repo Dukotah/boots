@@ -39,9 +39,10 @@ bag.push("shield"); // bag is now ["sword", "shield"]
 Write \`pickUp(bag, item)\` that adds \`item\` to the end of \`bag\` and **returns**
 the bag.`,
       starterCode: `function pickUp(bag, item) {
-  // push item onto bag, then return bag
+
 }
 `,
+      blocks: ["bag.push(item); ", "return bag;"],
       solution: `function pickUp(bag, item) {
   bag.push(item);
   return bag;
@@ -81,9 +82,10 @@ something with \`.includes()\`, which gives back \`true\` or \`false\`:
 Write \`hasItem(bag, item)\` that **returns** \`true\` if \`item\` is in \`bag\`, and
 \`false\` if it isn't.`,
       starterCode: `function hasItem(bag, item) {
-  // return true if item is in bag
+
 }
 `,
+      blocks: ["return ", "bag", ".includes(item)", ";"],
       solution: `function hasItem(bag, item) {
   return bag.includes(item);
 }`,
@@ -129,7 +131,7 @@ Write \`totalGold(coins)\` that returns the sum of all the numbers in the \`coin
 array. An empty pile is \`0\`.`,
       starterCode: `function totalGold(coins) {
   let total = 0;
-  // add up every coin
+
   return total;
 }
 `,
@@ -170,9 +172,10 @@ Math.min(120, 100); // 100 — can't go above 100
 Write \`heal(hp, amount, max)\` that adds \`amount\` to \`hp\`, but never returns more
 than \`max\`.`,
       starterCode: `function heal(hp, amount, max) {
-  // add amount to hp, but cap it at max
+
 }
 `,
+      blocks: ["return ", "Math.min(", "hp + amount", ", ", "max", ")", ";"],
       solution: `function heal(hp, amount, max) {
   return Math.min(hp + amount, max);
 }`,
@@ -206,9 +209,10 @@ book["fireball"]; // 30
 Write \`castSpell(book, name)\` that returns the damage for \`name\`. If the spell
 isn't in the book, return \`0\` (a fizzle!).`,
       starterCode: `function castSpell(book, name) {
-  // return book[name], or 0 if it's not there
+
 }
 `,
+      blocks: ["return ", "book[name]", " || ", "0", ";"],
       solution: `function castSpell(book, name) {
   return book[name] || 0;
 }`,
@@ -248,9 +252,10 @@ counts them:
 Write \`countDefeated(healths)\` that returns how many numbers in the array are
 \`0\` **or less**.`,
       starterCode: `function countDefeated(healths) {
-  // count how many values are <= 0
+
 }
 `,
+      blocks: ["return ", "healths", ".filter((hp) => hp <= 0)", ".length", ";"],
       solution: `function countDefeated(healths) {
   return healths.filter((hp) => hp <= 0).length;
 }`,

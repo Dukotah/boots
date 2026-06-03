@@ -43,9 +43,10 @@ Math.floor(r * 6) + 1
 Write \`rollDice(r)\` that returns a whole number from 1 to 6 using the formula
 above.`,
       starterCode: `function rollDice(r) {
-  // Math.floor(r * 6) + 1
+
 }
 `,
+      blocks: ["return ", "Math.floor(r * 6)", " + ", "1", ";"],
       solution: `function rollDice(r) {
   return Math.floor(r * 6) + 1;
 }`,
@@ -77,7 +78,7 @@ Write \`checkGuess(guess, target)\`:
 - return \`"too high"\` if the guess is bigger than the target,
 - return \`"too low"\` otherwise.`,
       starterCode: `function checkGuess(guess, target) {
-  // "correct", "too high", or "too low"
+
 }
 `,
       solution: `function checkGuess(guess, target) {
@@ -110,9 +111,10 @@ current score and hand back the new total.
 ## Your task
 Write \`addScore(score, points)\` that returns \`score + points\`.`,
       starterCode: `function addScore(score, points) {
-  // return the new total
+
 }
 `,
+      blocks: ["return ", "score", " + ", "points", ";"],
       solution: `function addScore(score, points) {
   return score + points;
 }`,
@@ -144,9 +146,10 @@ Math.abs(5 - 3); // 2
 Write \`isHit(playerX, targetX, range)\` that returns \`true\` when the distance
 between them is \`range\` or less.`,
       starterCode: `function isHit(playerX, targetX, range) {
-  // true when the distance is <= range
+
 }
 `,
+      blocks: ["return ", "Math.abs(playerX - targetX)", " <= ", "range", ";"],
       solution: `function isHit(playerX, targetX, range) {
   return Math.abs(playerX - targetX) <= range;
 }`,
@@ -175,9 +178,10 @@ Most games end when **lives** hit zero. This is a simple true/false check.
 Write \`isGameOver(lives)\` that returns \`true\` when \`lives\` is \`0\` or less, and
 \`false\` otherwise.`,
       starterCode: `function isGameOver(lives) {
-  // true when lives <= 0
+
 }
 `,
+      blocks: ["return ", "lives", " <= ", "0", ";"],
       solution: `function isGameOver(lives) {
   return lives <= 0;
 }`,
@@ -210,9 +214,10 @@ Math.max(120, 90); // 120
 ## Your task
 Write \`bestScore(score, best)\` that returns whichever is larger.`,
       starterCode: `function bestScore(score, best) {
-  // return the larger of score and best
+
 }
 `,
+      blocks: ["return ", "Math.max(", "score", ", ", "best", ")", ";"],
       solution: `function bestScore(score, best) {
   return Math.max(score, best);
 }`,
