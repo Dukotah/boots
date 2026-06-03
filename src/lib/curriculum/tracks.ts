@@ -17,7 +17,9 @@ export type TrackId =
   | "interview"
   | "python"
   | "sql"
-  | "ai";
+  | "ai"
+  | "cybersecurity"
+  | "kids";
 
 export type Track = {
   id: TrackId;
@@ -71,10 +73,46 @@ export const TRACKS: Track[] = [
   },
   {
     id: "ai",
-    label: "AI & LLMs",
-    blurb: "Understand and build with large language models — hands-on.",
+    label: "AI & Prompt Engineering",
+    blurb: "Understand and build with large language models — prompts, apps, agents, and ethics.",
     emoji: "🤖",
-    modules: ["ai-llms"],
+    modules: [
+      "ai-llms",
+      "prompt-engineering",
+      "ai-apps",
+      "ai-agents",
+      "ai-embeddings",
+      "ai-ethics",
+    ],
+  },
+  {
+    id: "cybersecurity",
+    label: "Cybersecurity",
+    blurb: "Think like a defender: safety, the hacker mindset, auth, web & network security, and CTF.",
+    emoji: "🛡️",
+    modules: [
+      "digital-safety",
+      "hacker-mindset",
+      "passwords-auth",
+      "web-security",
+      "network-security",
+      "ctf-intro",
+    ],
+  },
+  {
+    id: "kids",
+    label: "Kids & Teens",
+    blurb: "A playful on-ramp for young coders — logic, game-building, and staying smart online.",
+    emoji: "👾",
+    modules: [
+      "kids-logic",
+      "kids",
+      "code-quest-2",
+      "build-your-first-game",
+      "internet-for-kids",
+      "ai-safety-kids",
+      "digital-citizenship",
+    ],
   },
 ];
 

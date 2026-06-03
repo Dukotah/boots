@@ -44,6 +44,22 @@ import { pythonAlgorithms } from "../src/lib/curriculum/python-algorithms.ts";
 import { sqlAggregations } from "../src/lib/curriculum/sql-aggregations.ts";
 import { sqlSubqueries } from "../src/lib/curriculum/sql-subqueries.ts";
 import { gitGithub } from "../src/lib/curriculum/git-github.ts";
+import { promptEngineering } from "../src/lib/curriculum/prompt-engineering.ts";
+import { aiApps } from "../src/lib/curriculum/ai-apps.ts";
+import { aiAgents } from "../src/lib/curriculum/ai-agents.ts";
+import { aiEmbeddings } from "../src/lib/curriculum/ai-embeddings.ts";
+import { aiEthics } from "../src/lib/curriculum/ai-ethics.ts";
+import { hackerMindset } from "../src/lib/curriculum/hacker-mindset.ts";
+import { passwordsAuth } from "../src/lib/curriculum/passwords-auth.ts";
+import { webSecurity } from "../src/lib/curriculum/web-security.ts";
+import { networkSecurity } from "../src/lib/curriculum/network-security.ts";
+import { ctfIntro } from "../src/lib/curriculum/ctf-intro.ts";
+import { kidsLogic } from "../src/lib/curriculum/kids-logic.ts";
+import { codeQuest2 } from "../src/lib/curriculum/code-quest-2.ts";
+import { buildYourFirstGame } from "../src/lib/curriculum/build-your-first-game.ts";
+import { internetForKids } from "../src/lib/curriculum/internet-for-kids.ts";
+import { aiSafetyKids } from "../src/lib/curriculum/ai-safety-kids.ts";
+import { digitalCitizenship } from "../src/lib/curriculum/digital-citizenship.ts";
 import type { Lesson, Module } from "../src/lib/curriculum/types.ts";
 
 // Keep in sync with src/lib/curriculum/index.ts. (New module? Add it here too.)
@@ -87,6 +103,22 @@ const MODULES: Module[] = [
   sqlSubqueries,
   gitGithub,
   aiLlms,
+  promptEngineering,
+  aiApps,
+  aiAgents,
+  aiEmbeddings,
+  aiEthics,
+  hackerMindset,
+  passwordsAuth,
+  webSecurity,
+  networkSecurity,
+  ctfIntro,
+  kidsLogic,
+  codeQuest2,
+  buildYourFirstGame,
+  internetForKids,
+  aiSafetyKids,
+  digitalCitizenship,
 ];
 
 function stringify(v: unknown): string {

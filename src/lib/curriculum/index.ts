@@ -37,14 +37,33 @@ import { sqlAggregations } from "./sql-aggregations";
 import { sqlSubqueries } from "./sql-subqueries";
 import { gitGithub } from "./git-github";
 import { aiLlms } from "./ai-llms";
+import { promptEngineering } from "./prompt-engineering";
+import { aiApps } from "./ai-apps";
+import { aiAgents } from "./ai-agents";
+import { aiEmbeddings } from "./ai-embeddings";
+import { aiEthics } from "./ai-ethics";
 import { digitalSafety } from "./digital-safety";
+import { hackerMindset } from "./hacker-mindset";
+import { passwordsAuth } from "./passwords-auth";
+import { webSecurity } from "./web-security";
+import { networkSecurity } from "./network-security";
+import { ctfIntro } from "./ctf-intro";
+import { kidsLogic } from "./kids-logic";
+import { codeQuest2 } from "./code-quest-2";
+import { buildYourFirstGame } from "./build-your-first-game";
+import { internetForKids } from "./internet-for-kids";
+import { aiSafetyKids } from "./ai-safety-kids";
+import { digitalCitizenship } from "./digital-citizenship";
 
 // The whole curriculum. Add a module here and it shows up everywhere.
 // Order defines the Campaign Map progression (sequential unlock) — a difficulty ramp.
 export const MODULES: Module[] = [
   // Beginner on-ramps
   beginner,
+  kidsLogic,
   kids,
+  codeQuest2,
+  buildYourFirstGame,
   // Web foundations (HTML/CSS — live preview)
   html,
   css,
@@ -89,8 +108,23 @@ export const MODULES: Module[] = [
   gitGithub,
   // AI track
   aiLlms,
+  promptEngineering,
+  aiApps,
+  aiAgents,
+  aiEmbeddings,
+  aiEthics,
+  // Cybersecurity track
+  hackerMindset,
+  passwordsAuth,
+  webSecurity,
+  networkSecurity,
+  ctfIntro,
   // Public-good track (free)
   digitalSafety,
+  // Kids & teens (free, conceptual)
+  internetForKids,
+  aiSafetyKids,
+  digitalCitizenship,
 ];
 
 export function getModule(slug: string): Module | undefined {
