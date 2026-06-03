@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Send, X, Settings, Square, Sparkles, KeyRound, Cpu } from "lucide-react";
+import { Send, Settings, Square, Sparkles, KeyRound, Cpu } from "lucide-react";
 import { MascotBoots } from "./MascotBoots";
 import { useTutorSettings } from "@/lib/tutor/settings";
 import { streamTutorReply } from "@/lib/tutor/engine";
@@ -15,19 +15,15 @@ import {
   type TutorContext,
 } from "@/lib/tutor/types";
 
-// The on-device / BYOK Socratic tutor drawer. Runs entirely in the learner's
-// browser (local WebGPU model or their own Anthropic key) — $0 to the platform.
-// This lives alongside the Pro "Ask Cantrip" server tutor, as a free option.
-export function TutorPanel({
-  open,
-  onClose,
-  context,
-}: {
-  open: boolean;
-  onClose: () => void;
-  context: TutorContext;
-}) {
+// The on-device / BYOK Socratic tutor. Runs entirely in the learner's browser
+// (local WebGPU model or their own Anthropic key) — $0 to the platform.
+//
+// It renders as an INLINE collapsible card inside the lesson workspace (same
+// pattern as AskBoots), not a floating side drawer — so the lesson screen reads
+// like an integrated dashboard rather than a window popping over everything.
+export function TutorPanel({ context }: { context: TutorContext }) {
   const settings = useTutorSettings();
+  const [open, setOpen] = useState(false);
   const [thread, setThread] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
@@ -37,7 +33,7 @@ export function TutorPanel({
   const abortRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Open settings automatically if the chosen provider isn't ready.
+  // When the card is opened with a provider that isn't ready, reveal settings.
   useEffect(() => {
     if (open && settings.provider === "anthropic" && !settings.anthropicKey) {
       setShowSettings(true);
@@ -108,52 +104,44 @@ export function TutorPanel({
   }
 
   return (
-    <AnimatePresence>
-      {open && (
-        <>
+    <div className="card p-0">
+      {/* Header — toggles the panel open/closed in place */}
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="flex w-full items-center gap-2 px-4 py-3 text-left"
+      >
+        <Cpu size={18} className="text-accent-soft" />
+        <span className="font-semibold text-white">Tutor · on-device</span>
+        <span className="ml-auto text-xs text-gray-500">
+          {open ? "Hide" : "Free · runs in your browser"}
+        </span>
+      </button>
+
+      <AnimatePresence initial={false}>
+        {open && (
           <motion.div
-            className="fixed inset-0 z-40 bg-black/40"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-          />
-          <motion.aside
-            className="fixed right-0 top-0 z-50 flex h-full w-full max-w-md flex-col border-l border-line bg-surface"
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            transition={{ type: "spring", stiffness: 260, damping: 30 }}
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden border-t border-line"
           >
-            {/* Header */}
-            <div className="flex items-center justify-between border-b border-line px-4 py-3">
+            {/* Provider summary + settings toggle */}
+            <div className="flex items-center justify-between px-4 py-2.5">
               <div className="flex items-center gap-2">
-                <MascotBoots size={30} />
-                <div>
-                  <p className="text-sm font-bold text-white">Cantrip · on-device</p>
-                  <p className="text-[11px] text-gray-400">
-                    {settings.provider === "anthropic"
-                      ? "Your Anthropic key"
-                      : "Local model (in-browser)"}
-                  </p>
-                </div>
+                <MascotBoots size={22} />
+                <p className="text-xs text-gray-400">
+                  {settings.provider === "anthropic"
+                    ? "Using your Anthropic key"
+                    : "Local model · in-browser (WebGPU)"}
+                </p>
               </div>
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => setShowSettings((s) => !s)}
-                  className="rounded-lg p-2 text-gray-400 hover:bg-surface-2 hover:text-white"
-                  aria-label="Tutor settings"
-                >
-                  <Settings size={17} />
-                </button>
-                <button
-                  onClick={onClose}
-                  className="rounded-lg p-2 text-gray-400 hover:bg-surface-2 hover:text-white"
-                  aria-label="Close tutor"
-                >
-                  <X size={17} />
-                </button>
-              </div>
+              <button
+                onClick={() => setShowSettings((s) => !s)}
+                className="rounded-lg p-1.5 text-gray-400 hover:bg-surface-2 hover:text-white"
+                aria-label="Tutor settings"
+              >
+                <Settings size={16} />
+              </button>
             </div>
 
             {/* Settings */}
@@ -163,7 +151,7 @@ export function TutorPanel({
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: "auto", opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
-                  className="overflow-hidden border-b border-line bg-surface-2"
+                  className="overflow-hidden border-t border-line bg-surface-2"
                 >
                   <div className="space-y-3 p-4 text-sm">
                     <div className="flex gap-2">
@@ -248,12 +236,10 @@ export function TutorPanel({
             </AnimatePresence>
 
             {/* Messages */}
-            <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto p-4">
+            <div ref={scrollRef} className="max-h-72 space-y-3 overflow-y-auto p-4">
               {/* Cantrip intro bubble (display-only) */}
               <Bubble role="assistant">
-                <p className="font-medium text-white">
-                  Hey! I&apos;m Cantrip 🐾
-                </p>
+                <p className="font-medium text-white">Hey! I&apos;m Cantrip 🐾</p>
                 <p className="mt-1 text-gray-300">
                   I won&apos;t give you the answer — I&apos;ll help you find it.
                   Ask me anything, or tap a quick hint below.
@@ -341,10 +327,10 @@ export function TutorPanel({
                 )}
               </div>
             </div>
-          </motion.aside>
-        </>
-      )}
-    </AnimatePresence>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
 

@@ -5,7 +5,7 @@ import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { motion } from "framer-motion";
-import { Play, RotateCcw, Eye, ArrowRight, CheckCircle2, Loader2, Lock, Cpu } from "lucide-react";
+import { Play, RotateCcw, Eye, ArrowRight, CheckCircle2, Loader2, Lock } from "lucide-react";
 import type { Lesson, Module } from "@/lib/curriculum/types";
 import { lessonId } from "@/lib/curriculum";
 import { lessonLanguage, langMeta } from "@/lib/curriculum/lang";
@@ -51,8 +51,7 @@ export function LessonView({
   const alreadyDone = useGameStore((s) => s.completed.includes(id));
 
   // On-device / BYOK tutor (free, runs in the learner's browser) — separate from
-  // the Pro "Ask Cantrip" server tutor below.
-  const [tutorOpen, setTutorOpen] = useState(false);
+  // the Pro "Ask Cantrip" server tutor below. Renders as an inline card now.
   const tutorContext: TutorContext = useMemo(() => {
     let testSummary = "not run yet";
     if (outcome) {
@@ -288,20 +287,8 @@ export function LessonView({
         {/* Socratic AI tutor — hints, never the answer (Pro) */}
         <AskBoots module={module} lesson={lesson} language={language} code={code} />
 
-        {/* Free on-device tutor — runs in the learner's browser, $0 to the platform */}
-        <button
-          onClick={() => setTutorOpen(true)}
-          className="card flex w-full items-center gap-2 px-4 py-3 text-left transition-colors hover:border-accent/60"
-        >
-          <Cpu size={18} className="text-accent-soft" />
-          <span className="font-semibold text-white">Tutor on-device</span>
-          <span className="ml-auto text-xs text-gray-500">Free · runs in your browser</span>
-        </button>
-        <TutorPanel
-          open={tutorOpen}
-          onClose={() => setTutorOpen(false)}
-          context={tutorContext}
-        />
+        {/* Free on-device tutor — inline card, runs in the learner's browser, $0 to the platform */}
+        <TutorPanel context={tutorContext} />
       </section>
     </div>
   );
