@@ -2,7 +2,12 @@
 
 import { useGameStore } from "@/store/useGameStore";
 import { useMounted } from "@/hooks/useMounted";
-import { ACHIEVEMENTS } from "@/lib/achievements";
+import {
+  ACHIEVEMENTS,
+  ACHIEVEMENT_CATEGORIES,
+  achievementsByCategory,
+} from "@/lib/achievements";
+import type { Achievement } from "@/types/game";
 
 const RARITY: Record<string, string> = {
   common: "border-gray-500/40 text-gray-300",
@@ -17,13 +22,15 @@ export default function AchievementsPage() {
   const unlocked = useGameStore((s) => s.achievements);
   const have = new Set(mounted ? unlocked : []);
   const earned = have.size;
+  const total = ACHIEVEMENTS.length;
+  const pct = Math.round((earned / total) * 100);
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-white">Achievements</h1>
         <span className="text-sm text-gray-400">
-          {earned}/{ACHIEVEMENTS.length} unlocked
+          {earned}/{total} unlocked
         </span>
       </div>
       <p className="mt-1 text-gray-400">
@@ -31,27 +38,83 @@ export default function AchievementsPage() {
         new languages to fill the case.
       </p>
 
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {ACHIEVEMENTS.map((a) => {
-          const got = have.has(a.id);
-          return (
-            <div
-              key={a.id}
-              className={[
-                "card flex flex-col items-center text-center transition",
-                got ? RARITY[a.rarity] : "border-line opacity-50 grayscale",
-              ].join(" ")}
-            >
-              <span className="text-4xl">{got ? a.icon : "🔒"}</span>
-              <h2 className="mt-2 font-bold text-white">{a.title}</h2>
-              <p className="mt-1 text-xs text-gray-400">{a.description}</p>
-              <span className="mt-3 rounded-full bg-white/5 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide">
-                {a.rarity}
+      {/* Overall completion bar */}
+      <div className="mt-5 h-2 w-full overflow-hidden rounded-full bg-white/5">
+        <div
+          className="h-full rounded-full bg-gradient-to-r from-accent to-gold transition-all"
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+
+      {ACHIEVEMENT_CATEGORIES.map((cat) => {
+        const items = achievementsByCategory(cat.id);
+        if (items.length === 0) return null;
+        const got = items.filter((a) => have.has(a.id)).length;
+        return (
+          <section key={cat.id} className="mt-10">
+            <div className="flex items-baseline justify-between">
+              <h2 className="text-xl font-bold text-white">{cat.label}</h2>
+              <span className="text-xs text-gray-500">
+                {got}/{items.length}
               </span>
             </div>
-          );
-        })}
-      </div>
+            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {items.map((a) => (
+                <Badge key={a.id} achievement={a} got={have.has(a.id)} />
+              ))}
+            </div>
+          </section>
+        );
+      })}
+    </div>
+  );
+}
+
+function Badge({
+  achievement: a,
+  got,
+}: {
+  achievement: Achievement;
+  got: boolean;
+}) {
+  // Secret badges stay masked until earned.
+  const hidden = a.secret && !got;
+  const title = hidden ? "Secret Achievement" : a.title;
+  const description = hidden
+    ? "Keep playing to reveal this one…"
+    : a.description;
+  const icon = got ? a.icon : hidden ? "❓" : "🔒";
+
+  return (
+    <div
+      className={[
+        "card flex flex-col items-center text-center transition",
+        got ? RARITY[a.rarity] : "border-line opacity-50 grayscale",
+      ].join(" ")}
+    >
+      <span className="text-4xl">{icon}</span>
+      <h3 className="mt-2 font-bold text-white">{title}</h3>
+      <p className="mt-1 text-xs text-gray-400">{description}</p>
+
+      {/* Reward chips (hidden for masked secrets to preserve mystery) */}
+      {!hidden && (a.rewardXp || a.rewardGold) ? (
+        <div className="mt-2 flex flex-wrap items-center justify-center gap-1.5">
+          {a.rewardXp ? (
+            <span className="rounded-full bg-accent/15 px-2 py-0.5 text-[10px] font-semibold text-accent-soft">
+              +{a.rewardXp} XP
+            </span>
+          ) : null}
+          {a.rewardGold ? (
+            <span className="rounded-full bg-gold/15 px-2 py-0.5 text-[10px] font-semibold text-gold">
+              +{a.rewardGold} gold
+            </span>
+          ) : null}
+        </div>
+      ) : null}
+
+      <span className="mt-3 rounded-full bg-white/5 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide">
+        {a.rarity}
+      </span>
     </div>
   );
 }

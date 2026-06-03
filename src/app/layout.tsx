@@ -1,8 +1,9 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { AuthProvider } from "@/components/AuthProvider";
+import { PwaRegister } from "@/components/PwaRegister";
 import { SITE } from "@/lib/site";
 
 // Default social-share card (branded). Per-page metadata overrides this.
@@ -48,6 +49,12 @@ export const metadata: Metadata = {
     images: [DEFAULT_OG],
   },
   robots: { index: true, follow: true },
+  manifest: "/manifest.webmanifest",
+  appleWebApp: { capable: true, title: SITE.name, statusBarStyle: "black-translucent" },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0b0e14",
 };
 
 export default function RootLayout({
@@ -59,6 +66,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="min-h-screen">
         <AuthProvider>
+          <PwaRegister />
           <Navbar />
           <main className="min-h-[60vh]">{children}</main>
           <Footer />

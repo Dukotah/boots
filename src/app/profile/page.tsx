@@ -6,6 +6,8 @@ import { useGameStore } from "@/store/useGameStore";
 import { useMounted } from "@/hooks/useMounted";
 import { ProfileCard } from "@/components/features/profile/ProfileCard";
 import { PathProgressList } from "@/components/features/certificate/PathProgressList";
+import { GithubJournalCard } from "@/components/features/github/GithubJournalCard";
+import { BadgeEmbed } from "@/components/features/github/BadgeEmbed";
 import { SITE } from "@/lib/site";
 
 export default function ProfilePage() {
@@ -16,6 +18,7 @@ export default function ProfilePage() {
   const completed = useGameStore((s) => s.completed);
   const achievements = useGameStore((s) => s.achievements);
   const user = useGameStore((s) => s.user);
+  const equipped = useGameStore((s) => s.equipped);
   const [copied, setCopied] = useState(false);
 
   const handle = user?.email?.split("@")[0] ?? "you";
@@ -34,7 +37,14 @@ export default function ProfilePage() {
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-white">Your profile</h1>
+        <div>
+          <h1 className="text-xl font-semibold text-white">
+            Your profile {equipped.flair && <span>{equipped.flair}</span>}
+          </h1>
+          {equipped.title && (
+            <p className="text-xs font-medium text-accent-soft">{equipped.title}</p>
+          )}
+        </div>
         <button onClick={share} className="btn-ghost text-sm">
           {copied ? <Check size={15} /> : <Share2 size={15} />}
           {copied ? "Link copied" : "Share"}
@@ -56,6 +66,10 @@ export default function ProfilePage() {
         Your public profile lives at{" "}
         <span className="font-mono text-gray-400">/u/{handle}</span>
       </p>
+
+      <BadgeEmbed handle={handle} />
+
+      <GithubJournalCard />
 
       <section className="mt-8">
         <h2 className="mb-3 text-lg font-semibold text-white">Your paths</h2>

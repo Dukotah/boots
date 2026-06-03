@@ -12,6 +12,7 @@ import { lessonLanguage, langMeta } from "@/lib/curriculum/lang";
 import { runLesson, type RunOutcome } from "@/lib/runner";
 import { celebrate } from "@/lib/celebrate";
 import { verifyCompletion } from "@/lib/scoring";
+import { commitLessonToJournal } from "@/lib/github/journalClient";
 import { useGameStore } from "@/store/useGameStore";
 import { useAccess } from "@/hooks/useAccess";
 import { useMounted } from "@/hooks/useMounted";
@@ -89,11 +90,21 @@ export function LessonView({
     setRunning(false);
 
     if (result.results.every((r) => r.pass)) {
+      const wasDone = alreadyDone;
       completeLesson(id, lesson.xp);
       celebrate();
       // Server re-runs the code and awards canonical XP (best-effort; degrades
       // gracefully when signed out / no backend / non-JS lesson).
       void verifyCompletion(module.slug, lesson.slug, code);
+      // Commit the solution to the learner's GitHub journey repo (no-op unless
+      // they've connected GitHub). Only on the first completion — no churn on redo.
+      if (!wasDone) {
+        void commitLessonToJournal({
+          courseSlug: module.slug,
+          lessonSlug: lesson.slug,
+          code,
+        });
+      }
     }
   }
 

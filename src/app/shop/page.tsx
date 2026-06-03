@@ -2,16 +2,19 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Coins, Snowflake } from "lucide-react";
+import { Coins, Snowflake, Check } from "lucide-react";
 import { useGameStore } from "@/store/useGameStore";
 import { useMounted } from "@/hooks/useMounted";
-import { SHOP_ITEMS } from "@/lib/shop";
+import { SHOP_ITEMS, COSMETICS } from "@/lib/shop";
 
 export default function ShopPage() {
   const mounted = useMounted();
   const gold = useGameStore((s) => s.gold);
   const streakFreezes = useGameStore((s) => s.streakFreezes);
   const buyItem = useGameStore((s) => s.buyItem);
+  const owned = useGameStore((s) => s.cosmetics);
+  const equipped = useGameStore((s) => s.equipped);
+  const equipCosmetic = useGameStore((s) => s.equipCosmetic);
   const [flash, setFlash] = useState<string | null>(null);
 
   function handleBuy(id: string) {
@@ -65,6 +68,52 @@ export default function ShopPage() {
               >
                 <Coins size={15} /> {item.cost}
               </button>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Cosmetics — decorative, no pay-to-win */}
+      <h2 className="mt-12 text-2xl font-bold text-white">Cosmetics</h2>
+      <p className="mt-1 text-gray-400">
+        Decorate your profile. Purely for flair — never affects XP or rank.
+      </p>
+      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+        {COSMETICS.map((item) => {
+          const isOwned = mounted && owned.includes(item.id);
+          const isEquipped =
+            mounted && item.slot && equipped[item.slot] === item.value;
+          const afford = mounted && gold >= item.cost;
+          return (
+            <div key={item.id} className="card flex flex-col">
+              <span className="text-4xl">{item.icon}</span>
+              <h3 className="mt-3 text-lg font-bold text-white">{item.name}</h3>
+              <p className="mt-1 flex-1 text-sm text-gray-300">{item.description}</p>
+              {isOwned ? (
+                <button
+                  onClick={() => equipCosmetic(item.id)}
+                  className={[
+                    "mt-4 justify-center",
+                    isEquipped ? "btn-ghost" : "btn-primary",
+                  ].join(" ")}
+                >
+                  {isEquipped ? (
+                    <>
+                      <Check size={15} /> Equipped
+                    </>
+                  ) : (
+                    "Equip"
+                  )}
+                </button>
+              ) : (
+                <button
+                  onClick={() => handleBuy(item.id)}
+                  disabled={!afford}
+                  className="btn-primary mt-4 justify-center disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <Coins size={15} /> {item.cost}
+                </button>
+              )}
             </div>
           );
         })}

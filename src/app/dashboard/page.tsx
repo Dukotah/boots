@@ -10,6 +10,7 @@ import { XPBar } from "@/components/XPBar";
 import { DailyQuests } from "@/components/features/quests/DailyQuests";
 import { DailyChallenge } from "@/components/features/retention/DailyChallenge";
 import { StreakHeatmap } from "@/components/features/retention/StreakHeatmap";
+import { EnableNotifications } from "@/components/features/push/EnableNotifications";
 
 export default function Dashboard() {
   const [mounted, setMounted] = useState(false);
@@ -88,6 +89,7 @@ export default function Dashboard() {
       {/* Activity heatmap */}
       <div className="mt-4">
         <StreakHeatmap />
+        <EnableNotifications />
       </div>
 
       {/* Course progress */}

@@ -1,15 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Crown, Swords } from "lucide-react";
+import { Crown, Swords, ArrowUp, ArrowDown, Clock } from "lucide-react";
 import { useGameStore } from "@/store/useGameStore";
 import { useMounted } from "@/hooks/useMounted";
 import {
-  DEMO_LEAGUE,
-  rankLeaderboard,
-  type LeaderRow,
-  type RankedRow,
-} from "@/lib/leaderboard";
+  LEAGUE_TIERS,
+  TOP_TIER,
+  PROMOTE_COUNT,
+  RELEGATE_COUNT,
+  tierAt,
+  seasonStandings,
+  rankSeason,
+  type WeeklyRow,
+  type RankedWeeklyRow,
+  type SeasonResult,
+} from "@/lib/leagues";
 import {
   getSupabaseBrowserClient,
   isSupabaseConfigured,
@@ -17,12 +23,24 @@ import {
 
 export default function LeaguesPage() {
   const mounted = useMounted();
-  const xp = useGameStore((s) => s.xp);
+  const checkSeason = useGameStore((s) => s.checkSeason);
+  const season = useGameStore((s) => s.season);
+  const lastSeasonResult = useGameStore((s) => s.lastSeasonResult);
+  const clearSeasonResult = useGameStore((s) => s.clearSeasonResult);
   const user = useGameStore((s) => s.user);
-  const [field, setField] = useState<LeaderRow[]>(DEMO_LEAGUE);
 
-  // When Supabase is configured, rank real profiles by XP; otherwise the seeded
-  // demo league stands in so the board is never empty.
+  // Roll the season over (promote/relegate) if it expired while we were away.
+  useEffect(() => {
+    checkSeason();
+  }, [checkSeason]);
+
+  const { tier, daysLeft, weeklyXp } = mounted
+    ? season()
+    : { tier: 0, daysLeft: 7, weeklyXp: 0 };
+
+  // When a backend is configured, rank against real rivals by this week's XP;
+  // otherwise fall back to the seeded field so the board is never empty.
+  const [realField, setRealField] = useState<WeeklyRow[] | null>(null);
   useEffect(() => {
     if (!isSupabaseConfigured) return;
     const sb = getSupabaseBrowserClient();
@@ -31,56 +49,92 @@ export default function LeaguesPage() {
     (async () => {
       const { data } = await sb
         .from("profiles")
-        .select("username, xp")
-        .order("xp", { ascending: false })
+        .select("username, weekly_xp")
+        .order("weekly_xp", { ascending: false })
         .limit(25);
-      if (active && data && data.length) {
-        setField(
-          data.map((r) => ({
-            name: (r as { username?: string }).username ?? "Anonymous",
-            xp: (r as { xp?: number }).xp ?? 0,
-          })),
-        );
-      }
+      if (!active || !data) return;
+      const rows = (data as { username?: string; weekly_xp?: number }[])
+        .filter((r) => (r.weekly_xp ?? 0) > 0)
+        .map((r) => ({ name: r.username ?? "Anonymous", weeklyXp: r.weekly_xp ?? 0 }));
+      if (rows.length >= 3) setRealField(rows);
     })();
     return () => {
       active = false;
     };
   }, []);
 
-  // Drop "you" into the field (replacing a same-named server row if present).
+  const t = tierAt(tier);
   const youName = user?.email?.split("@")[0] ?? "You";
-  const withYou: LeaderRow[] = mounted
-    ? [
-        ...field.filter((r) => r.name !== youName),
-        { name: youName, xp, isYou: true },
-      ]
-    : field;
-  const ranked = rankLeaderboard(withYou);
-  const you = ranked.find((r) => r.isYou);
+
+  const standings: RankedWeeklyRow[] = realField
+    ? rankSeason(
+        [
+          ...realField.filter((r) => r.name !== youName),
+          { name: youName, weeklyXp, isYou: true },
+        ],
+        tier,
+      )
+    : seasonStandings(weeklyXp, tier).map((r) =>
+        r.isYou ? { ...r, name: youName } : r,
+      );
+  const you = standings.find((r) => r.isYou);
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
-      <div className="flex items-center gap-3">
-        <Swords className="text-accent-soft" />
-        <h1 className="text-3xl font-bold text-white">Bronze League</h1>
-      </div>
-      <p className="mt-1 text-gray-400">
-        A 7-day season. Earn the most XP to get promoted — newcomers compete
-        against peers, not veterans. Top 3 advance; bottom 3 are relegated.
-      </p>
-
-      {mounted && you && (
-        <div className="mt-6 flex items-center justify-between rounded-2xl border border-accent/40 bg-accent/10 px-5 py-3">
-          <span className="text-sm text-gray-300">Your standing</span>
-          <span className="text-lg font-bold text-white">
-            #{you.rank} · {you.xp} XP
-          </span>
-        </div>
+      {mounted && lastSeasonResult && (
+        <SeasonResultBanner result={lastSeasonResult} onDismiss={clearSeasonResult} />
       )}
 
+      <div className="flex items-center gap-3">
+        <Swords className="text-accent-soft" />
+        <h1 className="text-3xl font-bold text-white">
+          <span className={t.color}>{t.emoji} {t.name}</span> League
+        </h1>
+      </div>
+      <p className="mt-1 text-gray-400">
+        A 7-day season. Earn the most XP to climb. Top {PROMOTE_COUNT} are
+        promoted{tier < TOP_TIER ? " to the next tier" : ""}; bottom{" "}
+        {RELEGATE_COUNT} are relegated{tier === 0 ? " (you're safe in Bronze)" : ""}.
+      </p>
+
+      {/* Season status strip */}
+      <div className="mt-6 grid grid-cols-2 gap-3">
+        <div className="rounded-2xl border border-line bg-canvas/40 px-5 py-3">
+          <div className="flex items-center gap-2 text-sm text-gray-400">
+            <Clock size={14} /> Season ends
+          </div>
+          <p className="mt-1 text-lg font-bold text-white">
+            {mounted ? (daysLeft === 0 ? "Today" : `${daysLeft} day${daysLeft === 1 ? "" : "s"}`) : "—"}
+          </p>
+        </div>
+        <div className="rounded-2xl border border-accent/40 bg-accent/10 px-5 py-3">
+          <span className="text-sm text-gray-300">Your standing</span>
+          <p className="mt-1 text-lg font-bold text-white">
+            {mounted && you ? `#${you.rank} · ${you.weeklyXp} XP` : "—"}
+          </p>
+        </div>
+      </div>
+
+      {/* Tier ladder */}
+      <div className="mt-6 flex items-center justify-center gap-1 text-sm">
+        {LEAGUE_TIERS.map((tt, i) => (
+          <span
+            key={tt.name}
+            className={[
+              "rounded-full px-2.5 py-1 font-semibold transition",
+              i === tier
+                ? `bg-white/10 ${tt.color}`
+                : "text-gray-600",
+            ].join(" ")}
+            title={tt.name}
+          >
+            {tt.emoji}
+          </span>
+        ))}
+      </div>
+
       <div className="mt-6 space-y-2">
-        {ranked.map((row) => (
+        {standings.map((row) => (
           <Row key={`${row.name}-${row.rank}`} row={row} />
         ))}
       </div>
@@ -88,26 +142,76 @@ export default function LeaguesPage() {
   );
 }
 
-function Row({ row }: { row: RankedRow }) {
-  const promo = row.rank <= 3;
+function SeasonResultBanner({
+  result,
+  onDismiss,
+}: {
+  result: SeasonResult;
+  onDismiss: () => void;
+}) {
+  const from = tierAt(result.fromTier);
+  const to = tierAt(result.toTier);
+  const config = {
+    promoted: {
+      icon: <ArrowUp className="text-emerald-400" />,
+      title: `Promoted to ${to.name}!`,
+      body: `You finished #${result.rank} in ${from.name}. Onward and upward.`,
+      cls: "border-emerald-500/40 bg-emerald-500/10",
+    },
+    relegated: {
+      icon: <ArrowDown className="text-rose-400" />,
+      title: `Relegated to ${to.name}`,
+      body: `You finished #${result.rank} in ${from.name}. Climb back next season.`,
+      cls: "border-rose-500/40 bg-rose-500/10",
+    },
+    held: {
+      icon: <Crown className="text-gold" />,
+      title: `Held your spot in ${to.name}`,
+      body: `You finished #${result.rank}. A new season has begun — go again.`,
+      cls: "border-gold/40 bg-gold/10",
+    },
+  }[result.outcome];
+
+  return (
+    <div className={`mb-6 flex items-start gap-3 rounded-2xl border px-5 py-4 ${config.cls}`}>
+      <div className="mt-0.5">{config.icon}</div>
+      <div className="flex-1">
+        <p className="font-bold text-white">{config.title}</p>
+        <p className="mt-0.5 text-sm text-gray-300">{config.body}</p>
+      </div>
+      <button
+        onClick={onDismiss}
+        className="rounded-lg px-2 py-1 text-sm text-gray-400 hover:bg-white/5 hover:text-white"
+      >
+        Dismiss
+      </button>
+    </div>
+  );
+}
+
+function Row({ row }: { row: RankedWeeklyRow }) {
+  const zoneColor =
+    row.zone === "promote"
+      ? "text-emerald-400"
+      : row.zone === "relegate"
+        ? "text-rose-400"
+        : "text-gray-500";
   return (
     <div
       className={[
         "flex items-center gap-4 rounded-xl border px-4 py-3 transition",
-        row.isYou
-          ? "border-accent/60 bg-accent/15"
-          : "border-line bg-canvas/40",
+        row.isYou ? "border-accent/60 bg-accent/15" : "border-line bg-canvas/40",
       ].join(" ")}
     >
-      <span
-        className={[
-          "w-8 text-center text-sm font-bold",
-          promo ? "text-gold" : "text-gray-500",
-        ].join(" ")}
-      >
-        {row.rank <= 3 ? <Crown size={16} className="mx-auto" /> : row.rank}
+      <span className={`w-8 text-center text-sm font-bold ${zoneColor}`}>
+        {row.zone === "promote" ? (
+          <ArrowUp size={16} className="mx-auto" />
+        ) : row.zone === "relegate" ? (
+          <ArrowDown size={16} className="mx-auto" />
+        ) : (
+          row.rank
+        )}
       </span>
-      <span className="text-xl">{row.rankEmoji}</span>
       <div className="min-w-0 flex-1">
         <p className="truncate font-medium text-white">
           {row.name}
@@ -118,11 +222,15 @@ function Row({ row }: { row: RankedRow }) {
           )}
         </p>
         <p className="text-xs text-gray-500">
-          Lvl {row.level} · {row.rankName}
+          {row.zone === "promote"
+            ? "Promotion zone"
+            : row.zone === "relegate"
+              ? "Relegation zone"
+              : `Rank #${row.rank}`}
         </p>
       </div>
       <span className="font-mono text-sm font-semibold text-accent-soft">
-        {row.xp} XP
+        {row.weeklyXp} XP
       </span>
     </div>
   );

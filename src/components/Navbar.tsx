@@ -24,6 +24,7 @@ export function Navbar() {
 
   const xp = useGameStore((s) => s.xp);
   const streak = useGameStore((s) => s.streak);
+  const user = useGameStore((s) => s.user);
   const info = levelFromXp(xp);
 
   return (
@@ -87,6 +88,14 @@ export function Navbar() {
                 <Zap size={15} />
                 Lv {info.level}
               </span>
+            </Link>
+          )}
+          {mounted && !user && (
+            <Link
+              href="/login"
+              className="text-sm font-medium text-gray-300 hover:text-white"
+            >
+              Sign in
             </Link>
           )}
         </div>
