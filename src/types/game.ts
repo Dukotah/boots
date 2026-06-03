@@ -12,7 +12,23 @@ export type PlayerStats = {
   streak: number;
   completedCount: number;
   completedIds: string[];
+  // ── derived breadth (computed from completedIds against the curriculum) ──
+  /** Distinct lesson languages the player has completed ≥1 lesson in (e.g. "js", "py"). */
+  languages: string[];
+  /** Slugs of modules the player has fully completed (every lesson). */
+  completedModules: string[];
+  /** Number of distinct modules the player has touched (≥1 lesson). */
+  modulesTouched: number;
 };
+
+/** A grouping for the achievements case — drives the section headers in the UI. */
+export type AchievementCategory =
+  | "milestones"
+  | "streaks"
+  | "breadth"
+  | "mastery"
+  | "wealth"
+  | "secret";
 
 /**
  * An achievement definition. Definitions live in code (data-driven catalog); the
@@ -27,6 +43,10 @@ export type Achievement = {
   icon: string;
   /** Rarity drives the badge color/glow in the UI. */
   rarity: "common" | "rare" | "epic" | "legendary";
+  /** Which section of the case this badge lives in. Defaults to "milestones". */
+  category?: AchievementCategory;
+  /** Secret badges stay hidden (title/desc masked) until unlocked. */
+  secret?: boolean;
   /** Bonus rewards granted on unlock. */
   rewardXp?: number;
   rewardGold?: number;

@@ -24,6 +24,12 @@ export type Database = {
           completed: string[];
           achievements: string[];
           active_quest: string | null;
+          github_login: string | null;
+          github_installation_id: number | null;
+          github_repo: string | null;
+          weekly_xp: number;
+          league_tier: number;
+          season_start: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -39,6 +45,12 @@ export type Database = {
           completed?: string[];
           achievements?: string[];
           active_quest?: string | null;
+          github_login?: string | null;
+          github_installation_id?: number | null;
+          github_repo?: string | null;
+          weekly_xp?: number;
+          league_tier?: number;
+          season_start?: string | null;
         };
         Update: Partial<Database["public"]["Tables"]["profiles"]["Insert"]>;
         Relationships: [];
@@ -162,6 +174,63 @@ export type Database = {
         Update: Partial<
           Database["public"]["Tables"]["user_achievements"]["Insert"]
         >;
+        Relationships: [];
+      };
+      push_subscriptions: {
+        Row: {
+          id: string;
+          user_id: string;
+          endpoint: string;
+          p256dh: string;
+          auth: string;
+          created_at: string;
+        };
+        Insert: {
+          user_id: string;
+          endpoint: string;
+          p256dh: string;
+          auth: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["push_subscriptions"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      follows: {
+        Row: {
+          follower_id: string;
+          following_id: string;
+          created_at: string;
+        };
+        Insert: {
+          follower_id: string;
+          following_id: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["follows"]["Insert"]>;
+        Relationships: [];
+      };
+      duels: {
+        Row: {
+          id: string;
+          challenger_id: string;
+          opponent_id: string;
+          goal_lessons: number;
+          challenger_progress: number;
+          opponent_progress: number;
+          status: string;
+          ends_at: string;
+          created_at: string;
+        };
+        Insert: {
+          challenger_id: string;
+          opponent_id: string;
+          goal_lessons?: number;
+          challenger_progress?: number;
+          opponent_progress?: number;
+          status?: string;
+          ends_at: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["duels"]["Insert"]>;
         Relationships: [];
       };
     };

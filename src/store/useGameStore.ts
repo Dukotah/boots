@@ -19,10 +19,67 @@ import { persist } from "zustand/middleware";
 import type { User, Session } from "@supabase/supabase-js";
 import { levelFromXp } from "@/lib/levels";
 import { newlyUnlocked, getAchievement } from "@/lib/achievements";
-import { getQuest, isQuestComplete, type DailySnapshot } from "@/lib/quests";
+import {
+  getQuest,
+  getWeeklyQuest,
+  isQuestComplete,
+  getChain,
+  getChainStep,
+  isChainStepComplete,
+  chainStepKey,
+  type DailySnapshot,
+} from "@/lib/quests";
 import { getShopItem, CHEST_MIN, CHEST_MAX } from "@/lib/shop";
 import { getSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
+import { deriveBreadth } from "@/lib/progress";
+import { SEASON_DAYS, resolveSeason, type SeasonResult } from "@/lib/leagues";
+import { bossForSeason, bossState, type Boss, type BossState } from "@/lib/boss";
+import { nextBox, isReviewDue, type ReviewRecord } from "@/lib/mastery";
 import type { PlayerStats } from "@/types/game";
+
+/** Build the full stats snapshot (core resources + derived breadth) from state. */
+function buildStats(s: {
+  xp: number;
+  gold: number;
+  streak: number;
+  completed: string[];
+}): PlayerStats {
+  return {
+    xp: s.xp,
+    level: levelFromXp(s.xp).level,
+    gold: s.gold,
+    streak: s.streak,
+    completedCount: s.completed.length,
+    completedIds: s.completed,
+    ...deriveBreadth(s.completed),
+  };
+}
+
+/**
+ * If the weekly league season has expired, resolve it (promote/relegate) and
+ * start a fresh one. Returns the partial state update, or null if nothing to do.
+ * Pure aside from reading `todayKey()` — forgiving: a long absence only ever
+ * resolves one season, so being away for weeks never cascades relegations.
+ */
+function rolledSeason(s: {
+  seasonStart: string | null;
+  weeklyXp: number;
+  leagueTier: number;
+}): Partial<GameState> | null {
+  const today = todayKey();
+  // First ever — just open a season; nothing to resolve.
+  if (s.seasonStart === null) return { seasonStart: today };
+  if (dayDiff(s.seasonStart, today) < SEASON_DAYS) return null;
+  const result = resolveSeason(s.weeklyXp, s.leagueTier);
+  return {
+    leagueTier: result.toTier,
+    weeklyXp: 0,
+    weeklyLessons: 0,
+    seasonStart: today,
+    lastSeasonResult: result,
+    claimedWeeklyQuests: [], // new season → weekly quests reset
+  };
+}
 
 // ---- date helpers (local-day based) ----
 function todayKey(d = new Date()): string {
@@ -71,6 +128,22 @@ export type GameState = {
   claimedQuests: string[]; // quest ids claimed *today*
   // ── active quest ──
   activeQuest: string | null;
+  // ── leagues (weekly competitive season) ──
+  weeklyXp: number; // XP earned during the current season
+  weeklyLessons: number; // lessons completed during the current season
+  seasonStart: string | null; // local day-key when the current season began
+  leagueTier: number; // index into LEAGUE_TIERS
+  lastSeasonResult: SeasonResult | null; // surfaced once by the UI, then cleared
+  claimedWeeklyQuests: string[]; // weekly quest ids claimed this season
+  // ── quest chains (persistent, multi-step) ──
+  claimedChainSteps: string[]; // "chainId/stepId" steps already claimed
+  // ── boss battles ──
+  claimedBosses: string[]; // boss ids whose defeat reward was claimed
+  // ── spaced repetition ──
+  reviews: Record<string, ReviewRecord>; // lessonId → Leitner review record
+  // ── cosmetics (decorative; never power) ──
+  cosmetics: string[]; // owned cosmetic item ids
+  equipped: { flair: string | null; title: string | null };
   // ── transient UI signals (not persisted) ──
   lastLevelUp: number | null;
   recentAchievement: string | null;
@@ -84,6 +157,14 @@ export type GameState = {
   stats: () => PlayerStats;
   /** Today's activity, normalized (returns zeros if the stored day is stale). */
   today: () => DailySnapshot;
+  /** Current league season snapshot: tier index, days left, XP earned this season. */
+  season: () => { tier: number; daysLeft: number; weeklyXp: number };
+  /** This season's activity, for weekly quests (zeros if the season is stale). */
+  weekly: () => DailySnapshot;
+  /** Current weekly boss + live HP state for the player. */
+  boss: () => { boss: Boss; state: BossState; claimed: boolean };
+  /** Lesson ids whose spaced-repetition review is due (never-reviewed = due). */
+  dueReviews: () => string[];
 
   // ── game actions ──
   completeLesson: (id: string, xp: number) => CompletionResult;
@@ -92,10 +173,21 @@ export type GameState = {
   spendGold: (amount: number) => boolean;
   /** Claim a completed daily quest's reward (once per day). Returns true if claimed. */
   claimQuest: (questId: string) => boolean;
+  /** Claim a completed weekly quest's reward (once per season). Returns true if claimed. */
+  claimWeeklyQuest: (questId: string) => boolean;
+  /** Claim the next available step of a quest chain. Returns true if claimed. */
+  claimChainStep: (chainId: string, stepId: string) => boolean;
+  /** Claim the reward for defeating this week's boss. Returns true if claimed. */
+  claimBoss: (bossId: string) => boolean;
   /** Buy a shop item. Returns a result describing the outcome (e.g. chest payout). */
-  buyItem: (itemId: string) => { ok: boolean; chestGold?: number };
+  buyItem: (itemId: string) => { ok: boolean; chestGold?: number; owned?: boolean };
+  /** Equip an owned cosmetic into its slot (toggles off if already equipped). */
+  equipCosmetic: (itemId: string) => void;
+  /** Resolve + roll the league season if it has expired (idempotent; call on mount). */
+  checkSeason: () => void;
   clearLevelUp: () => void;
   clearRecentAchievement: () => void;
+  clearSeasonResult: () => void;
   reset: () => void;
 
   // ── auth actions (called from AuthProvider) ──
@@ -119,6 +211,17 @@ const INITIAL = {
   dailyLessons: 0,
   claimedQuests: [] as string[],
   activeQuest: null as string | null,
+  weeklyXp: 0,
+  weeklyLessons: 0,
+  seasonStart: null as string | null,
+  leagueTier: 0,
+  lastSeasonResult: null as SeasonResult | null,
+  claimedWeeklyQuests: [] as string[],
+  claimedChainSteps: [] as string[],
+  claimedBosses: [] as string[],
+  reviews: {} as Record<string, ReviewRecord>,
+  cosmetics: [] as string[],
+  equipped: { flair: null as string | null, title: null as string | null },
   lastLevelUp: null as number | null,
   recentAchievement: null as string | null,
 };
@@ -133,6 +236,9 @@ type ProfileSnapshot = {
   completed: string[];
   achievements: string[];
   active_quest: string | null;
+  weekly_xp: number;
+  league_tier: number;
+  season_start: string | null;
 };
 
 async function upsertProfile(userId: string, snap: ProfileSnapshot): Promise<void> {
@@ -146,7 +252,9 @@ async function fetchProfile(userId: string): Promise<ProfileSnapshot | null> {
   if (!sb) return null;
   const { data } = await sb
     .from("profiles")
-    .select("xp, gold, streak, last_active_day, completed, achievements, active_quest")
+    .select(
+      "xp, gold, streak, last_active_day, completed, achievements, active_quest, weekly_xp, league_tier, season_start",
+    )
     .eq("id", userId)
     .maybeSingle();
   return (data as ProfileSnapshot | null) ?? null;
@@ -162,17 +270,7 @@ export const useGameStore = create<GameState>()(
 
       isComplete: (id) => get().completed.includes(id),
 
-      stats: () => {
-        const s = get();
-        return {
-          xp: s.xp,
-          level: levelFromXp(s.xp).level,
-          gold: s.gold,
-          streak: s.streak,
-          completedCount: s.completed.length,
-          completedIds: s.completed,
-        };
-      },
+      stats: () => buildStats(get()),
 
       today: () => {
         const s = get();
@@ -184,7 +282,56 @@ export const useGameStore = create<GameState>()(
         };
       },
 
+      season: () => {
+        const s = get();
+        const elapsed = s.seasonStart ? dayDiff(s.seasonStart, todayKey()) : 0;
+        return {
+          tier: s.leagueTier,
+          daysLeft: Math.max(0, SEASON_DAYS - elapsed),
+          weeklyXp: s.weeklyXp,
+        };
+      },
+
+      weekly: () => {
+        const s = get();
+        // If the season has lapsed (a roll is pending), report zeros so weekly
+        // quests don't show stale progress before checkSeason() runs.
+        const expired =
+          s.seasonStart !== null &&
+          dayDiff(s.seasonStart, todayKey()) >= SEASON_DAYS;
+        return {
+          xp: expired ? 0 : s.weeklyXp,
+          lessons: expired ? 0 : s.weeklyLessons,
+          streak: s.streak,
+        };
+      },
+
+      boss: () => {
+        const s = get();
+        const boss = bossForSeason(s.seasonStart);
+        const elapsed = s.seasonStart ? dayDiff(s.seasonStart, todayKey()) : 0;
+        return {
+          boss,
+          state: bossState(boss, elapsed, s.weeklyXp),
+          claimed: s.claimedBosses.includes(boss.id),
+        };
+      },
+
+      dueReviews: () => {
+        const s = get();
+        const today = todayKey();
+        return s.completed.filter((id) => {
+          const rec = s.reviews[id];
+          if (!rec) return true; // completed but never reviewed → due
+          return isReviewDue(rec, dayDiff(rec.last, today));
+        });
+      },
+
       completeLesson: (id, xp) => {
+        // Roll the weekly league season over first if it expired, so this
+        // completion's XP lands in the correct (possibly new) season.
+        const seasonRoll = rolledSeason(get());
+        if (seasonRoll) set(seasonRoll);
         const state = get();
         const today = todayKey();
 
@@ -223,6 +370,14 @@ export const useGameStore = create<GameState>()(
             dailyXp: baseDailyXp,
             dailyLessons: baseDailyLessons,
             claimedQuests,
+            // Re-completing is a review → promote it to the next Leitner box.
+            reviews: {
+              ...state.reviews,
+              [id]: {
+                box: nextBox(state.reviews[id]?.box ?? 0),
+                last: today,
+              },
+            },
           });
           const unlocked = grantAchievements(get, set);
           get().syncToServer();
@@ -255,6 +410,10 @@ export const useGameStore = create<GameState>()(
           dailyXp: baseDailyXp + xp,
           dailyLessons: baseDailyLessons + 1,
           claimedQuests,
+          weeklyXp: state.weeklyXp + xp,
+          weeklyLessons: state.weeklyLessons + 1,
+          // First completion seeds the spaced-repetition record at box 0.
+          reviews: { ...state.reviews, [id]: { box: 0, last: today } },
           lastLevelUp: leveledUp ? newLevel : state.lastLevelUp,
           activeQuest: state.activeQuest === id ? null : state.activeQuest,
         });
@@ -299,8 +458,72 @@ export const useGameStore = create<GameState>()(
         set((s) => ({
           gold: s.gold + quest.rewardGold,
           xp: s.xp + (quest.rewardXp ?? 0),
+          weeklyXp: s.weeklyXp + (quest.rewardXp ?? 0),
           dailyDay: todayKey(),
           claimedQuests: [...claimed, questId],
+        }));
+        grantAchievements(get, set);
+        get().syncToServer();
+        return true;
+      },
+
+      claimWeeklyQuest: (questId) => {
+        const quest = getWeeklyQuest(questId);
+        if (!quest) return false;
+        if (get().claimedWeeklyQuests.includes(questId)) return false;
+        if (!isQuestComplete(quest, get().weekly())) return false;
+        set((s) => ({
+          gold: s.gold + quest.rewardGold,
+          xp: s.xp + (quest.rewardXp ?? 0),
+          weeklyXp: s.weeklyXp + (quest.rewardXp ?? 0),
+          claimedWeeklyQuests: [...s.claimedWeeklyQuests, questId],
+        }));
+        grantAchievements(get, set);
+        get().syncToServer();
+        return true;
+      },
+
+      claimChainStep: (chainId, stepId) => {
+        const chain = getChain(chainId);
+        const step = getChainStep(chainId, stepId);
+        if (!chain || !step) return false;
+
+        const key = chainStepKey(chainId, stepId);
+        const claimed = get().claimedChainSteps;
+        if (claimed.includes(key)) return false;
+
+        // Steps unlock in order — every earlier step must be claimed first.
+        const idx = chain.steps.findIndex((s) => s.id === stepId);
+        for (let i = 0; i < idx; i++) {
+          if (!claimed.includes(chainStepKey(chainId, chain.steps[i].id))) {
+            return false;
+          }
+        }
+
+        if (!isChainStepComplete(step, buildStats(get()))) return false;
+
+        set((s) => ({
+          gold: s.gold + step.rewardGold,
+          xp: s.xp + (step.rewardXp ?? 0),
+          weeklyXp: s.weeklyXp + (step.rewardXp ?? 0),
+          claimedChainSteps: [...s.claimedChainSteps, key],
+        }));
+        grantAchievements(get, set);
+        get().syncToServer();
+        return true;
+      },
+
+      claimBoss: (bossId) => {
+        const s = get();
+        const boss = bossForSeason(s.seasonStart);
+        if (boss.id !== bossId) return false;
+        if (s.claimedBosses.includes(bossId)) return false;
+        const elapsed = s.seasonStart ? dayDiff(s.seasonStart, todayKey()) : 0;
+        if (!bossState(boss, elapsed, s.weeklyXp).defeated) return false;
+        set((x) => ({
+          gold: x.gold + boss.rewardGold,
+          xp: x.xp + boss.rewardXp,
+          claimedBosses: [...x.claimedBosses, bossId],
         }));
         grantAchievements(get, set);
         get().syncToServer();
@@ -319,6 +542,13 @@ export const useGameStore = create<GameState>()(
           return { ok: true };
         }
 
+        if (item.kind === "cosmetic") {
+          if (get().cosmetics.includes(item.id)) return { ok: false, owned: true };
+          set((s) => ({ gold: s.gold - item.cost, cosmetics: [...s.cosmetics, item.id] }));
+          get().syncToServer();
+          return { ok: true };
+        }
+
         // Mystery chest: pay the cost, win a random gold payout. Vary by current
         // gold so it isn't a static value (Math.random is fine client-side).
         const roll = CHEST_MIN + Math.floor(Math.random() * (CHEST_MAX - CHEST_MIN + 1));
@@ -327,8 +557,32 @@ export const useGameStore = create<GameState>()(
         return { ok: true, chestGold: roll };
       },
 
+      checkSeason: () => {
+        const roll = rolledSeason(get());
+        if (roll) {
+          set(roll);
+          get().syncToServer();
+        }
+      },
+
+      equipCosmetic: (itemId) => {
+        const item = getShopItem(itemId);
+        if (!item || item.kind !== "cosmetic" || !item.slot) return;
+        if (!get().cosmetics.includes(itemId)) return; // must own it
+        const slot = item.slot;
+        set((s) => ({
+          equipped: {
+            ...s.equipped,
+            // Toggle off if this exact value is already equipped.
+            [slot]: s.equipped[slot] === item.value ? null : item.value ?? null,
+          },
+        }));
+        get().syncToServer();
+      },
+
       clearLevelUp: () => set({ lastLevelUp: null }),
       clearRecentAchievement: () => set({ recentAchievement: null }),
+      clearSeasonResult: () => set({ lastSeasonResult: null }),
 
       reset: () => {
         set({ ...INITIAL });
@@ -355,6 +609,9 @@ export const useGameStore = create<GameState>()(
             completed: s.completed,
             achievements: s.achievements,
             active_quest: s.activeQuest,
+            weekly_xp: s.weeklyXp,
+            league_tier: s.leagueTier,
+            season_start: s.seasonStart,
           });
           set({ syncStatus: "idle" });
         } catch {
@@ -404,6 +661,17 @@ export const useGameStore = create<GameState>()(
         dailyLessons: s.dailyLessons,
         claimedQuests: s.claimedQuests,
         activeQuest: s.activeQuest,
+        weeklyXp: s.weeklyXp,
+        weeklyLessons: s.weeklyLessons,
+        seasonStart: s.seasonStart,
+        leagueTier: s.leagueTier,
+        lastSeasonResult: s.lastSeasonResult,
+        claimedWeeklyQuests: s.claimedWeeklyQuests,
+        claimedChainSteps: s.claimedChainSteps,
+        claimedBosses: s.claimedBosses,
+        reviews: s.reviews,
+        cosmetics: s.cosmetics,
+        equipped: s.equipped,
       }),
       merge: (persisted, current) => ({
         ...current,
@@ -422,14 +690,7 @@ function grantAchievements(
   set: (partial: Partial<GameState>) => void,
 ): string[] {
   const s = get();
-  const stats: PlayerStats = {
-    xp: s.xp,
-    level: levelFromXp(s.xp).level,
-    gold: s.gold,
-    streak: s.streak,
-    completedCount: s.completed.length,
-    completedIds: s.completed,
-  };
+  const stats = buildStats(s);
 
   const fresh = newlyUnlocked(stats, s.achievements);
   if (fresh.length === 0) return [];
@@ -446,6 +707,7 @@ function grantAchievements(
     achievements: [...s.achievements, ...fresh],
     xp: s.xp + bonusXp,
     gold: s.gold + bonusGold,
+    weeklyXp: s.weeklyXp + bonusXp,
     recentAchievement: fresh[fresh.length - 1],
   });
 
