@@ -5,7 +5,7 @@ import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { motion } from "framer-motion";
-import { Play, RotateCcw, Eye, ArrowRight, CheckCircle2, Loader2, Lock } from "lucide-react";
+import { Play, RotateCcw, Lightbulb, ArrowRight, CheckCircle2, Loader2, Lock } from "lucide-react";
 import type { Lesson, Module } from "@/lib/curriculum/types";
 import { lessonId } from "@/lib/curriculum";
 import { lessonLanguage, langMeta } from "@/lib/curriculum/lang";
@@ -40,11 +40,9 @@ export function LessonView({
   const language = lessonLanguage(lesson, module);
   const lang = langMeta(language);
   const starterCode = lesson.starterCode ?? "";
-  const solution = lesson.solution ?? "";
   const [code, setCode] = useState(starterCode);
   const [outcome, setOutcome] = useState<RunOutcome | null>(null);
   const [running, setRunning] = useState(false);
-  const [showSolution, setShowSolution] = useState(false);
   const [hintsShown, setHintsShown] = useState(0);
   const hints = lesson.hints ?? [];
   const blocks = lesson.blocks ?? [];
@@ -52,6 +50,16 @@ export function LessonView({
   // The editor hands back an insert fn on mount; the block tray calls it to drop
   // a snippet at the cursor on tap (drag-and-drop is handled inside the editor).
   const insertRef = useRef<((text: string) => void) | null>(null);
+
+  // Drop the next hint straight into the editor as a comment line, so guidance
+  // lives right where the learner is typing instead of off in a side panel.
+  function dropHint() {
+    const hint = hints[hintsShown];
+    if (!hint) return;
+    const { open, close } = lang.comment;
+    insertRef.current?.(`${open} 💡 ${hint}${close ?? ""}\n`);
+    setHintsShown((n) => n + 1);
+  }
 
   const completeLesson = useGameStore((s) => s.completeLesson);
   const alreadyDone = useGameStore((s) => s.completed.includes(id));
@@ -134,37 +142,6 @@ export function LessonView({
           ⚡ {lesson.xp} XP
         </div>
 
-        {/* Progressive hints — free, no AI needed */}
-        {hints.length > 0 && (
-          <div className="mt-5 border-t border-line pt-4">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-              Hints
-            </p>
-            <div className="space-y-2">
-              {hints.slice(0, hintsShown).map((h, i) => (
-                <div
-                  key={i}
-                  className="rounded-lg border border-line bg-canvas/40 px-3 py-2 text-sm text-gray-300"
-                >
-                  <span className="mr-1.5 font-semibold text-gold">{i + 1}.</span>
-                  {h}
-                </div>
-              ))}
-            </div>
-            {hintsShown < hints.length && (
-              <button
-                onClick={() => setHintsShown((n) => n + 1)}
-                className="btn-ghost mt-2 text-xs"
-              >
-                💡 {hintsShown === 0 ? "Show a hint" : "Show another hint"}
-                <span className="text-gray-500">
-                  ({hints.length - hintsShown} left)
-                </span>
-              </button>
-            )}
-          </div>
-        )}
-
         {/* Beginner code blocks — drag or tap them into the editor */}
         {blocks.length > 0 && (
           <BlockTray
@@ -189,21 +166,24 @@ export function LessonView({
                 onClick={() => {
                   setCode(starterCode);
                   setOutcome(null);
-                  setShowSolution(false);
+                  setHintsShown(0);
                 }}
                 className="flex items-center gap-1 text-xs text-gray-400 hover:text-white"
               >
                 <RotateCcw size={13} /> Reset
               </button>
-              <button
-                onClick={() => {
-                  setShowSolution((s) => !s);
-                  if (!showSolution) setCode(solution);
-                }}
-                className="flex items-center gap-1 text-xs text-gray-400 hover:text-white"
-              >
-                <Eye size={13} /> {showSolution ? "Hide" : "Solution"}
-              </button>
+              {hints.length > 0 && (
+                <button
+                  onClick={dropHint}
+                  disabled={hintsShown >= hints.length}
+                  className="flex items-center gap-1 text-xs text-gold hover:text-gold/80 disabled:cursor-default disabled:text-gray-600 disabled:hover:text-gray-600"
+                >
+                  <Lightbulb size={13} />
+                  {hintsShown >= hints.length
+                    ? "No more hints"
+                    : `Hint (${hints.length - hintsShown})`}
+                </button>
+              )}
             </div>
           </div>
           <div className="h-[340px]">

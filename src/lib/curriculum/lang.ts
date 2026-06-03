@@ -11,6 +11,8 @@ export type LangMeta = {
   filename: string;
   /** Where the code runs, shown as a small badge near the editor. */
   runtime: string;
+  /** Line-comment delimiters, used to drop hints into the editor as comments. */
+  comment: { open: string; close?: string };
 };
 
 export const LANGUAGES: Record<LessonLanguage, LangMeta> = {
@@ -19,30 +21,35 @@ export const LANGUAGES: Record<LessonLanguage, LangMeta> = {
     monaco: "javascript",
     filename: "solution.js",
     runtime: "Runs in your browser",
+    comment: { open: "//" },
   },
   ts: {
     label: "TypeScript",
     monaco: "typescript",
     filename: "solution.ts",
     runtime: "Transpiled & run in your browser",
+    comment: { open: "//" },
   },
   py: {
     label: "Python",
     monaco: "python",
     filename: "solution.py",
     runtime: "Runs in your browser (Pyodide)",
+    comment: { open: "#" },
   },
   sql: {
     label: "SQL",
     monaco: "sql",
     filename: "query.sql",
     runtime: "Runs in your browser (SQLite/WASM)",
+    comment: { open: "--" },
   },
   html: {
     label: "HTML & CSS",
     monaco: "html",
     filename: "index.html",
     runtime: "Live preview in your browser",
+    comment: { open: "<!--", close: " -->" },
   },
 };
 
