@@ -45,19 +45,25 @@ export function LessonView({
   const [running, setRunning] = useState(false);
   const [hintsShown, setHintsShown] = useState(0);
   const hints = lesson.hints ?? [];
+  const hintCode = lesson.hintCode ?? [];
   const blocks = lesson.blocks ?? [];
 
   // The editor hands back an insert fn on mount; the block tray calls it to drop
   // a snippet at the cursor on tap (drag-and-drop is handled inside the editor).
   const insertRef = useRef<((text: string) => void) | null>(null);
 
-  // Drop the next hint straight into the editor as a comment line, so guidance
-  // lives right where the learner is typing instead of off in a side panel.
   function dropHint() {
     const hint = hints[hintsShown];
     if (!hint) return;
-    const { open, close } = lang.comment;
-    insertRef.current?.(`${open} 💡 ${hint}${close ?? ""}\n`);
+    const partial = hintCode[hintsShown];
+    if (partial !== undefined) {
+      // Fill in the partial solution directly, like the solution button does.
+      setCode(partial);
+    } else {
+      // No code provided for this hint — fall back to a comment in the editor.
+      const { open, close } = lang.comment;
+      insertRef.current?.(`${open} 💡 ${hint}${close ?? ""}\n`);
+    }
     setHintsShown((n) => n + 1);
   }
 
