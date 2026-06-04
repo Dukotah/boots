@@ -81,6 +81,26 @@ export default function Dashboard() {
         <DailyChallenge />
       </div>
 
+      {/* Quick links to new features */}
+      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {[
+          { href: "/guilds", icon: "🛡️", label: "Guilds", desc: "Team competition" },
+          { href: "/events", icon: "🎉", label: "Events", desc: "Seasonal challenges" },
+          { href: "/achievements", icon: "🏆", label: "Achievements", desc: "50+ badges" },
+          { href: "/leagues", icon: "⚔️", label: "Leagues", desc: "Weekly ranking" },
+        ].map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className="card flex flex-col items-center gap-1 text-center hover:border-accent/60 py-4"
+          >
+            <span className="text-2xl">{item.icon}</span>
+            <p className="text-sm font-semibold text-white">{item.label}</p>
+            <p className="text-[11px] text-gray-500">{item.desc}</p>
+          </Link>
+        ))}
+      </div>
+
       {/* Daily quests */}
       <div className="mt-8">
         <DailyQuests />

@@ -54,6 +54,8 @@ import { buildYourFirstGame } from "./build-your-first-game";
 import { internetForKids } from "./internet-for-kids";
 import { aiSafetyKids } from "./ai-safety-kids";
 import { digitalCitizenship } from "./digital-citizenship";
+import { systemDesign } from "./system-design";
+import { portfolioProjects } from "./portfolio-projects";
 
 // The whole curriculum. Add a module here and it shows up everywhere.
 // Order defines the Campaign Map progression (sequential unlock) — a difficulty ramp.
@@ -92,6 +94,8 @@ export const MODULES: Module[] = [
   twoPointers,
   bitManipulation,
   interview,
+  systemDesign,
+  portfolioProjects,
   // Python track
   python,
   pythonData,

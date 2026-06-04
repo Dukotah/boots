@@ -143,7 +143,10 @@ export type GameState = {
   reviews: Record<string, ReviewRecord>; // lessonId → Leitner review record
   // ── cosmetics (decorative; never power) ──
   cosmetics: string[]; // owned cosmetic item ids
-  equipped: { flair: string | null; title: string | null };
+  equipped: { flair: string | null; title: string | null; banner: string | null; border: string | null };
+  // ── guilds ──
+  guildId: string | null;
+  guildName: string | null;
   // ── transient UI signals (not persisted) ──
   lastLevelUp: number | null;
   recentAchievement: string | null;
@@ -183,6 +186,10 @@ export type GameState = {
   buyItem: (itemId: string) => { ok: boolean; chestGold?: number; owned?: boolean };
   /** Equip an owned cosmetic into its slot (toggles off if already equipped). */
   equipCosmetic: (itemId: string) => void;
+  /** Join a guild by id and name. */
+  joinGuild: (id: string, name: string) => void;
+  /** Leave the current guild. */
+  leaveGuild: () => void;
   /** Resolve + roll the league season if it has expired (idempotent; call on mount). */
   checkSeason: () => void;
   clearLevelUp: () => void;
@@ -221,7 +228,9 @@ const INITIAL = {
   claimedBosses: [] as string[],
   reviews: {} as Record<string, ReviewRecord>,
   cosmetics: [] as string[],
-  equipped: { flair: null as string | null, title: null as string | null },
+  equipped: { flair: null as string | null, title: null as string | null, banner: null as string | null, border: null as string | null },
+  guildId: null as string | null,
+  guildName: null as string | null,
   lastLevelUp: null as number | null,
   recentAchievement: null as string | null,
 };
@@ -580,6 +589,16 @@ export const useGameStore = create<GameState>()(
         get().syncToServer();
       },
 
+      joinGuild: (id, name) => {
+        set({ guildId: id, guildName: name });
+        get().syncToServer();
+      },
+
+      leaveGuild: () => {
+        set({ guildId: null, guildName: null });
+        get().syncToServer();
+      },
+
       clearLevelUp: () => set({ lastLevelUp: null }),
       clearRecentAchievement: () => set({ recentAchievement: null }),
       clearSeasonResult: () => set({ lastSeasonResult: null }),
@@ -672,6 +691,8 @@ export const useGameStore = create<GameState>()(
         reviews: s.reviews,
         cosmetics: s.cosmetics,
         equipped: s.equipped,
+        guildId: s.guildId,
+        guildName: s.guildName,
       }),
       merge: (persisted, current) => ({
         ...current,
