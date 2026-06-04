@@ -69,6 +69,12 @@ export function Navbar() {
             Blog
           </Link>
           <Link
+            href="/leaderboard"
+            className="hidden text-sm font-medium text-gray-300 hover:text-white sm:inline"
+          >
+            Leaderboard
+          </Link>
+          <Link
             href="/guilds"
             className="hidden text-sm font-medium text-gray-300 hover:text-white sm:inline"
           >

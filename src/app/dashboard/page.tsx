@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Flame, Zap, Trophy, Target, RotateCcw } from "lucide-react";
+import { Flame, Zap, Trophy, Target, RotateCcw, Briefcase } from "lucide-react";
 import { useGameStore } from "@/store/useGameStore";
 import { levelFromXp } from "@/lib/levels";
 import { MODULES, totalLessons, totalXpAvailable, lessonId } from "@/lib/curriculum";
+import { deriveBreadth } from "@/lib/progress";
 import { XPBar } from "@/components/XPBar";
 import { DailyQuests } from "@/components/features/quests/DailyQuests";
 import { DailyChallenge } from "@/components/features/retention/DailyChallenge";
@@ -24,6 +25,9 @@ export default function Dashboard() {
   const info = levelFromXp(xp);
   const doneCount = completed.length;
   const pct = Math.round((doneCount / totalLessons()) * 100);
+  const CAREER_SLUGS = ["javascript","python","sql","algorithms","data-structures","interview","system-design","portfolio-projects","git-github","typescript","ai-llms","web-security"];
+  const { completedModules } = deriveBreadth(completed);
+  const careerPct = Math.round((CAREER_SLUGS.filter(s => completedModules.includes(s)).length / CAREER_SLUGS.length) * 100);
 
   // Find the first unfinished lesson to "Continue".
   let continueHref = "/learn";
@@ -69,6 +73,11 @@ export default function Dashboard() {
           </p>
           <p className="text-sm text-gray-400">current rank</p>
         </div>
+        <Link href="/u/you" className="card hover:border-accent/60 transition-colors">
+          <Briefcase className="mb-2 text-accent-soft" />
+          <p className="text-3xl font-bold text-white">{careerPct}%</p>
+          <p className="text-sm text-gray-400">career ready</p>
+        </Link>
       </div>
 
       {/* Level progress */}
@@ -82,12 +91,14 @@ export default function Dashboard() {
       </div>
 
       {/* Quick links to new features */}
-      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         {[
           { href: "/guilds", icon: "🛡️", label: "Guilds", desc: "Team competition" },
           { href: "/events", icon: "🎉", label: "Events", desc: "Seasonal challenges" },
-          { href: "/achievements", icon: "🏆", label: "Achievements", desc: "50+ badges" },
+          { href: "/leaderboard", icon: "🏅", label: "Leaderboard", desc: "Global rankings" },
+          { href: "/achievements", icon: "🏆", label: "Achievements", desc: "55+ badges" },
           { href: "/leagues", icon: "⚔️", label: "Leagues", desc: "Weekly ranking" },
+          { href: "/paths", icon: "🎯", label: "Career Paths", desc: "Job-ready tracks" },
         ].map((item) => (
           <Link
             key={item.href}

@@ -578,7 +578,7 @@ export const useGameStore = create<GameState>()(
         const item = getShopItem(itemId);
         if (!item || item.kind !== "cosmetic" || !item.slot) return;
         if (!get().cosmetics.includes(itemId)) return; // must own it
-        const slot = item.slot;
+        const slot = item.slot as "flair" | "title" | "banner" | "border";
         set((s) => ({
           equipped: {
             ...s.equipped,

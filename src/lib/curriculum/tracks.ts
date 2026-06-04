@@ -19,6 +19,7 @@ export type TrackId =
   | "sql"
   | "ai"
   | "cybersecurity"
+  | "career"
   | "kids";
 
 export type Track = {
@@ -56,6 +57,13 @@ export const TRACKS: Track[] = [
     blurb: "Algorithms, data structures, and the patterns that land the offer.",
     emoji: "🎯",
     modules: ["algorithms", "data-structures", "dynamic-programming", "interview"],
+  },
+  {
+    id: "career",
+    label: "Career & Portfolio",
+    blurb: "System design, real projects, and everything that makes you hirable.",
+    emoji: "💼",
+    modules: ["system-design", "portfolio-projects", "git-github", "two-pointers", "bit-manipulation"],
   },
   {
     id: "python",

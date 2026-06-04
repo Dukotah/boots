@@ -360,12 +360,15 @@ function HowItWorks() {
 
 function Features() {
   const feats = [
-    { icon: Zap, title: "XP & ranks", body: "Climb from Intern to Archmage on a real RPG curve." },
-    { icon: Flame, title: "Streaks", body: "Daily practice with freezes that forgive an off day." },
-    { icon: Swords, title: "Leagues", body: "Compete fairly with learners who started when you did." },
-    { icon: Bot, title: "AI tutor", body: "Cantrip mentors you Socratically — it won't just hand over the answer." },
-    { icon: Trophy, title: "Path certificates", body: "Finish a path and earn a shareable certificate for the role." },
-    { icon: BookOpen, title: "Multi-language", body: "JavaScript, Python, SQL, AI/LLMs — whatever your path needs." },
+    { icon: Zap, title: "XP & Ranks", body: "Climb from Intern to Archmage on a real RPG curve. Earn gold every lesson." },
+    { icon: Flame, title: "Streaks & Freezes", body: "Daily practice habits with streak freezes that forgive an off day." },
+    { icon: Swords, title: "Leagues & Boss Battles", body: "Weekly competitive seasons with promotion/relegation — and a boss to defeat together." },
+    { icon: Trophy, title: "55+ Achievements", body: "Career, mastery, streaks, speed, and secret badges. A trophy wall worth putting on LinkedIn." },
+    { icon: Bot, title: "Guilds", body: "Join a team, share weekly XP goals, and compete on the guild leaderboard together." },
+    { icon: Sparkles, title: "Seasonal Events", body: "Time-limited events with exclusive cosmetics and titles you can only earn during the window." },
+    { icon: Briefcase, title: "Resume-Quality Profiles", body: "A public profile at /u/yourname with career readiness %, completed courses, and trophy wall." },
+    { icon: BookOpen, title: "Job-Ready Curriculum", body: "System Design, Portfolio Projects, Interview Prep — courses that matter to employers." },
+    { icon: Bot, title: "AI Tutor", body: "Cantrip mentors you Socratically — it won't just hand over the answer." },
   ];
   return (
     <section className="py-12">
