@@ -5,22 +5,11 @@ import Link from "next/link";
 import { Award, Share2, Check, Printer, Lock, ArrowRight } from "lucide-react";
 import { getPath, pathModules, pathStats } from "@/lib/paths";
 import { lessonId } from "@/lib/curriculum";
+import { certVerifyCode } from "@/lib/career";
 import { useGameStore } from "@/store/useGameStore";
 import { useMounted } from "@/hooks/useMounted";
 import { MascotBoots } from "@/components/MascotBoots";
 import { SITE } from "@/lib/site";
-
-// A short, deterministic verification code from the path + learner name. Not
-// cryptographic — it just gives the certificate a stable, official-looking id.
-// (Truly verifiable certs come with server-side progress; on the roadmap.)
-function verifyCode(slug: string, name: string): string {
-  const input = `${slug}::${name.toLowerCase()}`;
-  let h = 0;
-  for (let i = 0; i < input.length; i++) {
-    h = (h * 31 + input.charCodeAt(i)) >>> 0;
-  }
-  return "BOOTS-" + h.toString(36).toUpperCase().padStart(6, "0").slice(0, 6);
-}
 
 export function Certificate({ slug }: { slug: string }) {
   const path = getPath(slug);
@@ -54,7 +43,7 @@ export function Certificate({ slug }: { slug: string }) {
 
   const handle = user?.email?.split("@")[0];
   const displayName = name.trim() || handle || "Boots Learner";
-  const code = verifyCode(path.slug, displayName);
+  const code = certVerifyCode(path.slug, displayName);
   const date = new Date().toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",

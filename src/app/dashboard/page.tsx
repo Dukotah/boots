@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Flame, Zap, Trophy, Target, RotateCcw } from "lucide-react";
+import { Flame, Zap, Trophy, Target, RotateCcw, Briefcase, ArrowRight } from "lucide-react";
 import { useGameStore } from "@/store/useGameStore";
 import { levelFromXp } from "@/lib/levels";
 import { MODULES, totalLessons, totalXpAvailable, lessonId } from "@/lib/curriculum";
@@ -75,6 +75,26 @@ export default function Dashboard() {
       <div className="card mt-4">
         <XPBar info={info} />
       </div>
+
+      {/* Career Pack CTA */}
+      <Link
+        href="/career"
+        className="group mt-4 flex items-center gap-4 rounded-2xl border border-accent/30 bg-accent/5 p-4 transition hover:border-accent/60"
+      >
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent/15 text-accent-soft">
+          <Briefcase size={22} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="font-semibold text-white">Career Pack</p>
+          <p className="text-sm text-gray-400">
+            See your job-readiness score, certificates, and export a résumé.
+          </p>
+        </div>
+        <ArrowRight
+          size={18}
+          className="shrink-0 text-accent-soft transition group-hover:translate-x-0.5"
+        />
+      </Link>
 
       {/* Challenge of the day */}
       <div className="mt-4">
