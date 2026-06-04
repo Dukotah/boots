@@ -62,3 +62,13 @@ body {
 .prose-lesson strong {
   @apply font-semibold text-white;
 }
+
+/* Monaco hint highlight — fades via opacity transition in the JS timer */
+.hint-highlight-line {
+  background: rgba(234, 179, 8, 0.12) !important;
+  border-left: 2px solid rgba(234, 179, 8, 0.6);
+}
+.hint-highlight-gutter {
+  background: rgba(234, 179, 8, 0.4);
+  width: 3px !important;
+}
