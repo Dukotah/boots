@@ -62,6 +62,11 @@ export type Lesson = {
   blocks?: string[];
   // Optional progressive hints, revealed one at a time (free, no AI needed).
   hints?: string[];
+  // Optional partial code states paired with hints — each entry is the editor
+  // code after that hint is applied (like a partial solution). When present for
+  // hint[i], clicking Hint sets the editor to hintCode[i] instead of inserting
+  // a comment. Entries can be omitted (undefined) to fall back to comment mode.
+  hintCode?: (string | undefined)[];
   // Optional Markdown shown after all tests pass — why the solution works.
   explanation?: string;
 };

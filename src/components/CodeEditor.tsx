@@ -9,30 +9,30 @@ export function CodeEditor({
   onChange,
   language = "javascript",
   registerInsert,
+  registerHighlight,
 }: {
   value: string;
   onChange: (value: string) => void;
   language?: string;
-  // Called once the editor mounts with a function that inserts text at the
-  // cursor. Lets a parent (e.g. the code-block tray) drop snippets in on tap.
   registerInsert?: (insert: (text: string) => void) => void;
+  // Called once with a function that highlights a line range for a moment.
+  registerHighlight?: (highlight: (startLine: number, endLine: number) => void) => void;
 }) {
   const editorRef = useRef<MonacoEditor.IStandaloneCodeEditor | null>(null);
   const monacoRef = useRef<typeof import("monaco-editor") | null>(null);
+  const lastPosRef = useRef<IPosition | null>(null);
+  const decorationsRef = useRef<string[]>([]);
+  const clearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Respect users who prefer reduced motion (photosensitivity, focus).
   const reduced =
     typeof window !== "undefined" &&
     window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
-  // Insert `text` at `position` (or the current cursor if omitted). Goes through
-  // executeEdits so it's a single undoable step and fires onChange to keep React
-  // state in sync — no separate setValue needed.
   function insertText(text: string, position?: IPosition) {
     const editor = editorRef.current;
     const monaco = monacoRef.current;
     if (!editor || !monaco) return;
-    const pos = position ?? editor.getPosition();
+    const pos = position ?? lastPosRef.current ?? editor.getPosition();
     if (!pos) return;
     const range = new monaco.Range(
       pos.lineNumber,
@@ -47,9 +47,37 @@ export function CodeEditor({
     editor.focus();
   }
 
+  function highlightLines(startLine: number, endLine: number) {
+    const editor = editorRef.current;
+    const monaco = monacoRef.current;
+    if (!editor || !monaco) return;
+
+    if (clearTimerRef.current) clearTimeout(clearTimerRef.current);
+
+    decorationsRef.current = editor.deltaDecorations(decorationsRef.current, [
+      {
+        range: new monaco.Range(startLine, 1, endLine, 1),
+        options: {
+          isWholeLine: true,
+          className: "hint-highlight-line",
+          linesDecorationsClassName: "hint-highlight-gutter",
+        },
+      },
+    ]);
+
+    editor.revealLinesInCenterIfOutsideViewport(startLine, endLine);
+
+    clearTimerRef.current = setTimeout(() => {
+      if (editorRef.current) {
+        decorationsRef.current = editorRef.current.deltaDecorations(
+          decorationsRef.current,
+          [],
+        );
+      }
+    }, 3000);
+  }
+
   return (
-    // Wrapper owns the drop target so blocks dragged from the tray land in the
-    // editor. dragover must preventDefault for a drop event to fire at all.
     <div
       className="h-full"
       onDragOver={(e) => {
@@ -61,8 +89,6 @@ export function CodeEditor({
         if (!text) return;
         e.preventDefault();
         const editor = editorRef.current;
-        // Drop the snippet exactly where the cursor was released, falling back to
-        // the current cursor if the point isn't over editable text.
         const target = editor?.getTargetAtClientPoint(e.clientX, e.clientY);
         insertText(text, target?.position ?? undefined);
       }}
@@ -76,7 +102,11 @@ export function CodeEditor({
         onMount={(editor, monaco) => {
           editorRef.current = editor;
           monacoRef.current = monaco;
+          editor.onDidChangeCursorPosition((e) => {
+            lastPosRef.current = e.position;
+          });
           registerInsert?.((text) => insertText(text));
+          registerHighlight?.((s, e) => highlightLines(s, e));
         }}
         options={{
           fontSize: 14,

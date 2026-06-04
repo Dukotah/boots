@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -44,20 +44,46 @@ export function LessonView({
   const [outcome, setOutcome] = useState<RunOutcome | null>(null);
   const [running, setRunning] = useState(false);
   const [hintsShown, setHintsShown] = useState(0);
+  const [activeHint, setActiveHint] = useState<string | null>(null);
+  const [activeHintStep, setActiveHintStep] = useState(0);
   const hints = lesson.hints ?? [];
+  const hintCode = lesson.hintCode ?? [];
   const blocks = lesson.blocks ?? [];
 
-  // The editor hands back an insert fn on mount; the block tray calls it to drop
-  // a snippet at the cursor on tap (drag-and-drop is handled inside the editor).
   const insertRef = useRef<((text: string) => void) | null>(null);
+  const highlightRef = useRef<((startLine: number, endLine: number) => void) | null>(null);
 
-  // Drop the next hint straight into the editor as a comment line, so guidance
-  // lives right where the learner is typing instead of off in a side panel.
   function dropHint() {
     const hint = hints[hintsShown];
     if (!hint) return;
-    const { open, close } = lang.comment;
-    insertRef.current?.(`${open} 💡 ${hint}${close ?? ""}\n`);
+    const partial = hintCode[hintsShown];
+    if (partial !== undefined) {
+      // Find which lines changed so we can highlight them after React re-renders.
+      const oldLines = code.split("\n");
+      const newLines = partial.split("\n");
+      let firstChanged = -1;
+      let lastChanged = -1;
+      newLines.forEach((line, i) => {
+        if (line !== oldLines[i]) {
+          if (firstChanged === -1) firstChanged = i + 1;
+          lastChanged = i + 1;
+        }
+      });
+
+      setCode(partial);
+      setActiveHint(hint);
+      setActiveHintStep(hintsShown + 1);
+
+      if (firstChanged !== -1) {
+        // Defer highlight until after Monaco picks up the new value.
+        setTimeout(() => highlightRef.current?.(firstChanged, lastChanged), 50);
+      }
+    } else {
+      const { open, close } = lang.comment;
+      insertRef.current?.(`${open} 💡 ${hint}${close ?? ""}\n`);
+      setActiveHint(hint);
+      setActiveHintStep(hintsShown + 1);
+    }
     setHintsShown((n) => n + 1);
   }
 
@@ -94,6 +120,11 @@ export function LessonView({
     () => outcome !== null && outcome.results.every((r) => r.pass),
     [outcome],
   );
+
+  // Dismiss the hint card once all tests pass — they've got it.
+  useEffect(() => {
+    if (allPass) setActiveHint(null);
+  }, [allPass]);
 
   async function handleRun() {
     if (gated) return; // paywalled — run is disabled
@@ -167,6 +198,8 @@ export function LessonView({
                   setCode(starterCode);
                   setOutcome(null);
                   setHintsShown(0);
+                  setActiveHint(null);
+                  setActiveHintStep(0);
                 }}
                 className="flex items-center gap-1 text-xs text-gray-400 hover:text-white"
               >
@@ -186,6 +219,29 @@ export function LessonView({
               )}
             </div>
           </div>
+          {activeHint && (
+            <motion.div
+              key={activeHintStep}
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-start gap-2 border-b border-line bg-gold/10 px-3 py-2"
+            >
+              <Lightbulb size={14} className="mt-0.5 shrink-0 text-gold" />
+              <span className="flex-1 text-xs text-gold/90">
+                <span className="mr-1.5 font-semibold text-gold">
+                  Hint {activeHintStep} of {hints.length}:
+                </span>
+                {activeHint}
+              </span>
+              <button
+                onClick={() => setActiveHint(null)}
+                className="shrink-0 text-xs text-gray-500 hover:text-white"
+                aria-label="Dismiss hint"
+              >
+                ✕
+              </button>
+            </motion.div>
+          )}
           <div className="h-[340px]">
             <CodeEditor
               value={code}
@@ -193,6 +249,9 @@ export function LessonView({
               language={lang.monaco}
               registerInsert={(fn) => {
                 insertRef.current = fn;
+              }}
+              registerHighlight={(fn) => {
+                highlightRef.current = fn;
               }}
             />
           </div>

@@ -56,6 +56,10 @@ end. So \`hello("Sam")\` gives back \`"Hello, Sam!"\`.`,
         'Glue words together with `+`: `"Hello, " + name + "!"`.',
         "Don't forget the `!` at the very end. 🎉",
       ],
+      hintCode: [
+        `function hello(name) {\n  return "Hello, " + name;\n}\n`,
+        `function hello(name) {\n  return "Hello, " + name + "!";\n}\n`,
+      ],
       explanation:
         'Yes! 🎉 The `+` glues the words and the name into one greeting. You just made a function that can say hi to anybody!',
     },
@@ -102,6 +106,10 @@ return \`"stop"\`.`,
         'Check it with `if (color === "green")`. The `===` means "is exactly".',
         "Everything that isn't green should `return \"stop\"` in the `else`.",
       ],
+      hintCode: [
+        `function light(color) {\n  if (color === "green") {\n    \n  }\n}\n`,
+        `function light(color) {\n  if (color === "green") {\n    return "go";\n  } else {\n    return "stop";\n  }\n}\n`,
+      ],
       explanation:
         "🚦 Green means go, everything else means stop! That's an `if/else` — the way code chooses between two paths.",
     },
@@ -139,6 +147,10 @@ odd.`,
       hints: [
         "`n % 2` is 0 when the number splits evenly.",
         "`n % 2 === 0` is already a true/false answer — just return it!",
+      ],
+      hintCode: [
+        `function isEven(n) {\n  return n % 2;\n}\n`,
+        `function isEven(n) {\n  return n % 2 === 0;\n}\n`,
       ],
       explanation:
         "🍬 Sharing made easy! `n % 2 === 0` checks if there's nothing left over, which means the candy splits evenly. Even!",
@@ -188,6 +200,10 @@ space after each). So \`jumps(2)\` → \`"jump jump "\`.`,
         "The loop runs `n` times: `for (let i = 0; i < n; i++)`.",
         'Each time, add to the word: `moves = moves + "jump ";`.',
       ],
+      hintCode: [
+        `function jumps(n) {\n  let moves = "";\n  for (let i = 0; i < n; i++) {\n    \n  }\n  return moves;\n}\n`,
+        `function jumps(n) {\n  let moves = "";\n  for (let i = 0; i < n; i++) {\n    moves = moves + "jump ";\n  }\n  return moves;\n}\n`,
+      ],
       explanation:
         "🦘 Boing! The loop added `\"jump \"` again and again until it ran `n` times. That's how computers repeat things super fast!",
     },
@@ -236,6 +252,10 @@ Write \`addUpTo(n)\` that returns the sum of all numbers from 1 to \`n\`. So
         "Start the loop at 1 and go while `i <= n`.",
         "Add each `i` onto `total`: `total = total + i;`.",
       ],
+      hintCode: [
+        `function addUpTo(n) {\n  let total = 0;\n  for (let i = 1; i <= n; i++) {\n    \n  }\n  return total;\n}\n`,
+        `function addUpTo(n) {\n  let total = 0;\n  for (let i = 1; i <= n; i++) {\n    total = total + i;\n  }\n  return total;\n}\n`,
+      ],
       explanation:
         "🔢 Awesome counting! The loop visited every number from 1 to `n` and kept a running `total`. That's a super useful trick.",
     },
@@ -272,6 +292,10 @@ the same, returning that number is fine.`,
       hints: [
         "`Math.max(a, b)` gives back whichever number is bigger.",
         "Or use an `if`: `if (a > b) return a; else return b;`.",
+      ],
+      hintCode: [
+        `function taller(a, b) {\n  return Math.max(a, b);\n}\n`,
+        undefined,
       ],
       explanation:
         "📏 Great compare! `Math.max` looks at both numbers and hands back the bigger one. Computers love comparing — it's how games decide who wins!",
