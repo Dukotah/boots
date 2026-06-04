@@ -91,6 +91,7 @@ export const TRACKS: Track[] = [
       "ai-agents",
       "ai-embeddings",
       "ai-ethics",
+      "ai-security",
     ],
   },
   {

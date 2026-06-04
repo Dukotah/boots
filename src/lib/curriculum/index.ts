@@ -56,6 +56,7 @@ import { aiSafetyKids } from "./ai-safety-kids";
 import { digitalCitizenship } from "./digital-citizenship";
 import { systemDesign } from "./system-design";
 import { portfolioProjects } from "./portfolio-projects";
+import { aiSecurity } from "./ai-security";
 
 // The whole curriculum. Add a module here and it shows up everywhere.
 // Order defines the Campaign Map progression (sequential unlock) — a difficulty ramp.
@@ -117,6 +118,7 @@ export const MODULES: Module[] = [
   aiAgents,
   aiEmbeddings,
   aiEthics,
+  aiSecurity,
   // Cybersecurity track
   hackerMindset,
   passwordsAuth,

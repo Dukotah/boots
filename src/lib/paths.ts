@@ -137,6 +137,26 @@ export const PATHS: Path[] = [
     moduleSlugs: ["javascript", "async", "web-apis", "ai-llms"],
   },
   {
+    slug: "ai-security",
+    title: "AI Security",
+    role: "AI Security Engineer",
+    tagline: "Attack and defend AI systems.",
+    description:
+      "Learn how LLMs break and how to defend them. Master OWASP LLM Top 10, prompt injection, jailbreaking, data poisoning, MITRE ATLAS, and hands-on AI red teaming — the skills the industry is hiring for right now.",
+    emoji: "🔐",
+    gradient: "from-rose-500/20 to-orange-500/10",
+    difficulty: "Intermediate",
+    outcomes: [
+      "Understand the OWASP LLM Top 10 attack classes",
+      "Detect and defend against prompt injection and jailbreaking",
+      "Recognize training-time attacks: data poisoning, backdoors, supply chain",
+      "Apply MITRE ATLAS to threat model AI systems",
+      "Run a structured AI red team exercise and report findings",
+    ],
+    keywords: ["ai security", "llm security", "prompt injection", "ai red teaming", "owasp llm"],
+    moduleSlugs: ["ai-llms", "prompt-engineering", "ai-security", "web-security"],
+  },
+  {
     slug: "python",
     title: "Python Developer",
     role: "Python Developer",
