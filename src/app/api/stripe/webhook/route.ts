@@ -1,13 +1,11 @@
 // Stripe webhook. Verifies the signature (HMAC-SHA256, no SDK) and reacts to
-// subscription lifecycle events by flipping a user's Pro entitlement.
-//
-// The actual write to `profiles.is_pro` belongs to the Supabase layer (a
-// service-role client), which the auth agent is building. This route does the
-// secure plumbing (verification + event routing) and hands off via
-// `applyEntitlement` — a single, clearly-marked seam to wire up once that lands.
+// subscription lifecycle events by flipping a user's Pro entitlement, writing it
+// through the service-role Supabase client (which bypasses RLS and the
+// billing-column lockdown trigger).
 
 import { NextResponse } from "next/server";
 import crypto from "node:crypto";
+import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 
 // Stripe needs the raw body for signature verification — force Node runtime.
 export const runtime = "nodejs";
@@ -35,17 +33,45 @@ function verify(rawBody: string, header: string | null, secret: string): boolean
 }
 
 /**
- * Hand-off seam: grant/revoke Pro for the customer referenced by the event.
- * TODO(supabase): look up the profile by client_reference_id / customer email
- * and update `profiles.is_pro` via the service-role client.
+ * Grant/revoke Pro for the profile referenced by the event, via the service-role
+ * client. On the initial checkout we have the user id (client_reference_id) and
+ * can also stamp the Stripe customer id, so later subscription events — which
+ * carry only the customer id — can map back to the same profile.
  */
 async function applyEntitlement(args: {
   isPro: boolean;
   customerId?: string;
   clientReferenceId?: string;
-  email?: string;
 }): Promise<void> {
-  console.log("[stripe] entitlement change (wire to Supabase):", args);
+  const sb = getSupabaseAdminClient();
+  if (!sb) {
+    console.error("[stripe] entitlement change but admin client unconfigured:", args);
+    return;
+  }
+
+  // Checkout completion: map by user id and record the customer id for next time.
+  if (args.clientReferenceId) {
+    await sb
+      .from("profiles")
+      .update({
+        is_pro: args.isPro,
+        stripe_customer_id: args.customerId ?? null,
+        pro_since: args.isPro ? new Date().toISOString() : null,
+      })
+      .eq("id", args.clientReferenceId);
+    return;
+  }
+
+  // Subscription update/delete: map by the customer id stamped at checkout.
+  if (args.customerId) {
+    await sb
+      .from("profiles")
+      .update({
+        is_pro: args.isPro,
+        pro_since: args.isPro ? new Date().toISOString() : null,
+      })
+      .eq("stripe_customer_id", args.customerId);
+  }
 }
 
 export async function POST(req: Request) {
@@ -62,10 +88,26 @@ export async function POST(req: Request) {
   }
 
   const event = JSON.parse(rawBody) as {
+    id: string;
     type: string;
     data: { object: Record<string, unknown> };
   };
   const obj = event.data.object;
+
+  // Idempotency: Stripe delivers at-least-once and retries on any non-2xx.
+  // Record the event id first; if it's already there, this is a retry — ack and
+  // skip so we never double-apply. (No-op when the admin client isn't configured.)
+  const sb = getSupabaseAdminClient();
+  if (sb) {
+    const { error } = await sb
+      .from("stripe_events")
+      .insert({ id: event.id, type: event.type });
+    if (error) {
+      // Unique-violation = already processed. Any insert error → treat as seen
+      // rather than risk a double charge of entitlement side effects.
+      return NextResponse.json({ received: true, duplicate: true });
+    }
+  }
 
   switch (event.type) {
     case "checkout.session.completed":
@@ -73,7 +115,6 @@ export async function POST(req: Request) {
         isPro: true,
         customerId: obj.customer as string | undefined,
         clientReferenceId: obj.client_reference_id as string | undefined,
-        email: (obj.customer_details as { email?: string } | undefined)?.email,
       });
       break;
     case "customer.subscription.updated":

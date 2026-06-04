@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { getSupabaseServerClient, isSupabaseConfigured } from "@/lib/supabase/server";
+import { rateLimit } from "@/lib/rateLimit";
 
 // "Ask Cantrip" — the Socratic AI tutor. Server-side so the API key never reaches
 // the browser. Streams hints back as plain text. Pro-gated and token-capped.
@@ -17,6 +18,10 @@ export const dynamic = "force-dynamic";
 const MODEL = "claude-opus-4-8";
 const MAX_TOKENS = 1024;
 const MAX_HISTORY = 12; // keep the transcript bounded
+
+// Cost/abuse brake: cap tutor requests per caller per rolling window.
+const RATE_LIMIT = 20;
+const RATE_WINDOW_MS = 60_000;
 
 // Frozen, byte-identical across every request → one shared cache entry app-wide.
 const SOCRATIC_SYSTEM = `You are "Cantrip", the friendly mascot and AI tutor for the Cantrip coding academy. You help students learn to code through the Socratic method.
@@ -43,34 +48,56 @@ type TutorRequest = {
   messages?: ChatMessage[];
 };
 
-/** Verify the caller may use the tutor (Pro-gated). */
-async function isAllowed(): Promise<boolean> {
+/** Verify the caller may use the tutor (Pro-gated) and return their id for
+ *  rate-limit keying. */
+async function authorize(): Promise<{ allowed: boolean; userId: string | null }> {
   // Local dev with no backend: allow so the feature is testable. There is no real
   // Pro tier until Stripe + the profiles entitlement land, at which point this
   // path simply isn't hit in production.
-  if (!isSupabaseConfigured) return true;
+  if (!isSupabaseConfigured) return { allowed: true, userId: null };
 
   const sb = getSupabaseServerClient();
-  if (!sb) return true;
+  if (!sb) return { allowed: true, userId: null };
 
   const {
     data: { user },
   } = await sb.auth.getUser();
-  if (!user) return false;
+  if (!user) return { allowed: false, userId: null };
 
   const { data } = await sb
     .from("profiles")
     .select("is_pro")
     .eq("id", user.id)
     .maybeSingle();
-  return Boolean((data as { is_pro?: boolean } | null)?.is_pro);
+  const isPro = Boolean((data as { is_pro?: boolean } | null)?.is_pro);
+  return { allowed: isPro, userId: user.id };
+}
+
+/** Best-effort client IP for rate-limiting anonymous/dev callers. */
+function clientKey(req: Request, userId: string | null): string {
+  if (userId) return `tutor:user:${userId}`;
+  const ip =
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    req.headers.get("x-real-ip") ||
+    "unknown";
+  return `tutor:ip:${ip}`;
 }
 
 export async function POST(req: Request) {
-  if (!(await isAllowed())) {
+  const { allowed, userId } = await authorize();
+  if (!allowed) {
     return Response.json(
       { error: "The AI tutor is a Pro feature." },
       { status: 403 },
+    );
+  }
+
+  // Throttle before doing any paid work.
+  const limit = rateLimit(clientKey(req, userId), RATE_LIMIT, RATE_WINDOW_MS);
+  if (!limit.ok) {
+    return Response.json(
+      { error: "You're asking very fast — give me a moment and try again." },
+      { status: 429, headers: { "Retry-After": String(limit.retryAfter) } },
     );
   }
 

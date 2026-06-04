@@ -30,6 +30,9 @@ export type Database = {
           weekly_xp: number;
           league_tier: number;
           season_start: string | null;
+          is_pro: boolean;
+          stripe_customer_id: string | null;
+          pro_since: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -51,6 +54,9 @@ export type Database = {
           weekly_xp?: number;
           league_tier?: number;
           season_start?: string | null;
+          is_pro?: boolean;
+          stripe_customer_id?: string | null;
+          pro_since?: string | null;
         };
         Update: Partial<Database["public"]["Tables"]["profiles"]["Insert"]>;
         Relationships: [];
@@ -231,6 +237,20 @@ export type Database = {
           ends_at: string;
         };
         Update: Partial<Database["public"]["Tables"]["duels"]["Insert"]>;
+        Relationships: [];
+      };
+      stripe_events: {
+        Row: {
+          id: string;
+          type: string;
+          received_at: string;
+        };
+        Insert: {
+          id: string;
+          type: string;
+          received_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["stripe_events"]["Insert"]>;
         Relationships: [];
       };
     };

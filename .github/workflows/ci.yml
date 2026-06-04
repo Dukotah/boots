@@ -1,8 +1,8 @@
 name: CI
 
-# Quality gate: every push and PR must pass the curriculum check (all lesson
-# solutions green, no pre-solved lessons) and a production build. No broken
-# lesson or type error ever reaches the deployed branch.
+# Quality gate: every push and PR must pass type-checking, the curriculum +
+# engine + logic checks, and a production build. No type error, broken lesson,
+# or regressed business logic ever reaches the deployed branch.
 on:
   push:
     branches: ["**"]
@@ -23,8 +23,20 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Type check
+        run: npx tsc --noEmit
+
       - name: Curriculum check (all solutions must pass their tests)
         run: npm run check
+
+      - name: Visualizer engine check
+        run: npm run check:viz
+
+      - name: Quality analyzer check
+        run: npm run check:quality
+
+      - name: Business logic check
+        run: npm run check:logic
 
       - name: Build
         run: npm run build

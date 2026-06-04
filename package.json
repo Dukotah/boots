@@ -11,6 +11,7 @@
     "check": "node --experimental-strip-types scripts/check-curriculum.ts",
     "check:viz": "node --experimental-strip-types scripts/check-visualizer.ts",
     "check:quality": "node --experimental-strip-types scripts/check-quality.ts",
+    "check:logic": "node --experimental-strip-types scripts/check-logic.ts",
     "new:lesson": "node --experimental-strip-types scripts/new-lesson.ts"
   },
   "dependencies": {

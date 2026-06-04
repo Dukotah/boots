@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Github, Mail, Check } from "lucide-react";
 import {
   getSupabaseBrowserClient,
@@ -13,12 +14,16 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [origin, setOrigin] = useState("");
+  // COPPA: we don't knowingly collect data from under-13s. Require an age
+  // attestation before any sign-in path runs. (Kids under 13 use the free,
+  // account-less local mode.)
+  const [ageOk, setAgeOk] = useState(false);
 
   useEffect(() => setOrigin(window.location.origin), []);
 
   async function github() {
     const sb = getSupabaseBrowserClient();
-    if (!sb) return;
+    if (!sb || !ageOk) return;
     await sb.auth.signInWithOAuth({
       provider: "github",
       options: { redirectTo: `${origin}/dashboard` },
@@ -27,7 +32,7 @@ export default function LoginPage() {
 
   async function magicLink() {
     const sb = getSupabaseBrowserClient();
-    if (!sb || !email) return;
+    if (!sb || !email || !ageOk) return;
     await sb.auth.signInWithOtp({
       email,
       options: { emailRedirectTo: `${origin}/dashboard` },
@@ -75,9 +80,32 @@ export default function LoginPage() {
         GitHub journey.
       </p>
 
+      {/* COPPA age gate — must be checked before any sign-in path is enabled. */}
+      <label className="mt-6 flex cursor-pointer items-start gap-2.5 rounded-lg border border-line bg-canvas/40 px-3 py-3 text-sm text-gray-300">
+        <input
+          type="checkbox"
+          checked={ageOk}
+          onChange={(e) => setAgeOk(e.target.checked)}
+          className="mt-0.5 h-4 w-4 shrink-0 accent-accent"
+        />
+        <span>
+          I&apos;m 13 or older and agree to the{" "}
+          <Link href="/terms" className="text-accent-soft hover:underline">
+            Terms
+          </Link>{" "}
+          and{" "}
+          <Link href="/privacy" className="text-accent-soft hover:underline">
+            Privacy Policy
+          </Link>
+          . Under 13? You can still learn for free — your progress just saves on
+          this device.
+        </span>
+      </label>
+
       <button
         onClick={github}
-        className="btn-primary mt-8 w-full justify-center py-3"
+        disabled={!ageOk}
+        className="btn-primary mt-4 w-full justify-center py-3 disabled:opacity-40"
       >
         <Github size={18} /> Continue with GitHub
       </button>
@@ -101,7 +129,7 @@ export default function LoginPage() {
           />
           <button
             onClick={magicLink}
-            disabled={!email}
+            disabled={!email || !ageOk}
             className="btn-ghost w-full justify-center py-2.5 disabled:opacity-40"
           >
             <Mail size={16} /> Email me a magic link

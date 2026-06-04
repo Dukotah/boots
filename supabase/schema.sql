@@ -64,9 +64,44 @@ create table if not exists public.profiles (
   weekly_xp      integer not null default 0 check (weekly_xp >= 0),
   league_tier    integer not null default 0 check (league_tier >= 0),
   season_start   text,
+  -- Billing entitlement (see migration 0004). Written ONLY by the Stripe webhook
+  -- via the service-role client; the protect_billing_columns trigger blocks
+  -- client writes so a learner can't grant itself Pro.
+  is_pro             boolean not null default false,
+  stripe_customer_id text,
+  pro_since          timestamptz,
   created_at     timestamptz not null default now(),
   updated_at     timestamptz not null default now()
 );
+
+create unique index if not exists profiles_stripe_customer_idx
+  on public.profiles (stripe_customer_id)
+  where stripe_customer_id is not null;
+
+-- Block client writes to billing columns (service role bypasses this).
+create or replace function public.protect_billing_columns()
+returns trigger language plpgsql as $$
+begin
+  if current_user not in ('service_role', 'postgres', 'supabase_admin') then
+    new.is_pro             := old.is_pro;
+    new.stripe_customer_id := old.stripe_customer_id;
+    new.pro_since          := old.pro_since;
+  end if;
+  return new;
+end $$;
+
+drop trigger if exists trg_profiles_protect_billing on public.profiles;
+create trigger trg_profiles_protect_billing
+  before update on public.profiles
+  for each row execute function public.protect_billing_columns();
+
+-- Stripe webhook idempotency ledger (see migration 0004).
+create table if not exists public.stripe_events (
+  id          text primary key,
+  type        text not null,
+  received_at timestamptz not null default now()
+);
+alter table public.stripe_events enable row level security;
 
 drop trigger if exists trg_profiles_updated_at on public.profiles;
 create trigger trg_profiles_updated_at

@@ -4,12 +4,13 @@
 // add the Stripe SDK dependency yet. Degrades gracefully: if Stripe isn't
 // configured, returns 501 with a clear message instead of throwing.
 //
-// When auth lands, attach the Supabase user: pass `client_reference_id` =
-// user.id and `customer_email`, so the webhook can map the subscription back to
-// a profile.
+// When a learner is signed in we attach `client_reference_id` = user.id and
+// `customer_email`, so the Stripe webhook can map the completed subscription
+// back to their profile and grant Pro.
 
 import { NextResponse } from "next/server";
 import { getStripePriceId, type PlanId } from "@/lib/billing/plans";
+import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 const STRIPE_SECRET = process.env.STRIPE_SECRET_KEY;
 
@@ -46,6 +47,20 @@ export async function POST(req: Request) {
     cancel_url: `${origin}/pricing?canceled=1`,
     allow_promotion_codes: "true",
   });
+
+  // Tie the checkout to the signed-in learner so the webhook can grant Pro to
+  // the right profile. Best-effort: anonymous checkout still works (they just
+  // won't be auto-entitled until they sign in with the same email).
+  const sb = getSupabaseServerClient();
+  if (sb) {
+    const {
+      data: { user },
+    } = await sb.auth.getUser();
+    if (user) {
+      form.set("client_reference_id", user.id);
+      if (user.email) form.set("customer_email", user.email);
+    }
+  }
 
   const res = await fetch("https://api.stripe.com/v1/checkout/sessions", {
     method: "POST",

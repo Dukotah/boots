@@ -4,6 +4,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { AuthProvider } from "@/components/AuthProvider";
 import { PwaRegister } from "@/components/PwaRegister";
+import { Analytics } from "@/components/Analytics";
 import { SITE } from "@/lib/site";
 
 // Default social-share card (branded). Per-page metadata overrides this.
@@ -65,6 +66,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen">
+        <Analytics />
         <AuthProvider>
           <PwaRegister />
           <Navbar />
