@@ -91,7 +91,7 @@ export default function Dashboard() {
       </div>
 
       {/* Quick links to new features */}
-      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
         {[
           { href: "/guilds", icon: "🛡️", label: "Guilds", desc: "Team competition" },
           { href: "/events", icon: "🎉", label: "Events", desc: "Seasonal challenges" },
@@ -99,6 +99,7 @@ export default function Dashboard() {
           { href: "/achievements", icon: "🏆", label: "Achievements", desc: "55+ badges" },
           { href: "/leagues", icon: "⚔️", label: "Leagues", desc: "Weekly ranking" },
           { href: "/paths", icon: "🎯", label: "Career Paths", desc: "Job-ready tracks" },
+          { href: "/skill-tree", icon: "🌳", label: "Skill Tree", desc: "Unlock abilities" },
         ].map((item) => (
           <Link
             key={item.href}
