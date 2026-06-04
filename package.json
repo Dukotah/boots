@@ -15,11 +15,13 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.100.1",
+    "@dagrejs/dagre": "^3.0.0",
     "@mlc-ai/web-llm": "^0.2.84",
     "@monaco-editor/react": "^4.6.0",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.106.2",
     "@types/canvas-confetti": "^1.9.0",
+    "@xyflow/react": "^12.11.0",
     "acorn": "^8.16.0",
     "canvas-confetti": "^1.9.4",
     "clsx": "^2.1.1",
