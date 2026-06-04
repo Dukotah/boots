@@ -45,6 +45,7 @@ export function LessonView({
   const [running, setRunning] = useState(false);
   const [hintsShown, setHintsShown] = useState(0);
   const [activeHint, setActiveHint] = useState<string | null>(null);
+  const [activeHintStep, setActiveHintStep] = useState(0);
   const hints = lesson.hints ?? [];
   const hintCode = lesson.hintCode ?? [];
   const blocks = lesson.blocks ?? [];
@@ -71,6 +72,7 @@ export function LessonView({
 
       setCode(partial);
       setActiveHint(hint);
+      setActiveHintStep(hintsShown + 1);
 
       if (firstChanged !== -1) {
         // Defer highlight until after Monaco picks up the new value.
@@ -80,6 +82,7 @@ export function LessonView({
       const { open, close } = lang.comment;
       insertRef.current?.(`${open} 💡 ${hint}${close ?? ""}\n`);
       setActiveHint(hint);
+      setActiveHintStep(hintsShown + 1);
     }
     setHintsShown((n) => n + 1);
   }
@@ -196,6 +199,7 @@ export function LessonView({
                   setOutcome(null);
                   setHintsShown(0);
                   setActiveHint(null);
+                  setActiveHintStep(0);
                 }}
                 className="flex items-center gap-1 text-xs text-gray-400 hover:text-white"
               >
@@ -217,7 +221,7 @@ export function LessonView({
           </div>
           {activeHint && (
             <motion.div
-              key={hintsShown}
+              key={activeHintStep}
               initial={{ opacity: 0, y: -6 }}
               animate={{ opacity: 1, y: 0 }}
               className="flex items-start gap-2 border-b border-line bg-gold/10 px-3 py-2"
@@ -225,7 +229,7 @@ export function LessonView({
               <Lightbulb size={14} className="mt-0.5 shrink-0 text-gold" />
               <span className="flex-1 text-xs text-gold/90">
                 <span className="mr-1.5 font-semibold text-gold">
-                  Hint {hintsShown} of {hints.length}:
+                  Hint {activeHintStep} of {hints.length}:
                 </span>
                 {activeHint}
               </span>
