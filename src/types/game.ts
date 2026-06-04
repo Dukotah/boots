@@ -28,6 +28,10 @@ export type AchievementCategory =
   | "breadth"
   | "mastery"
   | "wealth"
+  | "career"
+  | "challenger"
+  | "collector"
+  | "speed"
   | "secret";
 
 /**

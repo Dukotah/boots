@@ -2,10 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Flame, Zap, Trophy, Target, RotateCcw, Briefcase, ArrowRight } from "lucide-react";
+import { Flame, Zap, Trophy, Target, RotateCcw, Briefcase } from "lucide-react";
 import { useGameStore } from "@/store/useGameStore";
 import { levelFromXp } from "@/lib/levels";
 import { MODULES, totalLessons, totalXpAvailable, lessonId } from "@/lib/curriculum";
+import { deriveBreadth } from "@/lib/progress";
+import { computeReadiness } from "@/lib/career";
+import type { PlayerStats } from "@/types/game";
 import { XPBar } from "@/components/XPBar";
 import { DailyQuests } from "@/components/features/quests/DailyQuests";
 import { DailyChallenge } from "@/components/features/retention/DailyChallenge";
@@ -17,6 +20,7 @@ export default function Dashboard() {
   useEffect(() => setMounted(true), []);
 
   const xp = useGameStore((s) => s.xp);
+  const gold = useGameStore((s) => s.gold);
   const streak = useGameStore((s) => s.streak);
   const completed = useGameStore((s) => s.completed);
   const reset = useGameStore((s) => s.reset);
@@ -24,6 +28,19 @@ export default function Dashboard() {
   const info = levelFromXp(xp);
   const doneCount = completed.length;
   const pct = Math.round((doneCount / totalLessons()) * 100);
+
+  // Single source of truth for "career ready" — the Career Pack score
+  // (lib/career), so the dashboard and /career never disagree.
+  const stats: PlayerStats = {
+    xp,
+    level: info.level,
+    gold,
+    streak,
+    completedCount: completed.length,
+    completedIds: completed,
+    ...deriveBreadth(completed),
+  };
+  const careerScore = computeReadiness(stats).score;
 
   // Find the first unfinished lesson to "Continue".
   let continueHref = "/learn";
@@ -49,7 +66,7 @@ export default function Dashboard() {
       </div>
 
       {/* Stat cards */}
-      <div className="mt-8 grid gap-4 sm:grid-cols-3">
+      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="card">
           <Flame className="mb-2 text-gold" />
           <p className="text-3xl font-bold text-white">{streak}</p>
@@ -69,6 +86,14 @@ export default function Dashboard() {
           </p>
           <p className="text-sm text-gray-400">current rank</p>
         </div>
+        <Link
+          href="/career"
+          className="card transition-colors hover:border-accent/60"
+        >
+          <Briefcase className="mb-2 text-accent-soft" />
+          <p className="text-3xl font-bold text-white">{careerScore}</p>
+          <p className="text-sm text-gray-400">career ready · Career Pack →</p>
+        </Link>
       </div>
 
       {/* Level progress */}
@@ -76,29 +101,32 @@ export default function Dashboard() {
         <XPBar info={info} />
       </div>
 
-      {/* Career Pack CTA */}
-      <Link
-        href="/career"
-        className="group mt-4 flex items-center gap-4 rounded-2xl border border-accent/30 bg-accent/5 p-4 transition hover:border-accent/60"
-      >
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent/15 text-accent-soft">
-          <Briefcase size={22} />
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="font-semibold text-white">Career Pack</p>
-          <p className="text-sm text-gray-400">
-            See your job-readiness score, certificates, and export a résumé.
-          </p>
-        </div>
-        <ArrowRight
-          size={18}
-          className="shrink-0 text-accent-soft transition group-hover:translate-x-0.5"
-        />
-      </Link>
-
       {/* Challenge of the day */}
       <div className="mt-4">
         <DailyChallenge />
+      </div>
+
+      {/* Quick links to new features */}
+      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
+        {[
+          { href: "/guilds", icon: "🛡️", label: "Guilds", desc: "Team competition" },
+          { href: "/events", icon: "🎉", label: "Events", desc: "Seasonal challenges" },
+          { href: "/leaderboard", icon: "🏅", label: "Leaderboard", desc: "Global rankings" },
+          { href: "/achievements", icon: "🏆", label: "Achievements", desc: "55+ badges" },
+          { href: "/leagues", icon: "⚔️", label: "Leagues", desc: "Weekly ranking" },
+          { href: "/paths", icon: "🎯", label: "Career Paths", desc: "Job-ready tracks" },
+          { href: "/skill-tree", icon: "🌳", label: "Skill Tree", desc: "Unlock abilities" },
+        ].map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className="card flex flex-col items-center gap-1 text-center hover:border-accent/60 py-4"
+          >
+            <span className="text-2xl">{item.icon}</span>
+            <p className="text-sm font-semibold text-white">{item.label}</p>
+            <p className="text-[11px] text-gray-500">{item.desc}</p>
+          </Link>
+        ))}
       </div>
 
       {/* Daily quests */}

@@ -53,7 +53,9 @@ export default function AchievementsPage() {
         return (
           <section key={cat.id} className="mt-10">
             <div className="flex items-baseline justify-between">
-              <h2 className="text-xl font-bold text-white">{cat.label}</h2>
+              <h2 className="text-xl font-bold text-white">
+                <span className="mr-2">{cat.icon}</span>{cat.label}
+              </h2>
               <span className="text-xs text-gray-500">
                 {got}/{items.length}
               </span>

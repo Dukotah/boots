@@ -60,6 +60,8 @@ import { buildYourFirstGame } from "../src/lib/curriculum/build-your-first-game.
 import { internetForKids } from "../src/lib/curriculum/internet-for-kids.ts";
 import { aiSafetyKids } from "../src/lib/curriculum/ai-safety-kids.ts";
 import { digitalCitizenship } from "../src/lib/curriculum/digital-citizenship.ts";
+import { systemDesign } from "../src/lib/curriculum/system-design.ts";
+import { portfolioProjects } from "../src/lib/curriculum/portfolio-projects.ts";
 import type { Lesson, Module } from "../src/lib/curriculum/types.ts";
 
 // Keep in sync with src/lib/curriculum/index.ts. (New module? Add it here too.)
@@ -119,6 +121,8 @@ const MODULES: Module[] = [
   internetForKids,
   aiSafetyKids,
   digitalCitizenship,
+  systemDesign,
+  portfolioProjects,
 ];
 
 function stringify(v: unknown): string {

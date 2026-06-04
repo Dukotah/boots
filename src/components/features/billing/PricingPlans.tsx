@@ -49,8 +49,11 @@ export function PricingPlans() {
           <Features
             items={[
               "Read every lesson",
-              "First 2 lessons of each course, interactive",
-              "Track XP, gold & streak",
+              "First 2 lessons per course, interactive",
+              "XP, gold, streak & level tracking",
+              "Public profile & activity heatmap",
+              "Daily quests & achievements",
+              "Join guilds",
             ]}
           />
           <Link href="/learn" className="btn-ghost mt-6 w-full">
@@ -69,9 +72,13 @@ export function PricingPlans() {
           <Features
             items={[
               "Every interactive, auto-graded lesson",
+              "System Design & Portfolio Projects courses",
+              "All 55+ achievements — including Career badges",
+              "Weekly boss battles & league seasons",
+              "Seasonal events with exclusive cosmetics",
+              "Premium cosmetics (banners, borders, titles)",
               "Cantrip AI tutor (Socratic mode)",
-              "Leagues & boss battles",
-              "Loot chests & streak freezes",
+              "Streak freezes & loot chests",
               "All languages & future courses",
             ]}
           />
@@ -85,8 +92,9 @@ export function PricingPlans() {
           <Features
             items={[
               "Everything in Pro",
-              "Centralized billing",
-              "Team leaderboard & progress",
+              "Private guild for your team",
+              "Team leaderboard & XP progress",
+              "Cohort certificates & progress reports",
               "For bootcamps, schools & companies",
             ]}
           />

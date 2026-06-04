@@ -37,6 +37,26 @@ export function languageName(code: string): string {
   return LANGUAGE_NAMES[code] ?? code.charAt(0).toUpperCase() + code.slice(1);
 }
 
+// The job-relevant modules surfaced as a concrete "skills you can show an
+// employer" grid (public profile). This is a display list of what counts as
+// career-relevant — distinct from the holistic readiness *score* below, which
+// weighs finished tracks, breadth, depth, and consistency.
+export const CAREER_MODULES = [
+  "javascript",
+  "typescript",
+  "python",
+  "sql",
+  "html",
+  "algorithms",
+  "data-structures",
+  "interview",
+  "git-github",
+  "ai-llms",
+  "ai-agents",
+  "prompt-engineering",
+  "web-security",
+];
+
 // ── Job-readiness score ──────────────────────────────────────────────────────
 
 export type ReadinessFactor = {
