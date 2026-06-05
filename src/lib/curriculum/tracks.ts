@@ -74,6 +74,8 @@ export const TRACKS: Track[] = [
       "web-apis",
       "math",
       "typescript",
+      "js-array-methods",
+      "debugging-skills",
     ],
   },
   {
@@ -102,14 +104,14 @@ export const TRACKS: Track[] = [
     label: "Career & Portfolio",
     blurb: "System design, real projects, and everything that makes you hirable.",
     emoji: "💼",
-    modules: ["system-design", "portfolio-projects", "git-github", "two-pointers", "bit-manipulation"],
+    modules: ["system-design", "portfolio-projects", "git-github", "two-pointers", "bit-manipulation", "http-and-rest"],
   },
   {
     id: "python",
     label: "Python",
     blurb: "Learn Python from scratch and put it to work on real data.",
     emoji: "🐍",
-    modules: ["python", "python-data"],
+    modules: ["python", "python-data", "python-strings", "python-comprehensions", "python-oop", "python-algorithms", "python-decorators", "python-generators"],
   },
   {
     id: "python-deep-dives",
@@ -128,7 +130,7 @@ export const TRACKS: Track[] = [
     label: "SQL & Data",
     blurb: "Query, filter, and join your way through real databases in the browser.",
     emoji: "🗃️",
-    modules: ["sql", "sql-joins"],
+    modules: ["sql", "sql-joins", "sql-aggregations", "sql-subqueries", "sql-window-functions"],
   },
   {
     id: "sql-deep-dives",

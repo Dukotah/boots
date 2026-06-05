@@ -62,6 +62,12 @@ import { aiSafetyKids } from "../src/lib/curriculum/ai-safety-kids.ts";
 import { digitalCitizenship } from "../src/lib/curriculum/digital-citizenship.ts";
 import { systemDesign } from "../src/lib/curriculum/system-design.ts";
 import { portfolioProjects } from "../src/lib/curriculum/portfolio-projects.ts";
+import { pythonDecorators } from "../src/lib/curriculum/python-decorators.ts";
+import { pythonGenerators } from "../src/lib/curriculum/python-generators.ts";
+import { sqlWindowFunctions } from "../src/lib/curriculum/sql-window-functions.ts";
+import { jsArrayMethods } from "../src/lib/curriculum/js-array-methods.ts";
+import { httpAndRest } from "../src/lib/curriculum/http-and-rest.ts";
+import { debuggingSkills } from "../src/lib/curriculum/debugging-skills.ts";
 import type { Lesson, Module } from "../src/lib/curriculum/types.ts";
 
 // Keep in sync with src/lib/curriculum/index.ts. (New module? Add it here too.)
@@ -123,6 +129,12 @@ const MODULES: Module[] = [
   digitalCitizenship,
   systemDesign,
   portfolioProjects,
+  pythonDecorators,
+  pythonGenerators,
+  sqlWindowFunctions,
+  jsArrayMethods,
+  httpAndRest,
+  debuggingSkills,
 ];
 
 function stringify(v: unknown): string {

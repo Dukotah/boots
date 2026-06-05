@@ -58,6 +58,12 @@ import { aiSafetyKids } from "./ai-safety-kids";
 import { digitalCitizenship } from "./digital-citizenship";
 import { systemDesign } from "./system-design";
 import { portfolioProjects } from "./portfolio-projects";
+import { pythonDecorators } from "./python-decorators";
+import { pythonGenerators } from "./python-generators";
+import { sqlWindowFunctions } from "./sql-window-functions";
+import { jsArrayMethods } from "./js-array-methods";
+import { httpAndRest } from "./http-and-rest";
+import { debuggingSkills } from "./debugging-skills";
 
 // The whole curriculum. Add a module here and it shows up everywhere.
 // Order defines the Campaign Map progression (sequential unlock) — a difficulty ramp.
@@ -109,13 +115,21 @@ export const MODULES: Module[] = [
   pythonComprehensions,
   pythonOop,
   pythonAlgorithms,
+  pythonDecorators,
+  pythonGenerators,
   // SQL track
   sql,
   sqlJoins,
   sqlAggregations,
   sqlSubqueries,
+  sqlWindowFunctions,
   // Tooling
   gitGithub,
+  // Web fundamentals
+  httpAndRest,
+  debuggingSkills,
+  // JavaScript array methods
+  jsArrayMethods,
   // AI track
   aiLlms,
   promptEngineering,

@@ -4,6 +4,5 @@
     { "path": "/api/email/streak-reminder", "schedule": "0 17 * * *" },
     { "path": "/api/push/send", "schedule": "5 17 * * *" },
     { "path": "/api/leagues/close-season", "schedule": "0 0 * * 1" }
-    
   ]
 }
