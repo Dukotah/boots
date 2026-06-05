@@ -106,10 +106,6 @@ export default function EventsPage() {
                       day: "numeric",
                       year: "numeric",
                     })}
-                    <span className="ml-3 text-gold">
-                      <Zap size={11} className="inline mr-0.5" />
-                      {event.xpMultiplier}× XP
-                    </span>
                   </p>
                 </div>
               </div>
@@ -181,7 +177,7 @@ function ActiveEventCard({
           <span className="flex items-center gap-1">
             <Zap size={12} /> Event XP: {playerXp.toLocaleString()}
           </span>
-          <span>{event.xpMultiplier}× multiplier active</span>
+          <span>Event in progress</span>
         </div>
         <div className="h-3 overflow-hidden rounded-full bg-white/20">
           <motion.div

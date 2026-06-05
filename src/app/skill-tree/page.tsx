@@ -1,410 +1,312 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
+import { Sparkles, RotateCcw, Check, Lock, Coins } from "lucide-react";
 import { useGameStore } from "@/store/useGameStore";
-import { MODULES, lessonId } from "@/lib/curriculum";
+import { useMounted } from "@/hooks/useMounted";
+import { levelFromXp } from "@/lib/levels";
+import { deriveBreadth } from "@/lib/progress";
 import {
-  SKILL_NODES,
-  SKILL_EDGES,
-  TRACK_COLORS,
-  TRACK_LABELS,
-  type SkillNode,
-} from "@/lib/skillTree";
+  TALENTS,
+  BRANCH_META,
+  RESPEC_COST,
+  talentsByBranch,
+  talentEffects,
+  earnedSkillPoints,
+  getTalent,
+  gateMet,
+  gateLabel,
+  type Talent,
+  type TalentBranch,
+} from "@/lib/talents";
+import type { PlayerStats } from "@/types/game";
 
-// Layout constants
-const NODE_W = 120;
-const NODE_H = 64;
-const TIER_H = 120;
-const COL_W = 140;
-const PAD_X = 60;
-const PAD_Y = 60;
+type NodeState = "owned" | "available" | "prereq-locked" | "gate-locked";
 
-function nodeCenter(n: SkillNode) {
-  return {
-    x: PAD_X + n.col * COL_W + NODE_W / 2,
-    y: PAD_Y + n.tier * TIER_H + NODE_H / 2,
-  };
-}
-
-type NodeStatus = "locked" | "available" | "in-progress" | "complete";
+const BRANCHES: TalentBranch[] = ["prospector", "sentinel", "luminary"];
 
 export default function SkillTreePage() {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const mounted = useMounted();
 
+  const xp = useGameStore((s) => s.xp);
+  const gold = useGameStore((s) => s.gold);
+  const streak = useGameStore((s) => s.streak);
   const completed = useGameStore((s) => s.completed);
-  const [selected, setSelected] = useState<SkillNode | null>(null);
-  const [filterTrack, setFilterTrack] = useState<string>("all");
-  const svgRef = useRef<SVGSVGElement>(null);
+  const talents = useGameStore((s) => s.talents);
+  const buyTalent = useGameStore((s) => s.buyTalent);
+  const respecTalents = useGameStore((s) => s.respecTalents);
 
-  // Which module slugs have at least one completed lesson
-  const completedModuleSet = useMemo(() => {
-    const set = new Set<string>();
-    for (const id of completed) {
-      const [slug] = id.split("/");
-      set.add(slug);
-    }
-    return set;
-  }, [completed]);
+  const stats: PlayerStats = useMemo(
+    () => ({
+      xp,
+      level: levelFromXp(xp).level,
+      gold,
+      streak,
+      completedCount: completed.length,
+      completedIds: completed,
+      ...deriveBreadth(completed),
+    }),
+    [xp, gold, streak, completed],
+  );
 
-  // Fully completed modules
-  const fullyCompleted = useMemo(() => {
-    const full = new Set<string>();
-    for (const mod of MODULES) {
-      const allDone = mod.lessons.every((l: { slug: string }) =>
-        completed.includes(lessonId(mod.slug, l.slug))
-      );
-      if (allDone && mod.lessons.length > 0) full.add(mod.slug);
-    }
-    return full;
-  }, [completed]);
+  const owned = useMemo(() => new Set(talents), [talents]);
+  const earned = earnedSkillPoints(stats);
+  const spent = talents.reduce((sum, id) => sum + (getTalent(id)?.cost ?? 0), 0);
+  const available = earned - spent;
+  const fx = useMemo(() => talentEffects(talents), [talents]);
 
-  function getStatus(node: SkillNode): NodeStatus {
-    if (fullyCompleted.has(node.id)) return "complete";
-    if (completedModuleSet.has(node.id)) return "in-progress";
-    if (node.requires.length === 0) return "available";
-    const prereqsMet = node.requires.every(
-      (r) => fullyCompleted.has(r) || completedModuleSet.has(r)
-    );
-    return prereqsMet ? "available" : "locked";
+  function nodeState(t: Talent): NodeState {
+    if (owned.has(t.id)) return "owned";
+    if (!t.requires.every((r) => owned.has(r))) return "prereq-locked";
+    if (!gateMet(t.gate, stats)) return "gate-locked";
+    return "available";
   }
 
-  const maxCol = Math.max(...SKILL_NODES.map((n) => n.col));
-  const maxTier = Math.max(...SKILL_NODES.map((n) => n.tier));
-  const svgW = PAD_X * 2 + (maxCol + 1) * COL_W;
-  const svgH = PAD_Y * 2 + (maxTier + 1) * TIER_H;
-
-  const visibleNodes = filterTrack === "all"
-    ? SKILL_NODES
-    : SKILL_NODES.filter((n) => n.track === filterTrack);
-  const visibleIds = new Set(visibleNodes.map((n) => n.id));
-
-  const selectedMod = selected
-    ? MODULES.find((m) => m.slug === selected.id)
-    : null;
-  const selectedStatus = selected ? getStatus(selected) : null;
-  const doneLessons = selectedMod
-    ? selectedMod.lessons.filter((l) =>
-        completed.includes(lessonId(selectedMod.slug, l.slug))
-      ).length
-    : 0;
-
-  const tracks = Array.from(new Set(SKILL_NODES.map((n) => n.track)));
+  function handleRespec() {
+    if (gold < RESPEC_COST) return;
+    if (
+      typeof window !== "undefined" &&
+      !window.confirm(
+        `Respec your build for ${RESPEC_COST} gold? Your ${spent} skill points are refunded to re-spend. Unlocked cosmetics are kept.`,
+      )
+    )
+      return;
+    respecTalents();
+  }
 
   if (!mounted) {
-    return <div className="flex h-screen items-center justify-center text-gray-500">Loading…</div>;
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-10 text-gray-500">Loading…</div>
+    );
   }
 
+  // Active-bonus chips from the current build.
+  const bonuses: string[] = [];
+  if (fx.goldMultPct) bonuses.push(`+${fx.goldMultPct}% lesson gold`);
+  if (fx.dailyGold) bonuses.push(`+${fx.dailyGold} first-lesson gold`);
+  if (fx.chestBonus) bonuses.push(`+${fx.chestBonus} chest gold`);
+  if (fx.freezePerWeek) bonuses.push(`+${fx.freezePerWeek} freeze/week`);
+  if (fx.cosmetics.length)
+    bonuses.push(
+      `${fx.cosmetics.length} exclusive cosmetic${fx.cosmetics.length > 1 ? "s" : ""}`,
+    );
+
   return (
-    <div className="flex h-screen flex-col bg-canvas">
+    <div className="mx-auto max-w-5xl px-4 py-10">
       {/* Header */}
-      <div className="border-b border-line px-6 py-4">
-        <div className="mx-auto flex max-w-7xl items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-white">Skill Tree</h1>
-            <p className="text-sm text-gray-400">
-              Complete modules to unlock advanced skills — {fullyCompleted.size}/{SKILL_NODES.length} mastered
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-white">Skill Tree</h1>
+          <p className="mt-1 max-w-xl text-gray-400">
+            Spend skill points — earned by finishing courses, paths, and leveling
+            up — on permanent perks. None affect XP or Leagues; this is your build,
+            not a shortcut.
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="rounded-2xl border border-accent/40 bg-accent/10 px-5 py-3 text-center">
+            <p className="text-3xl font-extrabold text-white">{available}</p>
+            <p className="text-[11px] uppercase tracking-wide text-accent-soft">
+              skill points
             </p>
           </div>
-          <Link href="/learn" className="btn-primary text-sm">Browse Courses</Link>
-        </div>
-
-        {/* Track filter */}
-        <div className="mx-auto mt-3 flex max-w-7xl flex-wrap gap-2">
           <button
-            onClick={() => setFilterTrack("all")}
-            className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-              filterTrack === "all"
-                ? "bg-accent text-white"
-                : "bg-surface-2 text-gray-400 hover:text-white"
-            }`}
+            onClick={handleRespec}
+            disabled={spent === 0 || gold < RESPEC_COST}
+            className="btn-ghost text-sm disabled:cursor-not-allowed disabled:opacity-40"
+            title={
+              spent === 0
+                ? "No talents to refund"
+                : gold < RESPEC_COST
+                  ? `Need ${RESPEC_COST - gold} more gold to respec`
+                  : `Refund all talents for ${RESPEC_COST} gold`
+            }
           >
-            All
+            <RotateCcw size={15} /> Respec
+            <span className="flex items-center gap-0.5 text-gold">
+              <Coins size={13} />
+              {RESPEC_COST}
+            </span>
           </button>
-          {tracks.map((t) => (
-            <button
-              key={t}
-              onClick={() => setFilterTrack(t)}
-              className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                filterTrack === t
-                  ? "text-canvas font-semibold"
-                  : "bg-surface-2 text-gray-400 hover:text-white"
-              }`}
-              style={filterTrack === t ? { backgroundColor: TRACK_COLORS[t] } : {}}
-            >
-              {TRACK_LABELS[t] ?? t}
-            </button>
-          ))}
         </div>
       </div>
 
-      {/* Main area */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* SVG tree */}
-        <div className="flex-1 overflow-auto">
-          <svg
-            ref={svgRef}
-            width={svgW}
-            height={svgH}
-            className="min-w-full"
-          >
-            {/* Edges */}
-            {SKILL_EDGES.filter(
-              (e) => visibleIds.has(e.from) && visibleIds.has(e.to)
-            ).map((edge) => {
-              const fromNode = SKILL_NODES.find((n) => n.id === edge.from)!;
-              const toNode = SKILL_NODES.find((n) => n.id === edge.to)!;
-              const from = nodeCenter(fromNode);
-              const to = nodeCenter(toNode);
-              const fromStatus = getStatus(fromNode);
-              const toStatus = getStatus(toNode);
-              const active = fromStatus !== "locked" && toStatus !== "locked";
-              return (
-                <line
-                  key={`${edge.from}-${edge.to}`}
-                  x1={from.x}
-                  y1={from.y + NODE_H / 2}
-                  x2={to.x}
-                  y2={to.y - NODE_H / 2}
-                  stroke={active ? TRACK_COLORS[toNode.track] : "#374151"}
-                  strokeWidth={active ? 2 : 1}
-                  strokeOpacity={active ? 0.5 : 0.3}
-                  strokeDasharray={active ? undefined : "4 4"}
-                />
-              );
-            })}
-
-            {/* Nodes */}
-            {visibleNodes.map((node) => {
-              const status = getStatus(node);
-              const { x, y } = nodeCenter(node);
-              const nx = x - NODE_W / 2;
-              const ny = y - NODE_H / 2;
-              const color = TRACK_COLORS[node.track];
-              const isSelected = selected?.id === node.id;
-
-              const bgOpacity =
-                status === "complete" ? "0.25"
-                  : status === "in-progress" ? "0.15"
-                  : status === "available" ? "0.08"
-                  : "0.03";
-              const strokeColor =
-                status === "complete" ? color
-                  : status === "in-progress" ? color
-                  : status === "available" ? color
-                  : "#374151";
-              const strokeWidth = isSelected ? 2.5 : status === "complete" ? 2 : 1;
-              const strokeOpacity =
-                status === "locked" ? "0.2"
-                  : isSelected ? "1"
-                  : status === "complete" ? "0.9"
-                  : "0.5";
-
-              return (
-                <g
-                  key={node.id}
-                  onClick={() => setSelected(isSelected ? null : node)}
-                  className="cursor-pointer"
-                >
-                  {/* Glow for complete */}
-                  {status === "complete" && (
-                    <rect
-                      x={nx - 3}
-                      y={ny - 3}
-                      width={NODE_W + 6}
-                      height={NODE_H + 6}
-                      rx={10}
-                      fill={color}
-                      opacity={0.08}
-                    />
-                  )}
-                  <rect
-                    x={nx}
-                    y={ny}
-                    width={NODE_W}
-                    height={NODE_H}
-                    rx={8}
-                    fill={color}
-                    fillOpacity={bgOpacity}
-                    stroke={strokeColor}
-                    strokeWidth={strokeWidth}
-                    strokeOpacity={strokeOpacity}
-                  />
-                  {/* Emoji */}
-                  <text
-                    x={nx + 14}
-                    y={ny + NODE_H / 2 + 6}
-                    fontSize={20}
-                    className="select-none"
-                  >
-                    {status === "locked" ? "🔒" : node.emoji}
-                  </text>
-                  {/* Label */}
-                  <text
-                    x={nx + 38}
-                    y={ny + NODE_H / 2 - 4}
-                    fontSize={11}
-                    fontWeight={600}
-                    fill={status === "locked" ? "#6b7280" : "#e5e7eb"}
-                    className="select-none"
-                  >
-                    {node.label.length > 12
-                      ? node.label.slice(0, 11) + "…"
-                      : node.label}
-                  </text>
-                  {/* Lesson count / status */}
-                  <text
-                    x={nx + 38}
-                    y={ny + NODE_H / 2 + 10}
-                    fontSize={10}
-                    fill={status === "complete" ? color : "#6b7280"}
-                    className="select-none"
-                  >
-                    {status === "complete"
-                      ? "✓ Mastered"
-                      : status === "in-progress"
-                      ? "In progress"
-                      : `${node.lessonCount} lessons`}
-                  </text>
-                </g>
-              );
-            })}
-          </svg>
-        </div>
-
-        {/* Side panel */}
-        {selected && (
-          <div className="w-72 shrink-0 overflow-y-auto border-l border-line bg-surface p-5">
-            <div className="mb-4 flex items-start justify-between">
-              <div>
-                <span className="text-3xl">{selected.emoji}</span>
-                <h2 className="mt-1 text-lg font-bold text-white">{selected.label}</h2>
-                <span
-                  className="inline-block rounded-full px-2 py-0.5 text-xs font-medium text-canvas mt-1"
-                  style={{ backgroundColor: TRACK_COLORS[selected.track] }}
-                >
-                  {TRACK_LABELS[selected.track] ?? selected.track}
-                </span>
-              </div>
-              <button
-                onClick={() => setSelected(null)}
-                className="text-gray-500 hover:text-white"
+      {/* SP economy + active bonuses */}
+      <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-400">
+        <span>
+          <span className="text-gray-200">{earned}</span> earned ·{" "}
+          <span className="text-gray-200">{spent}</span> spent
+        </span>
+        {bonuses.length > 0 ? (
+          <span className="flex flex-wrap items-center gap-2">
+            <Sparkles size={14} className="text-accent-soft" />
+            {bonuses.map((b) => (
+              <span
+                key={b}
+                className="rounded-full bg-surface-2 px-2.5 py-0.5 text-xs font-medium text-gray-200"
               >
-                ✕
-              </button>
-            </div>
-
-            {/* Status badge */}
-            <div className={`mb-4 rounded-lg px-3 py-2 text-sm font-medium ${
-              selectedStatus === "complete"
-                ? "bg-success/10 text-success"
-                : selectedStatus === "in-progress"
-                ? "bg-accent/10 text-accent-soft"
-                : selectedStatus === "available"
-                ? "bg-gold/10 text-gold"
-                : "bg-surface-2 text-gray-400"
-            }`}>
-              {selectedStatus === "complete" && "✓ Mastered — all lessons done"}
-              {selectedStatus === "in-progress" && `⚡ In progress — ${doneLessons}/${selectedMod?.lessons.length} lessons`}
-              {selectedStatus === "available" && "🔓 Unlocked — ready to start"}
-              {selectedStatus === "locked" && "🔒 Locked — complete prerequisites first"}
-            </div>
-
-            {/* Prerequisites */}
-            {selected.requires.length > 0 && (
-              <div className="mb-4">
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-                  Prerequisites
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {selected.requires.map((r) => {
-                    const rNode = SKILL_NODES.find((n) => n.id === r);
-                    const rStatus = rNode ? getStatus(rNode) : "locked";
-                    return (
-                      <span
-                        key={r}
-                        className={`rounded px-2 py-0.5 text-xs ${
-                          rStatus === "complete"
-                            ? "bg-success/20 text-success"
-                            : "bg-surface-2 text-gray-400"
-                        }`}
-                      >
-                        {rNode ? rNode.emoji : ""} {rNode?.label ?? r}
-                      </span>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Unlocks */}
-            {(() => {
-              const unlocks = SKILL_NODES.filter((n) => n.requires.includes(selected.id));
-              if (!unlocks.length) return null;
-              return (
-                <div className="mb-4">
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-                    Unlocks
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {unlocks.map((u) => (
-                      <button
-                        key={u.id}
-                        onClick={() => setSelected(u)}
-                        className="rounded px-2 py-0.5 text-xs bg-surface-2 text-gray-300 hover:text-white"
-                      >
-                        {u.emoji} {u.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              );
-            })()}
-
-            {/* CTA */}
-            {selectedStatus !== "locked" && (
-              <Link
-                href={`/learn/${selected.id}`}
-                className="btn-primary mt-2 block w-full text-center text-sm"
-              >
-                {selectedStatus === "complete"
-                  ? "Review Module"
-                  : selectedStatus === "in-progress"
-                  ? "Continue Module"
-                  : "Start Module"}
-              </Link>
-            )}
-            {selectedStatus === "locked" && (
-              <p className="mt-2 text-xs text-gray-500">
-                Complete the prerequisites above to unlock this module.
-              </p>
-            )}
-          </div>
+                {b}
+              </span>
+            ))}
+          </span>
+        ) : (
+          <span className="text-gray-400">
+            {available === 0
+              ? "Finish a course to earn your first skill point — then build below."
+              : "No talents yet — pick a branch below."}
+          </span>
         )}
       </div>
 
-      {/* Legend */}
-      <div className="border-t border-line px-6 py-3">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-4 text-xs text-gray-500">
-          <span className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded border-2 border-gray-600 bg-gray-800" />
-            Locked
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded border-2 border-yellow-400/50 bg-yellow-400/10" />
-            Available
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded border-2 border-accent bg-accent/15" />
-            In Progress
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded border-2 border-success bg-success/25" />
-            Mastered
-          </span>
-          <span className="ml-auto text-gray-600">Click a node to inspect · Scroll to pan</span>
+      {/* Branches */}
+      <div className="mt-8 grid gap-6 md:grid-cols-3">
+        {BRANCHES.map((branch) => {
+          const meta = BRANCH_META[branch];
+          const nodes = talentsByBranch(branch);
+          const ownedInBranch = nodes.filter((t) => owned.has(t.id)).length;
+          return (
+            <section
+              key={branch}
+              className="rounded-2xl border border-line bg-surface p-4"
+            >
+              <header className="mb-4 flex items-center gap-3 border-b border-line pb-3">
+                <span
+                  className="flex h-10 w-10 items-center justify-center rounded-xl text-xl"
+                  style={{ backgroundColor: `${meta.color}22` }}
+                >
+                  {meta.icon}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <h2 className="font-bold text-white">{meta.label}</h2>
+                  <p className="truncate text-xs text-gray-500">{meta.tagline}</p>
+                </div>
+                <span className="text-xs text-gray-500">
+                  {ownedInBranch}/{nodes.length}
+                </span>
+              </header>
+
+              <div className="space-y-0">
+                {nodes.map((t, i) => {
+                  const state = nodeState(t);
+                  const affordable = available >= t.cost;
+                  return (
+                    <div key={t.id}>
+                      {i > 0 && nodes[i].tier !== nodes[i - 1].tier && (
+                        <div className="mx-auto h-4 w-0.5 bg-line" aria-hidden />
+                      )}
+                      <TalentCard
+                        talent={t}
+                        state={state}
+                        affordable={affordable}
+                        color={meta.color}
+                        owned={owned}
+                        onBuy={() => buyTalent(t.id)}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          );
+        })}
+      </div>
+
+      <p className="mt-6 text-center text-xs text-gray-400">
+        {TALENTS.length} talents · earn 1 point per course finished, 2 per career
+        certificate, 1 every 5 levels ·{" "}
+        <Link href="/learn" className="text-accent-soft hover:underline">
+          go learn to earn more
+        </Link>
+      </p>
+    </div>
+  );
+}
+
+function TalentCard({
+  talent: t,
+  state,
+  affordable,
+  color,
+  owned,
+  onBuy,
+}: {
+  talent: Talent;
+  state: NodeState;
+  affordable: boolean;
+  color: string;
+  owned: Set<string>;
+  onBuy: () => void;
+}) {
+  const isOwned = state === "owned";
+  const dim = state === "prereq-locked" || state === "gate-locked";
+  const missingPrereqs = t.requires.filter((r) => !owned.has(r));
+
+  return (
+    <div
+      className={[
+        "rounded-xl border p-3 transition",
+        isOwned ? "bg-surface-2" : "bg-canvas/40",
+        dim ? "opacity-60" : "",
+      ].join(" ")}
+      style={{
+        borderColor: isOwned ? color : "#2a2a40", // #2a2a40 = tailwind `line`
+        boxShadow: isOwned ? `0 0 22px -10px ${color}` : undefined,
+      }}
+    >
+      <div className="flex items-start gap-2.5">
+        <span className="mt-0.5 text-2xl">
+          {state === "prereq-locked" || state === "gate-locked" ? "🔒" : t.icon}
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5">
+            <h3 className="text-sm font-semibold text-white">{t.label}</h3>
+            {t.keystone && (
+              <span
+                className="rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide"
+                style={{ backgroundColor: `${color}22`, color }}
+              >
+                Keystone
+              </span>
+            )}
+          </div>
+          <p className="mt-0.5 text-xs leading-snug text-gray-400">
+            {t.description}
+          </p>
         </div>
+      </div>
+
+      <div className="mt-2.5 flex items-center justify-between gap-2">
+        <span className="flex items-center gap-1 text-xs font-medium" style={{ color }}>
+          {t.cost} SP
+        </span>
+
+        {isOwned ? (
+          <span className="flex items-center gap-1 text-xs font-semibold text-success">
+            <Check size={13} /> Owned
+          </span>
+        ) : state === "prereq-locked" ? (
+          <span className="flex items-center gap-1 text-[11px] text-gray-400">
+            <Lock size={11} /> Needs{" "}
+            {missingPrereqs.map((r) => getTalent(r)?.label ?? r).join(", ")}
+          </span>
+        ) : state === "gate-locked" ? (
+          <span className="flex items-center gap-1 text-[11px] text-gray-400">
+            <Lock size={11} /> {t.gate ? gateLabel(t.gate) : "Locked"}
+          </span>
+        ) : (
+          <button
+            onClick={onBuy}
+            disabled={!affordable}
+            className="rounded-lg px-3 py-1 text-xs font-semibold transition disabled:cursor-not-allowed"
+            style={{
+              backgroundColor: affordable ? color : "#2a2a40",
+              color: affordable ? "#0a0a12" : "#e5e7eb",
+            }}
+          >
+            {affordable ? "Unlock" : "Need more SP"}
+          </button>
+        )}
       </div>
     </div>
   );

@@ -158,7 +158,9 @@ export default function ShopPage() {
         {COSMETIC_SECTIONS.filter(
           (sec) => activeSection === "all" || activeSection === sec.slot,
         ).map((sec) => {
-          const items = COSMETICS.filter((c) => c.slot === sec.slot);
+          const items = COSMETICS.filter(
+            (c) => c.slot === sec.slot && !c.talentOnly,
+          );
           if (items.length === 0) return null;
           return (
             <div key={sec.slot} className="mb-10">

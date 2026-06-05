@@ -42,7 +42,7 @@ export function Certificate({ slug }: { slug: string }) {
   const stats = pathStats(path);
 
   const handle = user?.email?.split("@")[0];
-  const displayName = name.trim() || handle || "Boots Learner";
+  const displayName = name.trim() || handle || `${SITE.name} Learner`;
   const code = certVerifyCode(path.slug, displayName);
   const date = new Date().toLocaleDateString("en-US", {
     year: "numeric",
@@ -119,7 +119,7 @@ export function Certificate({ slug }: { slug: string }) {
           <div className="flex items-center justify-center gap-2">
             <MascotBoots size={40} />
             <span className="text-lg font-bold tracking-tight text-white">
-              Boots
+              {SITE.name}
             </span>
           </div>
 

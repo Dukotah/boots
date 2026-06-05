@@ -21,6 +21,7 @@ const BANNER_GRADIENTS: Record<string, string> = {
   fire: "from-red-900 via-orange-900 to-yellow-900",
   matrix: "from-black via-green-950 to-black",
   ocean: "from-blue-900 via-cyan-900 to-teal-900",
+  prestige: "from-amber-800 via-yellow-700 to-amber-900",
 };
 
 const BORDER_STYLES: Record<string, string> = {

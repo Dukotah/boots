@@ -23,6 +23,7 @@ import {
   pathCredentials,
   languageName,
 } from "@/lib/career";
+import { SITE } from "@/lib/site";
 import type { PlayerStats } from "@/types/game";
 
 export default function CareerPage() {
@@ -36,6 +37,7 @@ export default function CareerPage() {
 
   const [name, setName] = useState("");
   const [copied, setCopied] = useState(false);
+  const [copyErr, setCopyErr] = useState(false);
 
   // Reconstruct the stats snapshot from raw fields (avoids a selector that
   // returns a fresh object every render).
@@ -53,7 +55,7 @@ export default function CareerPage() {
   );
 
   const handle = user?.email?.split("@")[0];
-  const displayName = name.trim() || handle || "Boots Learner";
+  const displayName = name.trim() || handle || `${SITE.name} Learner`;
 
   const readiness = useMemo(() => computeReadiness(stats), [stats]);
   const creds = useMemo(() => pathCredentials(completed), [completed]);
@@ -74,7 +76,10 @@ export default function CareerPage() {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      /* clipboard blocked — no-op */
+      // Clipboard blocked (insecure context / permissions) — tell the user
+      // instead of leaving the button looking inert.
+      setCopyErr(true);
+      setTimeout(() => setCopyErr(false), 2500);
     }
   }
 
@@ -327,7 +332,11 @@ export default function CareerPage() {
           <div className="flex gap-2">
             <button onClick={copyMarkdown} className="btn-ghost text-sm">
               {copied ? <Check size={15} /> : <Copy size={15} />}
-              {copied ? "Copied" : "Copy as Markdown"}
+              {copied
+                ? "Copied"
+                : copyErr
+                  ? "Copy failed — use Print"
+                  : "Copy as Markdown"}
             </button>
             <button
               onClick={() => window.print()}

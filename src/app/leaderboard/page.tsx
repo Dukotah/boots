@@ -89,16 +89,22 @@ export default function LeaderboardPage() {
 
       if (fetched.length === 0) {
         fetched = seededPlayers();
-        // Inject local player at realistic position
-        const me: LeaderboardPlayer = {
-          id: "me",
-          username: myHandle,
-          xp: myXp,
-          weekly_xp: myWeeklyXp,
-          streak: myStreak,
-          league_tier: myLeagueTier,
-        };
-        fetched = [...fetched, me];
+      }
+
+      // Always ensure the local player appears (on both the seeded and the
+      // Supabase-backed path) so the rank callout + highlight never vanish.
+      if (!fetched.some((p) => p.id === "me" || p.username === myHandle)) {
+        fetched = [
+          ...fetched,
+          {
+            id: "me",
+            username: myHandle,
+            xp: myXp,
+            weekly_xp: myWeeklyXp,
+            streak: myStreak,
+            league_tier: myLeagueTier,
+          },
+        ];
       }
 
       const sortKey = tab === "weekly" ? "weekly_xp" : "xp";

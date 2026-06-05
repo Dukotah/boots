@@ -35,6 +35,13 @@ import { deriveBreadth } from "@/lib/progress";
 import { SEASON_DAYS, resolveSeason, type SeasonResult } from "@/lib/leagues";
 import { bossForSeason, bossState, type Boss, type BossState } from "@/lib/boss";
 import { nextBox, isReviewDue, type ReviewRecord } from "@/lib/mastery";
+import {
+  earnedSkillPoints,
+  talentEffects,
+  getTalent,
+  gateMet,
+  RESPEC_COST,
+} from "@/lib/talents";
 import type { PlayerStats } from "@/types/game";
 
 /** Build the full stats snapshot (core resources + derived breadth) from state. */
@@ -61,13 +68,17 @@ function buildStats(s: {
  * Pure aside from reading `todayKey()` — forgiving: a long absence only ever
  * resolves one season, so being away for weeks never cascades relegations.
  */
-function rolledSeason(s: {
-  seasonStart: string | null;
-  weeklyXp: number;
-  leagueTier: number;
-}): Partial<GameState> | null {
+function rolledSeason(
+  s: {
+    seasonStart: string | null;
+    weeklyXp: number;
+    leagueTier: number;
+    streakFreezes: number;
+  },
+  freezePerWeek = 0,
+): Partial<GameState> | null {
   const today = todayKey();
-  // First ever — just open a season; nothing to resolve.
+  // First ever — just open a season; nothing to resolve (no regen on the seed).
   if (s.seasonStart === null) return { seasonStart: today };
   if (dayDiff(s.seasonStart, today) < SEASON_DAYS) return null;
   const result = resolveSeason(s.weeklyXp, s.leagueTier);
@@ -78,6 +89,10 @@ function rolledSeason(s: {
     seasonStart: today,
     lastSeasonResult: result,
     claimedWeeklyQuests: [], // new season → weekly quests reset
+    // Sentinel talents regenerate streak freezes on each weekly roll.
+    ...(freezePerWeek > 0
+      ? { streakFreezes: s.streakFreezes + freezePerWeek }
+      : {}),
   };
 }
 
@@ -144,6 +159,8 @@ export type GameState = {
   // ── cosmetics (decorative; never power) ──
   cosmetics: string[]; // owned cosmetic item ids
   equipped: { flair: string | null; title: string | null; banner: string | null; border: string | null };
+  // ── talents (spent skill points; earned SP is derived from progress) ──
+  talents: string[]; // purchased talent ids
   // ── guilds ──
   guildId: string | null;
   guildName: string | null;
@@ -168,6 +185,8 @@ export type GameState = {
   boss: () => { boss: Boss; state: BossState; claimed: boolean };
   /** Lesson ids whose spaced-repetition review is due (never-reviewed = due). */
   dueReviews: () => string[];
+  /** Skill-point economy: earned (from progress), spent (on talents), available. */
+  skillPoints: () => { earned: number; spent: number; available: number };
 
   // ── game actions ──
   completeLesson: (id: string, xp: number) => CompletionResult;
@@ -186,6 +205,10 @@ export type GameState = {
   buyItem: (itemId: string) => { ok: boolean; chestGold?: number; owned?: boolean };
   /** Equip an owned cosmetic into its slot (toggles off if already equipped). */
   equipCosmetic: (itemId: string) => void;
+  /** Buy a talent with skill points (checks prereqs + gate + affordability). */
+  buyTalent: (id: string) => boolean;
+  /** Refund all talents for gold (RESPEC_COST). Unlocked cosmetics are kept. */
+  respecTalents: () => boolean;
   /** Join a guild by id and name. */
   joinGuild: (id: string, name: string) => void;
   /** Leave the current guild. */
@@ -229,6 +252,7 @@ const INITIAL = {
   reviews: {} as Record<string, ReviewRecord>,
   cosmetics: [] as string[],
   equipped: { flair: null as string | null, title: null as string | null, banner: null as string | null, border: null as string | null },
+  talents: [] as string[],
   guildId: null as string | null,
   guildName: null as string | null,
   lastLevelUp: null as number | null,
@@ -336,10 +360,23 @@ export const useGameStore = create<GameState>()(
         });
       },
 
+      skillPoints: () => {
+        const earned = earnedSkillPoints(buildStats(get()));
+        const spent = get().talents.reduce(
+          (sum, id) => sum + (getTalent(id)?.cost ?? 0),
+          0,
+        );
+        return { earned, spent, available: Math.max(0, earned - spent) };
+      },
+
       completeLesson: (id, xp) => {
         // Roll the weekly league season over first if it expired, so this
-        // completion's XP lands in the correct (possibly new) season.
-        const seasonRoll = rolledSeason(get());
+        // completion's XP lands in the correct (possibly new) season. A roll also
+        // regenerates Sentinel streak freezes.
+        const seasonRoll = rolledSeason(
+          get(),
+          talentEffects(get().talents).freezePerWeek,
+        );
         if (seasonRoll) set(seasonRoll);
         const state = get();
         const today = todayKey();
@@ -403,7 +440,14 @@ export const useGameStore = create<GameState>()(
         const newXp = state.xp + xp;
         const newLevel = levelFromXp(newXp).level;
         const leveledUp = newLevel > prevLevel;
-        const gainedGold = Math.round(xp * GOLD_PER_XP);
+        // Prospector talents boost gold: a percent multiplier on every lesson,
+        // plus a flat bonus on the first lesson of the day. (Gold only — never
+        // XP — so Leagues stay pay-to-win-free.)
+        const fx = talentEffects(state.talents);
+        const firstLessonToday = baseDailyLessons === 0;
+        const gainedGold =
+          Math.round(xp * GOLD_PER_XP * (1 + fx.goldMultPct / 100)) +
+          (firstLessonToday ? fx.dailyGold : 0);
 
         set({
           xp: newXp,
@@ -468,7 +512,6 @@ export const useGameStore = create<GameState>()(
           gold: s.gold + quest.rewardGold,
           xp: s.xp + (quest.rewardXp ?? 0),
           weeklyXp: s.weeklyXp + (quest.rewardXp ?? 0),
-          dailyDay: todayKey(),
           claimedQuests: [...claimed, questId],
         }));
         grantAchievements(get, set);
@@ -559,15 +602,22 @@ export const useGameStore = create<GameState>()(
         }
 
         // Mystery chest: pay the cost, win a random gold payout. Vary by current
-        // gold so it isn't a static value (Math.random is fine client-side).
-        const roll = CHEST_MIN + Math.floor(Math.random() * (CHEST_MAX - CHEST_MIN + 1));
+        // gold so it isn't a static value (Math.random is fine client-side). The
+        // Prospector "Tycoon" talent adds a flat bonus to every chest.
+        const roll =
+          CHEST_MIN +
+          Math.floor(Math.random() * (CHEST_MAX - CHEST_MIN + 1)) +
+          talentEffects(get().talents).chestBonus;
         set((s) => ({ gold: s.gold - item.cost + roll }));
         get().syncToServer();
         return { ok: true, chestGold: roll };
       },
 
       checkSeason: () => {
-        const roll = rolledSeason(get());
+        const roll = rolledSeason(
+          get(),
+          talentEffects(get().talents).freezePerWeek,
+        );
         if (roll) {
           set(roll);
           get().syncToServer();
@@ -587,6 +637,44 @@ export const useGameStore = create<GameState>()(
           },
         }));
         get().syncToServer();
+      },
+
+      buyTalent: (id) => {
+        const talent = getTalent(id);
+        if (!talent) return false;
+        const s = get();
+        if (s.talents.includes(id)) return false; // already owned
+        // Prerequisites must all be owned.
+        if (!talent.requires.every((r) => s.talents.includes(r))) return false;
+        // Learning gate (if any) must be satisfied.
+        if (!gateMet(talent.gate, buildStats(s))) return false;
+        // Must be able to afford it.
+        if (get().skillPoints().available < talent.cost) return false;
+
+        // Luminary talents also grant ownership of a talent-exclusive cosmetic,
+        // so it's immediately equippable from the profile/shop.
+        const grantsCosmetic =
+          talent.effect.kind === "cosmetic" ? talent.effect.cosmeticId : null;
+        set({
+          talents: [...s.talents, id],
+          cosmetics:
+            grantsCosmetic && !s.cosmetics.includes(grantsCosmetic)
+              ? [...s.cosmetics, grantsCosmetic]
+              : s.cosmetics,
+        });
+        get().syncToServer();
+        return true;
+      },
+
+      respecTalents: () => {
+        const s = get();
+        if (s.talents.length === 0) return false; // nothing to refund
+        if (s.gold < RESPEC_COST) return false;
+        // Refund the points (clear talents) but KEEP unlocked cosmetics — identity
+        // is permanent; respec only frees points to rebuild the active effects.
+        set({ gold: s.gold - RESPEC_COST, talents: [] });
+        get().syncToServer();
+        return true;
       },
 
       joinGuild: (id, name) => {
@@ -691,12 +779,16 @@ export const useGameStore = create<GameState>()(
         reviews: s.reviews,
         cosmetics: s.cosmetics,
         equipped: s.equipped,
+        talents: s.talents,
         guildId: s.guildId,
         guildName: s.guildName,
       }),
+      // A no-op migrate keeps an older persisted blob intact across version
+      // bumps; without it, a bump could silently drop the stored state.
+      migrate: (persisted) => persisted as GameState,
       merge: (persisted, current) => ({
         ...current,
-        ...(persisted as Partial<GameState>),
+        ...((persisted as Partial<GameState>) ?? {}),
       }),
     },
   ),
@@ -728,7 +820,10 @@ function grantAchievements(
     achievements: [...s.achievements, ...fresh],
     xp: s.xp + bonusXp,
     gold: s.gold + bonusGold,
-    weeklyXp: s.weeklyXp + bonusXp,
+    // NOTE: achievement bonus XP is deliberately NOT added to weeklyXp. A
+    // gold-gated achievement would otherwise pipe gold → weekly League standing,
+    // breaking the no-pay-to-win invariant. Achievements are milestones, not
+    // weekly effort, so they count toward total XP/level only.
     recentAchievement: fresh[fresh.length - 1],
   });
 

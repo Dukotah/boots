@@ -374,7 +374,8 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "👑",
     rarity: "legendary",
     category: "wealth",
-    rewardXp: 300,
+    // No XP reward: a gold-gated achievement granting XP would be a
+    // gold → XP → leaderboard bridge (pay-to-win). The badge is the reward.
     check: (s) => s.gold >= 5000,
   },
 

@@ -16,6 +16,8 @@ export type ShopItem = {
   /** Cosmetic-only: which slot it fills + the value applied when equipped. */
   slot?: CosmeticSlot;
   value?: string;
+  /** Cosmetic-only: granted exclusively by the talent tree, never sold for gold. */
+  talentOnly?: boolean;
 };
 
 export const SHOP_ITEMS: ShopItem[] = [
@@ -293,6 +295,41 @@ export const COSMETICS: ShopItem[] = [
     kind: "cosmetic",
     slot: "border",
     value: "fire",
+  },
+  // ── Talent-exclusive cosmetics — unlocked only via the Skill Tree (Luminary
+  // branch), never purchasable. cost 0 + talentOnly so the shop hides them. ──
+  {
+    id: "flair-constellation",
+    name: "Constellation Flair",
+    description: "An exclusive ✦ — granted only by the Skill Tree.",
+    icon: "✦",
+    cost: 0,
+    kind: "cosmetic",
+    slot: "flair",
+    value: "✦",
+    talentOnly: true,
+  },
+  {
+    id: "title-ascendant",
+    name: "Title: Ascendant",
+    description: "An exclusive title earned in the Skill Tree.",
+    icon: "🌠",
+    cost: 0,
+    kind: "cosmetic",
+    slot: "title",
+    value: "Ascendant",
+    talentOnly: true,
+  },
+  {
+    id: "banner-prestige",
+    name: "Banner: Prestige",
+    description: "A radiant prestige banner — proof of a maxed Skill Tree build.",
+    icon: "👑",
+    cost: 0,
+    kind: "cosmetic",
+    slot: "banner",
+    value: "prestige",
+    talentOnly: true,
   },
 ];
 

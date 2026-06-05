@@ -193,7 +193,7 @@ function getUser(id) {
   const user = db.query("SELECT * FROM users WHERE id = ?", id);
 
   // 3. Store in cache for next time
-  cache.set("user:" + id, user, ttl: 3600); // 1 hour TTL
+  cache.set("user:" + id, user, 3600); // third arg = TTL in seconds (1 hour)
 
   return user;
 }

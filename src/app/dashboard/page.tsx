@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Flame, Zap, Trophy, Target, RotateCcw, Briefcase } from "lucide-react";
 import { useGameStore } from "@/store/useGameStore";
 import { levelFromXp } from "@/lib/levels";
@@ -31,16 +31,18 @@ export default function Dashboard() {
 
   // Single source of truth for "career ready" — the Career Pack score
   // (lib/career), so the dashboard and /career never disagree.
-  const stats: PlayerStats = {
-    xp,
-    level: info.level,
-    gold,
-    streak,
-    completedCount: completed.length,
-    completedIds: completed,
-    ...deriveBreadth(completed),
-  };
-  const careerScore = computeReadiness(stats).score;
+  const careerScore = useMemo(() => {
+    const stats: PlayerStats = {
+      xp,
+      level: info.level,
+      gold,
+      streak,
+      completedCount: completed.length,
+      completedIds: completed,
+      ...deriveBreadth(completed),
+    };
+    return computeReadiness(stats).score;
+  }, [xp, info.level, gold, streak, completed]);
 
   // Find the first unfinished lesson to "Continue".
   let continueHref = "/learn";
@@ -91,7 +93,10 @@ export default function Dashboard() {
           className="card transition-colors hover:border-accent/60"
         >
           <Briefcase className="mb-2 text-accent-soft" />
-          <p className="text-3xl font-bold text-white">{careerScore}</p>
+          <p className="text-3xl font-bold text-white">
+            {careerScore}
+            <span className="text-base font-normal text-gray-500"> / 100</span>
+          </p>
           <p className="text-sm text-gray-400">career ready · Career Pack →</p>
         </Link>
       </div>

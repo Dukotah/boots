@@ -150,7 +150,7 @@ assertEquals(list.getPending()[0].text, "Task 1");`,
 A real calculator is harder than it looks. You need to manage:
 - **State** (what was the last operation?)
 - **Edge cases** (dividing by zero, multiple decimals)
-- **Operator chaining** (3 + 4 × 2 = ?)
+- **Operator chaining** — like a basic pocket calculator, evaluated left-to-right (press 3, +, 4, =, ×, 2, = → 14), not with math precedence
 
 ## The Spec
 
@@ -537,7 +537,7 @@ else → deny
 ## The Spec
 
 \`\`\`js
-const limiter = new RateLimiter(limit=5, windowMs=1000);
+const limiter = new RateLimiter(5, 1000); // limit=5, windowMs=1000
 limiter.isAllowed("user123"); // true (1st request)
 // ... after 5 requests in 1 second:
 limiter.isAllowed("user123"); // false (rate limited)

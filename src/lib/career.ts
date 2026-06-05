@@ -19,6 +19,7 @@ import {
   type Path,
 } from "@/lib/paths";
 import { levelFromXp } from "@/lib/levels";
+import { SITE } from "@/lib/site";
 import type { PlayerStats } from "@/types/game";
 
 // ── Language display names ───────────────────────────────────────────────────
@@ -195,7 +196,11 @@ export function certVerifyCode(slug: string, name: string): string {
   for (let i = 0; i < input.length; i++) {
     h = (h * 31 + input.charCodeAt(i)) >>> 0;
   }
-  return "BOOTS-" + h.toString(36).toUpperCase().padStart(6, "0").slice(0, 6);
+  return (
+    SITE.name.toUpperCase() +
+    "-" +
+    h.toString(36).toUpperCase().padStart(6, "0").slice(0, 6)
+  );
 }
 
 // ── Résumé / portfolio export ────────────────────────────────────────────────

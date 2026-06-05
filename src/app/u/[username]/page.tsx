@@ -25,6 +25,7 @@ import { ACHIEVEMENTS, ACHIEVEMENT_CATEGORIES } from "@/lib/achievements";
 import { MODULES } from "@/lib/curriculum";
 import { deriveBreadth } from "@/lib/progress";
 import { computeReadiness, CAREER_MODULES } from "@/lib/career";
+import { SITE } from "@/lib/site";
 import type { PlayerStats } from "@/types/game";
 import {
   getSupabaseBrowserClient,
@@ -52,6 +53,7 @@ const BANNER_GRADIENTS: Record<string, string> = {
   fire: "from-red-900 via-orange-900 to-yellow-900",
   matrix: "from-black via-green-950 to-black",
   ocean: "from-blue-900 via-cyan-900 to-teal-900",
+  prestige: "from-amber-800 via-yellow-700 to-amber-900",
 };
 
 const LANGUAGE_LABELS: Record<string, { label: string; icon: string; color: string }> = {
@@ -73,16 +75,23 @@ function HeatmapFromCompleted({ completed }: { completed: string[] }) {
   // We don't have activeDays for other users, so derive from completed list
   // (approximate — treat every 5 completions as an active day)
   const activeCount = Math.min(Math.floor(completed.length / 2), DAYS);
+  // Deterministic fill (no Math.random in render — that reshuffled the wall on
+  // every re-render). Approximate, since we lack other users' real activeDays.
   const cells = Array.from({ length: DAYS }, (_, i) => ({
     key: i.toString(),
-    active: i >= DAYS - activeCount && Math.random() > 0.3,
+    active: i >= DAYS - activeCount && i % 3 !== 0,
   }));
 
   return (
-    <div className="grid grid-flow-col grid-rows-7 gap-1 overflow-x-auto">
+    <div
+      role="img"
+      aria-label={`Activity heatmap — roughly ${activeCount} active days`}
+      className="grid grid-flow-col grid-rows-7 gap-1 overflow-x-auto"
+    >
       {cells.map((c) => (
         <div
           key={c.key}
+          aria-hidden="true"
           className={[
             "h-3 w-3 rounded-sm",
             c.active ? "bg-accent shadow-glow" : "bg-surface-2",
@@ -610,7 +619,7 @@ export default function PublicProfilePage() {
             <span className="font-semibold text-accent-soft">💡 Resume tip:</span>{" "}
             Link to{" "}
             <span className="font-mono text-xs bg-surface-2 rounded px-1">
-              boots.dev/u/{data.name}
+              {SITE.url.replace(/^https?:\/\//, "")}/u/{data.name}
             </span>{" "}
             on your resume or LinkedIn to show verified coding progress.
           </p>

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Flame, Zap } from "lucide-react";
+import { Flame, Zap, Menu, X } from "lucide-react";
 import { useGameStore } from "@/store/useGameStore";
 import { levelFromXp } from "@/lib/levels";
 import { MascotBoots } from "./MascotBoots";
@@ -11,21 +11,40 @@ import { useEffect, useState } from "react";
 // Routes that render their own AppShell chrome (sidebar) — hide the top Navbar there.
 const APP_SHELL_ROUTES = ["/map"];
 
+// Every top-level destination. Desktop shows a subset inline; the mobile menu
+// lists them all so no route is unreachable on a phone.
+const NAV_LINKS: { href: string; label: string; desktop?: boolean }[] = [
+  { href: "/learn", label: "Learn", desktop: true },
+  { href: "/paths", label: "Paths", desktop: true },
+  { href: "/skill-tree", label: "Skill Tree", desktop: true },
+  { href: "/career", label: "Career", desktop: true },
+  { href: "/playground", label: "Playground", desktop: true },
+  { href: "/leaderboard", label: "Leaderboard" },
+  { href: "/guilds", label: "Guilds" },
+  { href: "/events", label: "Events" },
+  { href: "/tools", label: "Tools" },
+  { href: "/blog", label: "Blog" },
+  { href: "/pricing", label: "Pricing", desktop: true },
+];
+
 export function Navbar() {
   // Avoid hydration mismatch: store is persisted/client-only.
   const [mounted, setMounted] = useState(false);
+  const [open, setOpen] = useState(false);
   useEffect(() => setMounted(true), []);
 
+  // All hooks are called unconditionally (before any early return) to satisfy
+  // the rules of hooks across route changes.
   const pathname = usePathname();
-  const hidden = APP_SHELL_ROUTES.some(
-    (r) => pathname === r || pathname.startsWith(r + "/"),
-  );
-  if (hidden) return null;
-
   const xp = useGameStore((s) => s.xp);
   const streak = useGameStore((s) => s.streak);
   const user = useGameStore((s) => s.user);
   const info = levelFromXp(xp);
+
+  const hidden = APP_SHELL_ROUTES.some(
+    (r) => pathname === r || pathname.startsWith(r + "/"),
+  );
+  if (hidden) return null;
 
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-canvas/80 backdrop-blur">
@@ -38,72 +57,18 @@ export function Navbar() {
         </Link>
 
         <div className="flex items-center gap-2 sm:gap-4">
-          <Link
-            href="/learn"
-            className="text-sm font-medium text-gray-300 hover:text-white"
-          >
-            Learn
-          </Link>
-          <Link
-            href="/paths"
-            className="hidden text-sm font-medium text-gray-300 hover:text-white sm:inline"
-          >
-            Paths
-          </Link>
-          <Link
-            href="/skill-tree"
-            className="hidden text-sm font-medium text-gray-300 hover:text-white sm:inline"
-          >
-            Skill Tree
-          </Link>
-          <Link
-            href="/playground"
-            className="text-sm font-medium text-gray-300 hover:text-white"
-          >
-            Playground
-          </Link>
-          <Link
-            href="/career"
-            className="hidden text-sm font-medium text-gray-300 hover:text-white sm:inline"
-          >
-            Career
-          </Link>
-          <Link
-            href="/tools"
-            className="hidden text-sm font-medium text-gray-300 hover:text-white sm:inline"
-          >
-            Tools
-          </Link>
-          <Link
-            href="/blog"
-            className="hidden text-sm font-medium text-gray-300 hover:text-white sm:inline"
-          >
-            Blog
-          </Link>
-          <Link
-            href="/leaderboard"
-            className="hidden text-sm font-medium text-gray-300 hover:text-white sm:inline"
-          >
-            Leaderboard
-          </Link>
-          <Link
-            href="/guilds"
-            className="hidden text-sm font-medium text-gray-300 hover:text-white sm:inline"
-          >
-            Guilds
-          </Link>
-          <Link
-            href="/events"
-            className="hidden text-sm font-medium text-gray-300 hover:text-white sm:inline"
-          >
-            Events
-          </Link>
-          <Link
-            href="/pricing"
-            className="text-sm font-medium text-gray-300 hover:text-white"
-          >
-            Pricing
-          </Link>
+          {/* Desktop links */}
+          <div className="hidden items-center gap-4 sm:flex">
+            {NAV_LINKS.filter((l) => l.desktop).map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                className="text-sm font-medium text-gray-300 hover:text-white"
+              >
+                {l.label}
+              </Link>
+            ))}
+          </div>
 
           {mounted && (
             <Link
@@ -123,13 +88,55 @@ export function Navbar() {
           {mounted && !user && (
             <Link
               href="/login"
-              className="text-sm font-medium text-gray-300 hover:text-white"
+              className="hidden text-sm font-medium text-gray-300 hover:text-white sm:inline"
             >
               Sign in
             </Link>
           )}
+
+          {/* Mobile hamburger */}
+          <button
+            type="button"
+            onClick={() => setOpen((o) => !o)}
+            aria-label={open ? "Close menu" : "Open menu"}
+            aria-expanded={open}
+            aria-controls="mobile-nav"
+            className="rounded-lg p-1.5 text-gray-300 hover:bg-surface-2 hover:text-white sm:hidden"
+          >
+            {open ? <X size={20} /> : <Menu size={20} />}
+          </button>
         </div>
       </nav>
+
+      {/* Mobile menu — reaches every route */}
+      {open && (
+        <div
+          id="mobile-nav"
+          className="border-t border-line bg-canvas/95 backdrop-blur sm:hidden"
+        >
+          <div className="mx-auto flex max-w-6xl flex-col px-4 py-2">
+            {NAV_LINKS.map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                onClick={() => setOpen(false)}
+                className="rounded-lg px-2 py-2.5 text-sm font-medium text-gray-300 hover:bg-surface-2 hover:text-white"
+              >
+                {l.label}
+              </Link>
+            ))}
+            {mounted && !user && (
+              <Link
+                href="/login"
+                onClick={() => setOpen(false)}
+                className="rounded-lg px-2 py-2.5 text-sm font-medium text-accent-soft hover:bg-surface-2"
+              >
+                Sign in
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
     </header>
   );
 }
