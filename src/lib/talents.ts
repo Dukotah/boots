@@ -12,7 +12,7 @@
 import { completedPaths } from "@/lib/paths";
 import type { PlayerStats } from "@/types/game";
 
-export type TalentBranch = "prospector" | "sentinel" | "luminary";
+export type TalentBranch = "prospector" | "sentinel" | "luminary" | "scholar";
 
 /** A talent's effect, interpreted by the store (economy/QoL) or equip (cosmetic). */
 export type TalentEffect =
@@ -20,6 +20,7 @@ export type TalentEffect =
   | { kind: "daily-gold"; gold: number } // bonus gold on the first lesson each day
   | { kind: "chest-luck"; gold: number } // flat bonus added to mystery-chest payouts
   | { kind: "freeze-regen"; perWeek: number } // streak freezes granted each season roll
+  | { kind: "review-gold"; gold: number } // gold earned per *due* spaced-repetition review
   | { kind: "cosmetic"; cosmeticId: string }; // unlocks (grants ownership of) a cosmetic
 
 /** Optional learning gate — ties a talent to real progress, not just SP. */
@@ -64,6 +65,12 @@ export const BRANCH_META: Record<
     tagline: "Wear what can't be bought.",
     icon: "✨",
     color: "#a78bfa",
+  },
+  scholar: {
+    label: "Scholar",
+    tagline: "Get paid to remember.",
+    icon: "📚",
+    color: "#38bdf8",
   },
 };
 
@@ -190,10 +197,87 @@ export const TALENTS: Talent[] = [
     effect: { kind: "cosmetic", cosmeticId: "banner-prestige" },
     keystone: true,
   },
+
+  // ── 📚 Scholar — retention / spaced repetition ──────────────────────────────
+  // Rewards the rarest learning virtue: coming *back*. Reviews paid nothing
+  // before; this branch turns a maintained memory into a gentle gold faucet —
+  // gold only, never XP, so it can't touch Leagues.
+  {
+    id: "scholar-recall-1",
+    branch: "scholar",
+    tier: 0,
+    label: "Spaced Study",
+    description: "Earn +8 gold each time you clear a due review.",
+    icon: "🔁",
+    cost: 1,
+    requires: [],
+    effect: { kind: "review-gold", gold: 8 },
+  },
+  {
+    id: "scholar-recall-2",
+    branch: "scholar",
+    tier: 1,
+    label: "Active Recall",
+    description: "Earn an additional +14 gold per due review (+22 total).",
+    icon: "🧠",
+    cost: 2,
+    requires: ["scholar-recall-1"],
+    gate: { kind: "level", value: 4 },
+    effect: { kind: "review-gold", gold: 14 },
+  },
+  {
+    id: "scholar-polymath",
+    branch: "scholar",
+    tier: 2,
+    label: "Polymath",
+    description: "Unlock the exclusive Polymath title — proof you never let knowledge fade.",
+    icon: "🎓",
+    cost: 3,
+    requires: ["scholar-recall-2"],
+    gate: { kind: "modules", value: 12 },
+    effect: { kind: "cosmetic", cosmeticId: "title-polymath" },
+    keystone: true,
+  },
 ];
 
 export function getTalent(id: string): Talent | undefined {
   return TALENTS.find((t) => t.id === id);
+}
+
+const ALL_BRANCHES: TalentBranch[] = [
+  "prospector",
+  "sentinel",
+  "luminary",
+  "scholar",
+];
+
+/** Skill points invested per branch — for build-summary surfaces. */
+export function branchPoints(owned: string[]): Record<TalentBranch, number> {
+  const out = { prospector: 0, sentinel: 0, luminary: 0, scholar: 0 };
+  for (const id of owned) {
+    const t = getTalent(id);
+    if (t) out[t.branch] += t.cost;
+  }
+  return out;
+}
+
+/**
+ * A short build identity from where the player spent their points. A clearly
+ * dominant branch (≥60% of invested SP) names the build; a spread reads "Hybrid".
+ * Returns null for an empty build so callers can hide the surface.
+ */
+export function buildTitle(owned: string[]): string | null {
+  const pts = branchPoints(owned);
+  const total = ALL_BRANCHES.reduce((sum, b) => sum + pts[b], 0);
+  if (total === 0) return null;
+  const ranked = ALL_BRANCHES.filter((b) => pts[b] > 0).sort(
+    (a, b) => pts[b] - pts[a],
+  );
+  const top = ranked[0];
+  if (ranked.length === 1 || pts[top] / total >= 0.6) {
+    return `${BRANCH_META[top].label} build`;
+  }
+  return "Hybrid build";
 }
 
 export function talentsByBranch(branch: TalentBranch): Talent[] {
@@ -231,6 +315,7 @@ export type AggregatedEffects = {
   dailyGold: number;
   chestBonus: number;
   freezePerWeek: number;
+  reviewGold: number;
   cosmetics: string[];
 };
 
@@ -241,6 +326,7 @@ export function talentEffects(owned: string[]): AggregatedEffects {
     dailyGold: 0,
     chestBonus: 0,
     freezePerWeek: 0,
+    reviewGold: 0,
     cosmetics: [],
   };
   for (const id of owned) {
@@ -258,6 +344,9 @@ export function talentEffects(owned: string[]): AggregatedEffects {
         break;
       case "freeze-regen":
         fx.freezePerWeek += t.effect.perWeek;
+        break;
+      case "review-gold":
+        fx.reviewGold += t.effect.gold;
         break;
       case "cosmetic":
         fx.cosmetics.push(t.effect.cosmeticId);

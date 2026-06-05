@@ -25,6 +25,7 @@ import { ACHIEVEMENTS, ACHIEVEMENT_CATEGORIES } from "@/lib/achievements";
 import { MODULES } from "@/lib/curriculum";
 import { deriveBreadth } from "@/lib/progress";
 import { computeReadiness, CAREER_MODULES } from "@/lib/career";
+import { TalentBuildCard } from "@/components/features/talents/TalentBuildCard";
 import { SITE } from "@/lib/site";
 import type { PlayerStats } from "@/types/game";
 import {
@@ -45,6 +46,7 @@ type ProfileData = {
   equippedFlair?: string | null;
   equippedBanner?: string | null;
   guildName?: string | null;
+  talents?: string[];
 };
 
 const BANNER_GRADIENTS: Record<string, string> = {
@@ -143,6 +145,7 @@ export default function PublicProfilePage() {
   const activeDays = useGameStore((s) => s.activeDays);
   const equipped = useGameStore((s) => s.equipped);
   const guildName = useGameStore((s) => s.guildName);
+  const talents = useGameStore((s) => s.talents);
   const user = useGameStore((s) => s.user);
 
   const [state, setState] = useState<Load>("loading");
@@ -167,6 +170,7 @@ export default function PublicProfilePage() {
         equippedFlair: equipped.flair,
         equippedBanner: equipped.banner,
         guildName,
+        talents,
       });
       setState("found");
       return;
@@ -185,7 +189,9 @@ export default function PublicProfilePage() {
     (async () => {
       const { data: row } = await sb
         .from("profiles")
-        .select("username, xp, streak, gold, completed, achievements")
+        .select(
+          "username, xp, streak, gold, completed, achievements, talents, equipped, guild_name",
+        )
         .eq("username", username)
         .maybeSingle();
       if (!active) return;
@@ -199,6 +205,13 @@ export default function PublicProfilePage() {
         gold?: number;
         completed?: string[];
         achievements?: string[];
+        talents?: string[];
+        equipped?: {
+          title?: string | null;
+          flair?: string | null;
+          banner?: string | null;
+        } | null;
+        guild_name?: string | null;
       };
       setData({
         name: username,
@@ -207,6 +220,11 @@ export default function PublicProfilePage() {
         gold: r.gold ?? 0,
         completed: r.completed ?? [],
         achievements: r.achievements ?? [],
+        talents: r.talents ?? [],
+        equippedTitle: r.equipped?.title ?? null,
+        equippedFlair: r.equipped?.flair ?? null,
+        equippedBanner: r.equipped?.banner ?? null,
+        guildName: r.guild_name ?? null,
       });
       setState("found");
     })();
@@ -434,6 +452,21 @@ export default function PublicProfilePage() {
           </p>
         )}
       </motion.div>
+
+      {/* Talent Build */}
+      {data.talents && data.talents.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.13 }}
+        >
+          <TalentBuildCard
+            talents={data.talents}
+            showBonuses={isOwnProfile}
+            href={isOwnProfile ? "/skill-tree" : null}
+          />
+        </motion.div>
+      )}
 
       {/* Skills / Languages */}
       {breadth.languages.length > 0 && (

@@ -24,7 +24,7 @@ import type { PlayerStats } from "@/types/game";
 
 type NodeState = "owned" | "available" | "prereq-locked" | "gate-locked";
 
-const BRANCHES: TalentBranch[] = ["prospector", "sentinel", "luminary"];
+const BRANCHES: TalentBranch[] = ["prospector", "sentinel", "luminary", "scholar"];
 
 export default function SkillTreePage() {
   const mounted = useMounted();
@@ -86,6 +86,7 @@ export default function SkillTreePage() {
   if (fx.goldMultPct) bonuses.push(`+${fx.goldMultPct}% lesson gold`);
   if (fx.dailyGold) bonuses.push(`+${fx.dailyGold} first-lesson gold`);
   if (fx.chestBonus) bonuses.push(`+${fx.chestBonus} chest gold`);
+  if (fx.reviewGold) bonuses.push(`+${fx.reviewGold} gold/review`);
   if (fx.freezePerWeek) bonuses.push(`+${fx.freezePerWeek} freeze/week`);
   if (fx.cosmetics.length)
     bonuses.push(
@@ -160,7 +161,7 @@ export default function SkillTreePage() {
       </div>
 
       {/* Branches */}
-      <div className="mt-8 grid gap-6 md:grid-cols-3">
+      <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {BRANCHES.map((branch) => {
           const meta = BRANCH_META[branch];
           const nodes = talentsByBranch(branch);

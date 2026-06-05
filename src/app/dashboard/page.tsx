@@ -8,8 +8,10 @@ import { levelFromXp } from "@/lib/levels";
 import { MODULES, totalLessons, totalXpAvailable, lessonId } from "@/lib/curriculum";
 import { deriveBreadth } from "@/lib/progress";
 import { computeReadiness } from "@/lib/career";
+import { earnedSkillPoints, getTalent } from "@/lib/talents";
 import type { PlayerStats } from "@/types/game";
 import { XPBar } from "@/components/XPBar";
+import { TalentBuildCard } from "@/components/features/talents/TalentBuildCard";
 import { DailyQuests } from "@/components/features/quests/DailyQuests";
 import { DailyChallenge } from "@/components/features/retention/DailyChallenge";
 import { StreakHeatmap } from "@/components/features/retention/StreakHeatmap";
@@ -23,11 +25,27 @@ export default function Dashboard() {
   const gold = useGameStore((s) => s.gold);
   const streak = useGameStore((s) => s.streak);
   const completed = useGameStore((s) => s.completed);
+  const talents = useGameStore((s) => s.talents);
   const reset = useGameStore((s) => s.reset);
 
   const info = levelFromXp(xp);
   const doneCount = completed.length;
   const pct = Math.round((doneCount / totalLessons()) * 100);
+
+  // Skill points still available to spend = earned (from progress) − invested.
+  const availableSp = useMemo(() => {
+    const stats: PlayerStats = {
+      xp,
+      level: info.level,
+      gold,
+      streak,
+      completedCount: completed.length,
+      completedIds: completed,
+      ...deriveBreadth(completed),
+    };
+    const spent = talents.reduce((sum, id) => sum + (getTalent(id)?.cost ?? 0), 0);
+    return earnedSkillPoints(stats) - spent;
+  }, [xp, info.level, gold, streak, completed, talents]);
 
   // Single source of truth for "career ready" — the Career Pack score
   // (lib/career), so the dashboard and /career never disagree.
@@ -109,6 +127,11 @@ export default function Dashboard() {
       {/* Challenge of the day */}
       <div className="mt-4">
         <DailyChallenge />
+      </div>
+
+      {/* Talent build summary */}
+      <div className="mt-4">
+        <TalentBuildCard talents={talents} availableSp={availableSp} />
       </div>
 
       {/* Quick links to new features */}

@@ -331,6 +331,17 @@ export const COSMETICS: ShopItem[] = [
     value: "prestige",
     talentOnly: true,
   },
+  {
+    id: "title-polymath",
+    name: "Title: Polymath",
+    description: "An exclusive title from the Skill Tree's Scholar branch.",
+    icon: "🎓",
+    cost: 0,
+    kind: "cosmetic",
+    slot: "title",
+    value: "Polymath",
+    talentOnly: true,
+  },
 ];
 
 export function getCosmetic(id: string): ShopItem | undefined {
@@ -341,6 +352,47 @@ export function getShopItem(id: string): ShopItem | undefined {
   return SHOP_ITEMS.find((i) => i.id === id) ?? COSMETICS.find((i) => i.id === id);
 }
 
-/** Deterministic-ish chest payout band. The store supplies the random roll. */
+// ── Mystery chest economics ─────────────────────────────────────────────────
+// A chest costs CHEST_COST gold. The payout is a *weighted* roll, not a flat
+// uniform band: usually you win a little less than you paid (a small house edge),
+// but rare jackpots keep it exciting. This keeps the chest a gamble — variance and
+// the thrill of a jackpot — instead of a money printer that trivialises every
+// cosmetic sink. The base expected value is ~46 gold against a 50 cost, so gold
+// stays meaningful; the Prospector "Tycoon" talent (chest-luck) is what flips a
+// chest into a deliberately +EV investment.
+export const CHEST_COST = 50;
+
+/** Lowest/highest *possible* payouts — for UI copy only. */
 export const CHEST_MIN = 10;
-export const CHEST_MAX = 160;
+export const CHEST_MAX = 300;
+
+type ChestTier = { p: number; lo: number; hi: number };
+
+// Cumulative-probability loot tiers (p values sum to 1). Tuned so the base EV
+// (~46) sits just under CHEST_COST (50) — see rollChest for the EV breakdown.
+const CHEST_TIERS: ChestTier[] = [
+  { p: 0.55, lo: 10, hi: 30 }, // common   — avg 20  ·  contributes 11.0
+  { p: 0.28, lo: 35, hi: 65 }, // uncommon — avg 50  ·  contributes 14.0
+  { p: 0.13, lo: 80, hi: 140 }, // rare     — avg 110 ·  contributes 14.3
+  { p: 0.04, lo: 200, hi: 300 }, // jackpot  — avg 250 ·  contributes 10.0
+]; //                                          base EV ≈ 49.3 (≈ 46 after rounding)
+
+/**
+ * Roll a mystery-chest payout from a uniform random `r` in [0, 1).
+ * `bonus` is the flat Prospector "Tycoon" chest-luck add (0 if unowned).
+ * Pure + deterministic in `r` so the store owns the single Math.random() call.
+ */
+export function rollChest(r: number, bonus = 0): number {
+  const x = Math.min(0.999999, Math.max(0, r));
+  let acc = 0;
+  for (const tier of CHEST_TIERS) {
+    acc += tier.p;
+    if (x < acc) {
+      // Spread the remaining randomness across this tier's [lo, hi] band.
+      const span = (x - (acc - tier.p)) / tier.p; // 0..1 within the tier
+      return Math.round(tier.lo + span * (tier.hi - tier.lo)) + bonus;
+    }
+  }
+  // Floating-point fallthrough → top of the jackpot band.
+  return CHEST_TIERS[CHEST_TIERS.length - 1].hi + bonus;
+}

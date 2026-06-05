@@ -29,7 +29,7 @@ import {
   chainStepKey,
   type DailySnapshot,
 } from "@/lib/quests";
-import { getShopItem, CHEST_MIN, CHEST_MAX } from "@/lib/shop";
+import { getShopItem, rollChest } from "@/lib/shop";
 import { getSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { deriveBreadth } from "@/lib/progress";
 import { SEASON_DAYS, resolveSeason, type SeasonResult } from "@/lib/leagues";
@@ -432,9 +432,19 @@ export const useGameStore = create<GameState>()(
           } else streak = 1;
         }
 
-        // Re-completing refreshes the streak but never re-awards rewards.
+        // Re-completing refreshes the streak but never re-awards XP. The Scholar
+        // branch *does* pay gold for clearing a review — but only one that was
+        // genuinely DUE, so you can't farm it by re-completing the same lesson on
+        // repeat the same day (the Leitner interval gates the next payout).
         if (state.completed.includes(id)) {
+          const prevRec = state.reviews[id];
+          const reviewWasDue =
+            !prevRec || isReviewDue(prevRec, dayDiff(prevRec.last, today));
+          const reviewGold = reviewWasDue
+            ? talentEffects(state.talents).reviewGold
+            : 0;
           set({
+            gold: state.gold + reviewGold,
             streak,
             streakFreezes,
             lastActiveDay: today,
@@ -463,7 +473,7 @@ export const useGameStore = create<GameState>()(
           get().syncToServer();
           return {
             gainedXp: 0,
-            gainedGold: 0,
+            gainedGold: reviewGold,
             gainedSkillPoints,
             leveledUp: false,
             newLevel: levelFromXp(state.xp).level,
@@ -642,13 +652,13 @@ export const useGameStore = create<GameState>()(
           return { ok: true };
         }
 
-        // Mystery chest: pay the cost, win a random gold payout. Vary by current
-        // gold so it isn't a static value (Math.random is fine client-side). The
-        // Prospector "Tycoon" talent adds a flat bonus to every chest.
-        const roll =
-          CHEST_MIN +
-          Math.floor(Math.random() * (CHEST_MAX - CHEST_MIN + 1)) +
-          talentEffects(get().talents).chestBonus;
+        // Mystery chest: pay the cost, win a weighted-random gold payout (mostly
+        // a small loss, rare jackpots — see lib/shop.rollChest). The Prospector
+        // "Tycoon" talent adds a flat chest-luck bonus to every roll.
+        const roll = rollChest(
+          Math.random(),
+          talentEffects(get().talents).chestBonus,
+        );
         set((s) => ({ gold: s.gold - item.cost + roll }));
         get().syncToServer();
         return { ok: true, chestGold: roll };
@@ -692,8 +702,8 @@ export const useGameStore = create<GameState>()(
         // Must be able to afford it.
         if (get().skillPoints().available < talent.cost) return false;
 
-        // Luminary talents also grant ownership of a talent-exclusive cosmetic,
-        // so it's immediately equippable from the profile/shop.
+        // Cosmetic-effect talents (Luminary branch, Scholar keystone) also grant
+        // ownership of a talent-exclusive cosmetic, so it's immediately equippable.
         const grantsCosmetic =
           talent.effect.kind === "cosmetic" ? talent.effect.cosmeticId : null;
         set({
