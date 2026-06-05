@@ -13,6 +13,7 @@ import { celebrate } from "@/lib/celebrate";
 import { useAccess } from "@/hooks/useAccess";
 import { useMounted } from "@/hooks/useMounted";
 import { LevelUpToast } from "./LevelUpToast";
+import { SkillPointToast } from "./SkillPointToast";
 import { ProGate } from "./features/billing/ProGate";
 
 // Renders a quiz/scenario lesson: reading content + multiple-choice questions
@@ -69,6 +70,7 @@ export function QuizView({
   return (
     <div className="mx-auto max-w-3xl px-4 py-6">
       <LevelUpToast />
+      <SkillPointToast />
       <Link
         href={`/learn/${module.slug}`}
         className="text-xs font-medium text-accent-soft hover:underline"

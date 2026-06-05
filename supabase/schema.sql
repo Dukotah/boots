@@ -64,6 +64,15 @@ create table if not exists public.profiles (
   weekly_xp      integer not null default 0 check (weekly_xp >= 0),
   league_tier    integer not null default 0 check (league_tier >= 0),
   season_start   text,
+  -- Skill tree, cosmetics & guild (see migration 0005). `rev` is the sync
+  -- revision the client bumps each write to resolve last-writer-wins on pull.
+  cosmetics      text[] not null default '{}',
+  talents        text[] not null default '{}',
+  equipped       jsonb not null default '{}'::jsonb,
+  streak_freezes integer not null default 0 check (streak_freezes >= 0),
+  guild_id       text,
+  guild_name     text,
+  rev            integer not null default 0,
   -- Billing entitlement (see migration 0004). Written ONLY by the Stripe webhook
   -- via the service-role client; the protect_billing_columns trigger blocks
   -- client writes so a learner can't grant itself Pro.

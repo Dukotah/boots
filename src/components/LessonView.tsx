@@ -20,6 +20,7 @@ import { CodeEditor } from "./CodeEditor";
 import { BlockTray } from "./BlockTray";
 import { TestResults } from "./TestResults";
 import { LevelUpToast } from "./LevelUpToast";
+import { SkillPointToast } from "./SkillPointToast";
 import { ProGate } from "./features/billing/ProGate";
 import { AskBoots } from "./features/tutor/AskBoots";
 import { TutorPanel } from "./TutorPanel";
@@ -155,6 +156,7 @@ export function LessonView({
   return (
     <div className="mx-auto grid max-w-7xl gap-4 px-4 py-6 lg:grid-cols-2">
       <LevelUpToast />
+      <SkillPointToast />
 
       {/* Left: lesson content */}
       <section className="card max-h-[calc(100vh-7rem)] overflow-y-auto lg:sticky lg:top-20">

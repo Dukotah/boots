@@ -117,6 +117,7 @@ export type SyncStatus = "idle" | "syncing" | "error";
 export type CompletionResult = {
   gainedXp: number;
   gainedGold: number;
+  gainedSkillPoints: number;
   leveledUp: boolean;
   newLevel: number;
   unlockedAchievements: string[];
@@ -164,9 +165,13 @@ export type GameState = {
   // ── guilds ──
   guildId: string | null;
   guildName: string | null;
+  // ── sync revision (bumped on every server write; resolves last-writer-wins) ──
+  rev: number;
   // ── transient UI signals (not persisted) ──
   lastLevelUp: number | null;
   recentAchievement: string | null;
+  // Skill points earned by the latest completion (for the toast); null = none.
+  recentSkillPoints: number | null;
   // ── auth / sync (not persisted) ──
   user: User | null;
   session: Session | null;
@@ -217,6 +222,7 @@ export type GameState = {
   checkSeason: () => void;
   clearLevelUp: () => void;
   clearRecentAchievement: () => void;
+  clearRecentSkillPoints: () => void;
   clearSeasonResult: () => void;
   reset: () => void;
 
@@ -255,11 +261,20 @@ const INITIAL = {
   talents: [] as string[],
   guildId: null as string | null,
   guildName: null as string | null,
+  rev: 0,
   lastLevelUp: null as number | null,
   recentAchievement: null as string | null,
+  recentSkillPoints: null as number | null,
 };
 
 // ── Supabase sync helpers — the live snapshot lives on the profiles row ──
+
+type EquippedLoadout = {
+  flair: string | null;
+  title: string | null;
+  banner: string | null;
+  border: string | null;
+};
 
 type ProfileSnapshot = {
   xp: number;
@@ -272,7 +287,20 @@ type ProfileSnapshot = {
   weekly_xp: number;
   league_tier: number;
   season_start: string | null;
+  cosmetics: string[];
+  talents: string[];
+  equipped: EquippedLoadout;
+  streak_freezes: number;
+  guild_id: string | null;
+  guild_name: string | null;
+  // Monotonic sync revision — bumped on every write; used for last-writer-wins.
+  rev: number;
 };
+
+const PROFILE_COLUMNS =
+  "xp, gold, streak, last_active_day, completed, achievements, active_quest, " +
+  "weekly_xp, league_tier, season_start, cosmetics, talents, equipped, " +
+  "streak_freezes, guild_id, guild_name, rev";
 
 async function upsertProfile(userId: string, snap: ProfileSnapshot): Promise<void> {
   const sb = getSupabaseBrowserClient();
@@ -285,9 +313,7 @@ async function fetchProfile(userId: string): Promise<ProfileSnapshot | null> {
   if (!sb) return null;
   const { data } = await sb
     .from("profiles")
-    .select(
-      "xp, gold, streak, last_active_day, completed, achievements, active_quest, weekly_xp, league_tier, season_start",
-    )
+    .select(PROFILE_COLUMNS)
     .eq("id", userId)
     .maybeSingle();
   return (data as ProfileSnapshot | null) ?? null;
@@ -380,6 +406,9 @@ export const useGameStore = create<GameState>()(
         if (seasonRoll) set(seasonRoll);
         const state = get();
         const today = todayKey();
+        // Skill points are derived from progress; capture the baseline so we can
+        // report how many this completion earns (module/path finished, level-up).
+        const beforeSP = earnedSkillPoints(buildStats(state));
 
         // Roll the daily counters over if the stored day is not today.
         const sameDay = state.dailyDay === today;
@@ -426,10 +455,16 @@ export const useGameStore = create<GameState>()(
             },
           });
           const unlocked = grantAchievements(get, set);
+          const gainedSkillPoints = Math.max(
+            0,
+            earnedSkillPoints(buildStats(get())) - beforeSP,
+          );
+          if (gainedSkillPoints > 0) set({ recentSkillPoints: gainedSkillPoints });
           get().syncToServer();
           return {
             gainedXp: 0,
             gainedGold: 0,
+            gainedSkillPoints,
             leveledUp: false,
             newLevel: levelFromXp(state.xp).level,
             unlockedAchievements: unlocked,
@@ -472,11 +507,17 @@ export const useGameStore = create<GameState>()(
         });
 
         const unlockedAchievements = grantAchievements(get, set);
+        const gainedSkillPoints = Math.max(
+          0,
+          earnedSkillPoints(buildStats(get())) - beforeSP,
+        );
+        if (gainedSkillPoints > 0) set({ recentSkillPoints: gainedSkillPoints });
         get().syncToServer();
 
         return {
           gainedXp: xp,
           gainedGold,
+          gainedSkillPoints,
           leveledUp,
           newLevel,
           unlockedAchievements,
@@ -689,6 +730,7 @@ export const useGameStore = create<GameState>()(
 
       clearLevelUp: () => set({ lastLevelUp: null }),
       clearRecentAchievement: () => set({ recentAchievement: null }),
+      clearRecentSkillPoints: () => set({ recentSkillPoints: null }),
       clearSeasonResult: () => set({ lastSeasonResult: null }),
 
       reset: () => {
@@ -706,7 +748,9 @@ export const useGameStore = create<GameState>()(
       syncToServer: async () => {
         const s = get();
         if (!s.user || !isSupabaseConfigured) return;
-        set({ syncStatus: "syncing" });
+        // Bump the revision so a later device knows this write is newer.
+        const rev = s.rev + 1;
+        set({ syncStatus: "syncing", rev });
         try {
           await upsertProfile(s.user.id, {
             xp: s.xp,
@@ -719,6 +763,13 @@ export const useGameStore = create<GameState>()(
             weekly_xp: s.weeklyXp,
             league_tier: s.leagueTier,
             season_start: s.seasonStart,
+            cosmetics: s.cosmetics,
+            talents: s.talents,
+            equipped: s.equipped,
+            streak_freezes: s.streakFreezes,
+            guild_id: s.guildId,
+            guild_name: s.guildName,
+            rev,
           });
           set({ syncStatus: "idle" });
         } catch {
@@ -736,18 +787,41 @@ export const useGameStore = create<GameState>()(
           return;
         }
         const local = get();
+        // Is the server snapshot newer than what THIS device last wrote? If so it
+        // wins for consumable/preference fields (gold, freezes, equipped). The old
+        // Math.max on gold would refund already-spent gold from a stale device.
+        const remoteNewer = (remote.rev ?? 0) > local.rev;
+        const union = (a: string[], b: string[] | null | undefined) =>
+          Array.from(new Set([...a, ...(b ?? [])]));
         set({
+          // Monotonic progress — keep the best of either side, always.
           xp: Math.max(local.xp, remote.xp ?? 0),
-          gold: Math.max(local.gold, remote.gold ?? 0),
           streak: Math.max(local.streak, remote.streak ?? 0),
-          completed: Array.from(new Set([...local.completed, ...(remote.completed ?? [])])),
-          achievements: Array.from(
-            new Set([...local.achievements, ...(remote.achievements ?? [])]),
-          ),
+          weeklyXp: Math.max(local.weeklyXp, remote.weekly_xp ?? 0),
+          leagueTier: Math.max(local.leagueTier, remote.league_tier ?? 0),
+          // Additive sets — union so nothing earned/owned is ever dropped.
+          completed: union(local.completed, remote.completed),
+          achievements: union(local.achievements, remote.achievements),
+          cosmetics: union(local.cosmetics, remote.cosmetics),
+          talents: union(local.talents, remote.talents),
+          // Consumable / preference — newest writer wins (via the rev counter).
+          gold: remoteNewer ? remote.gold ?? local.gold : local.gold,
+          streakFreezes: remoteNewer
+            ? remote.streak_freezes ?? local.streakFreezes
+            : local.streakFreezes,
+          equipped: remoteNewer
+            ? { ...local.equipped, ...(remote.equipped ?? {}) }
+            : local.equipped,
+          guildId: remoteNewer ? remote.guild_id ?? local.guildId : local.guildId,
+          guildName: remoteNewer
+            ? remote.guild_name ?? local.guildName
+            : local.guildName,
           lastActiveDay: local.lastActiveDay ?? remote.last_active_day,
           activeQuest: local.activeQuest ?? remote.active_quest,
+          seasonStart: local.seasonStart ?? remote.season_start,
+          rev: Math.max(local.rev, remote.rev ?? 0),
         });
-        get().syncToServer(); // push the merged result back
+        get().syncToServer(); // push the merged result back (bumps rev again)
       },
     }),
     {
@@ -782,6 +856,7 @@ export const useGameStore = create<GameState>()(
         talents: s.talents,
         guildId: s.guildId,
         guildName: s.guildName,
+        rev: s.rev,
       }),
       // A no-op migrate keeps an older persisted blob intact across version
       // bumps; without it, a bump could silently drop the stored state.

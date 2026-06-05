@@ -7,6 +7,14 @@
 export type LessonStatus = "in_progress" | "completed";
 export type AchievementRarity = "common" | "rare" | "epic" | "legendary";
 
+/** The cosmetic loadout stored as jsonb on profiles.equipped. */
+export type EquippedLoadout = {
+  flair: string | null;
+  title: string | null;
+  banner: string | null;
+  border: string | null;
+};
+
 // Row / Insert / Update triplets per table (the shape supabase-js expects).
 export type Database = {
   public: {
@@ -30,6 +38,13 @@ export type Database = {
           weekly_xp: number;
           league_tier: number;
           season_start: string | null;
+          cosmetics: string[];
+          talents: string[];
+          equipped: EquippedLoadout;
+          streak_freezes: number;
+          guild_id: string | null;
+          guild_name: string | null;
+          rev: number;
           is_pro: boolean;
           stripe_customer_id: string | null;
           pro_since: string | null;
@@ -54,6 +69,13 @@ export type Database = {
           weekly_xp?: number;
           league_tier?: number;
           season_start?: string | null;
+          cosmetics?: string[];
+          talents?: string[];
+          equipped?: EquippedLoadout;
+          streak_freezes?: number;
+          guild_id?: string | null;
+          guild_name?: string | null;
+          rev?: number;
           is_pro?: boolean;
           stripe_customer_id?: string | null;
           pro_since?: string | null;

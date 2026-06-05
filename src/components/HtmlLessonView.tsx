@@ -17,6 +17,7 @@ import { useMounted } from "@/hooks/useMounted";
 import { CodeEditor } from "./CodeEditor";
 import { TestResults } from "./TestResults";
 import { LevelUpToast } from "./LevelUpToast";
+import { SkillPointToast } from "./SkillPointToast";
 import { ProGate } from "./features/billing/ProGate";
 
 export function HtmlLessonView({
@@ -69,6 +70,7 @@ export function HtmlLessonView({
   return (
     <div className="mx-auto grid max-w-7xl gap-4 px-4 py-6 lg:grid-cols-2">
       <LevelUpToast />
+      <SkillPointToast />
 
       {/* Left: lesson content */}
       <section className="card max-h-[calc(100vh-7rem)] overflow-y-auto lg:sticky lg:top-20">
