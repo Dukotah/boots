@@ -6,6 +6,7 @@ import { Flame, Zap, Trophy, Target, RotateCcw, Briefcase, RefreshCw } from "luc
 import { useGameStore, streakRepairCost } from "@/store/useGameStore";
 import { levelFromXp } from "@/lib/levels";
 import { MODULES, totalLessons, totalXpAvailable, lessonId } from "@/lib/curriculum";
+import { groupByTrack } from "@/lib/curriculum/tracks";
 import { deriveBreadth } from "@/lib/progress";
 import { computeReadiness } from "@/lib/career";
 import type { PlayerStats } from "@/types/game";
@@ -224,43 +225,91 @@ export default function Dashboard() {
           </span>
         </div>
         <div className="space-y-3">
-          {MODULES.map((m) => {
-            const done = m.lessons.filter((l) =>
-              completed.includes(lessonId(m.slug, l.slug)),
-            ).length;
-            const mpct = Math.round((done / m.lessons.length) * 100);
-            const complete = done === m.lessons.length;
+          {groupByTrack(MODULES).map(({ track, modules }) => {
+            const tLessons = modules.reduce((s, m) => s + m.lessons.length, 0);
+            const tDone = modules.reduce(
+              (s, m) =>
+                s +
+                m.lessons.filter((l) =>
+                  completed.includes(lessonId(m.slug, l.slug)),
+                ).length,
+              0,
+            );
+            const tpct = tLessons ? Math.round((tDone / tLessons) * 100) : 0;
             return (
-              <div key={m.slug} className="space-y-1">
-              <Link
-                href={`/learn/${m.slug}`}
-                className="card flex items-center gap-4 hover:border-accent/60"
+              <details
+                key={track.id}
+                open={tDone > 0 && tDone < tLessons}
+                className="card group"
               >
-                <span className="text-3xl">{m.emoji}</span>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between">
-                    <p className="font-medium text-white">{m.title}</p>
-                    <span className="text-xs text-gray-400">
-                      {done}/{m.lessons.length}
-                    </span>
+                <summary className="flex cursor-pointer list-none items-center gap-3">
+                  <span className="text-2xl">{track.emoji}</span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between">
+                      <p className="font-semibold text-white">{track.label}</p>
+                      <span className="ml-2 shrink-0 text-xs text-gray-400">
+                        {tDone}/{tLessons} · {modules.length} courses
+                      </span>
+                    </div>
+                    <div className="mt-2 h-2 overflow-hidden rounded-full bg-surface-2">
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-accent to-accent-soft"
+                        style={{ width: `${tpct}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="mt-2 h-2 overflow-hidden rounded-full bg-surface-2">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-accent to-accent-soft"
-                      style={{ width: `${mpct}%` }}
-                    />
-                  </div>
+                  <span className="ml-1 shrink-0 text-gray-500 transition-transform group-open:rotate-90">
+                    ▸
+                  </span>
+                </summary>
+
+                <div className="mt-4 space-y-2">
+                  {modules.map((m) => {
+                    const done = m.lessons.filter((l) =>
+                      completed.includes(lessonId(m.slug, l.slug)),
+                    ).length;
+                    const mpct = Math.round((done / m.lessons.length) * 100);
+                    const complete = done === m.lessons.length;
+                    return (
+                      <div key={m.slug} className="space-y-1">
+                        <Link
+                          href={`/learn/${m.slug}`}
+                          className="flex items-center gap-4 rounded-lg border border-line/60 bg-surface-2/40 px-3 py-2 hover:border-accent/60"
+                        >
+                          <span className="text-2xl">{m.emoji}</span>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center justify-between">
+                              <p className="truncate text-sm font-medium text-white">
+                                {m.title}
+                              </p>
+                              <span className="ml-2 shrink-0 text-xs text-gray-400">
+                                {done}/{m.lessons.length}
+                              </span>
+                            </div>
+                            <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface-2">
+                              <div
+                                className="h-full rounded-full bg-gradient-to-r from-accent to-accent-soft"
+                                style={{ width: `${mpct}%` }}
+                              />
+                            </div>
+                          </div>
+                          {complete && (
+                            <span className="shrink-0 text-success">✓</span>
+                          )}
+                        </Link>
+                        {complete && (
+                          <Link
+                            href={`/certificate/${m.slug}`}
+                            className="inline-flex items-center gap-1 px-1 text-xs font-medium text-gold hover:underline"
+                          >
+                            🎓 View your certificate
+                          </Link>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
-              </Link>
-              {complete && (
-                <Link
-                  href={`/certificate/${m.slug}`}
-                  className="inline-flex items-center gap-1 px-1 text-xs font-medium text-gold hover:underline"
-                >
-                  🎓 View your certificate
-                </Link>
-              )}
-              </div>
+              </details>
             );
           })}
         </div>

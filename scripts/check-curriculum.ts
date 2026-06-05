@@ -69,6 +69,36 @@ import { jsArrayMethods } from "../src/lib/curriculum/js-array-methods.ts";
 import { httpAndRest } from "../src/lib/curriculum/http-and-rest.ts";
 import { debuggingSkills } from "../src/lib/curriculum/debugging-skills.ts";
 import type { Lesson, Module } from "../src/lib/curriculum/types.ts";
+import { jsGenerators } from "../src/lib/curriculum/js-generators.ts";
+import { jsProxyReflect } from "../src/lib/curriculum/js-proxy-reflect.ts";
+import { tsMappedConditionalTypes } from "../src/lib/curriculum/ts-mapped-conditional-types.ts";
+import { pythonTypeHints } from "../src/lib/curriculum/python-type-hints.ts";
+import { pythonItertools } from "../src/lib/curriculum/python-itertools.ts";
+import { pythonDatetime } from "../src/lib/curriculum/python-datetime.ts";
+import { pythonStatistics } from "../src/lib/curriculum/python-statistics.ts";
+import { sqlRecursiveCtes } from "../src/lib/curriculum/sql-recursive-ctes.ts";
+import { sqlCaseAndPivoting } from "../src/lib/curriculum/sql-case-and-pivoting.ts";
+import { dbNormalization } from "../src/lib/curriculum/db-normalization.ts";
+import { dbTransactionsAcid } from "../src/lib/curriculum/db-transactions-acid.ts";
+import { slidingWindow } from "../src/lib/curriculum/sliding-window.ts";
+import { greedyAlgorithms } from "../src/lib/curriculum/greedy-algorithms.ts";
+import { graphsJs } from "../src/lib/curriculum/graphs-js.ts";
+import { heapsPriorityQueuesJs } from "../src/lib/curriculum/heaps-priority-queues-js.ts";
+import { fpCompositionPipelines } from "../src/lib/curriculum/fp-composition-pipelines.ts";
+import { httpCaching } from "../src/lib/curriculum/http-caching.ts";
+import { browserStorage } from "../src/lib/curriculum/browser-storage.ts";
+import { numberSystems } from "../src/lib/curriculum/number-systems.ts";
+import { bigOComplexity } from "../src/lib/curriculum/big-o-complexity.ts";
+import { unitTestingFundamentals } from "../src/lib/curriculum/unit-testing-fundamentals.ts";
+import { tddPractice } from "../src/lib/curriculum/tdd-practice.ts";
+import { solidPrinciples } from "../src/lib/curriculum/solid-principles.ts";
+import { behavioralPatterns } from "../src/lib/curriculum/behavioral-patterns.ts";
+import { tsGenericsAdvanced } from "../src/lib/curriculum/ts-generics-advanced.ts";
+import { webcryptoApi } from "../src/lib/curriculum/webcrypto-api.ts";
+import { hashingAndIntegrity } from "../src/lib/curriculum/hashing-and-integrity.ts";
+import { mlModelEvaluation } from "../src/lib/curriculum/ml-model-evaluation.ts";
+import { decisionTrees } from "../src/lib/curriculum/decision-trees.ts";
+import { numberTheory } from "../src/lib/curriculum/number-theory.ts";
 
 // Keep in sync with src/lib/curriculum/index.ts. (New module? Add it here too.)
 const MODULES: Module[] = [
@@ -135,6 +165,37 @@ const MODULES: Module[] = [
   jsArrayMethods,
   httpAndRest,
   debuggingSkills,
+  // Module-discovery batch (2026-06-04)
+  jsGenerators,
+  jsProxyReflect,
+  tsMappedConditionalTypes,
+  pythonTypeHints,
+  pythonItertools,
+  pythonDatetime,
+  pythonStatistics,
+  sqlRecursiveCtes,
+  sqlCaseAndPivoting,
+  dbNormalization,
+  dbTransactionsAcid,
+  slidingWindow,
+  greedyAlgorithms,
+  graphsJs,
+  heapsPriorityQueuesJs,
+  fpCompositionPipelines,
+  httpCaching,
+  browserStorage,
+  numberSystems,
+  bigOComplexity,
+  unitTestingFundamentals,
+  tddPractice,
+  solidPrinciples,
+  behavioralPatterns,
+  tsGenericsAdvanced,
+  webcryptoApi,
+  hashingAndIntegrity,
+  mlModelEvaluation,
+  decisionTrees,
+  numberTheory,
 ];
 
 function stringify(v: unknown): string {

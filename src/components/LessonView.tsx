@@ -28,6 +28,7 @@ import { CodeReview } from "./quality/CodeReview";
 import { LessonSidebar } from "./LessonSidebar";
 import { LessonNav } from "./LessonNav";
 import { summarizeLesson } from "@/lib/tutor/prompt";
+import { deriveHintLadder, isSolutionStep } from "@/lib/hints";
 import type { TutorContext } from "@/lib/tutor/types";
 
 export function LessonView({
@@ -49,12 +50,19 @@ export function LessonView({
   const [hintsShown, setHintsShown] = useState(0);
   const [activeHint, setActiveHint] = useState<string | null>(null);
   const [activeHintStep, setActiveHintStep] = useState(0);
-  const hints = lesson.hints ?? [];
-  const hintCode = lesson.hintCode ?? [];
+  // Derived hint ladder: every code lesson with a solution gets a working set of
+  // hints, the last of which loads the full solution into the editor.
+  const ladder = useMemo(() => deriveHintLadder(lesson, language), [lesson, language]);
+  const hints = ladder.hints;
+  const hintCode = ladder.hintCode;
   const blocks = lesson.blocks ?? [];
   // Bumped to ask AskBoots to open + scroll into view (the "Explain this to me"
   // affordance). Starts at 0 so the panel stays closed on first render.
   const [explainSignal, setExplainSignal] = useState(0);
+
+  const remainingHints = hints.length - hintsShown;
+  const nextIsSolution =
+    remainingHints > 0 && isSolutionStep(ladder, hintsShown, lesson);
 
   const insertRef = useRef<((text: string) => void) | null>(null);
   const highlightRef = useRef<((startLine: number, endLine: number) => void) | null>(null);
@@ -242,7 +250,9 @@ export function LessonView({
                   <Lightbulb size={13} />
                   {hintsShown >= hints.length
                     ? "No more hints"
-                    : `Hint (${hints.length - hintsShown})`}
+                    : nextIsSolution
+                      ? "Show solution"
+                      : `Hint (${remainingHints})`}
                 </button>
               )}
             </div>

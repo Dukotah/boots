@@ -41,6 +41,21 @@ export default function LearnIndex() {
         when the feature ships; nothing else on this page needs to move.
       */}
 
+      {/* Jump-to-track nav — keeps 90+ courses navigable at a glance. */}
+      <nav className="mt-6 flex flex-wrap gap-2">
+        {groups.map(({ track, modules }) => (
+          <a
+            key={track.id}
+            href={`#track-${track.id}`}
+            className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface-2/50 px-3 py-1 text-sm text-gray-300 transition-colors hover:border-accent/60 hover:text-white"
+          >
+            <span aria-hidden>{track.emoji}</span>
+            {track.label}
+            <span className="text-xs text-gray-500">{modules.length}</span>
+          </a>
+        ))}
+      </nav>
+
       <div className="mt-10 space-y-12">
         {groups.map(({ track, modules }) => (
           <section key={track.id} aria-labelledby={`track-${track.id}`}>
@@ -50,7 +65,7 @@ export default function LearnIndex() {
               </span>
               <h2
                 id={`track-${track.id}`}
-                className="text-xl font-bold text-white"
+                className="scroll-mt-24 text-xl font-bold text-white"
               >
                 {track.label}
               </h2>
