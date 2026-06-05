@@ -8,7 +8,6 @@ import { levelFromXp } from "@/lib/levels";
 import { MODULES, totalLessons, totalXpAvailable, lessonId } from "@/lib/curriculum";
 import { deriveBreadth } from "@/lib/progress";
 import { computeReadiness } from "@/lib/career";
-import { earnedSkillPoints, getTalent } from "@/lib/talents";
 import type { PlayerStats } from "@/types/game";
 import { XPBar } from "@/components/XPBar";
 import { TalentBuildCard } from "@/components/features/talents/TalentBuildCard";
@@ -26,26 +25,16 @@ export default function Dashboard() {
   const streak = useGameStore((s) => s.streak);
   const completed = useGameStore((s) => s.completed);
   const talents = useGameStore((s) => s.talents);
+  const skillPoints = useGameStore((s) => s.skillPoints);
   const reset = useGameStore((s) => s.reset);
 
   const info = levelFromXp(xp);
   const doneCount = completed.length;
   const pct = Math.round((doneCount / totalLessons()) * 100);
 
-  // Skill points still available to spend = earned (from progress) − invested.
-  const availableSp = useMemo(() => {
-    const stats: PlayerStats = {
-      xp,
-      level: info.level,
-      gold,
-      streak,
-      completedCount: completed.length,
-      completedIds: completed,
-      ...deriveBreadth(completed),
-    };
-    const spent = talents.reduce((sum, id) => sum + (getTalent(id)?.cost ?? 0), 0);
-    return earnedSkillPoints(stats) - spent;
-  }, [xp, info.level, gold, streak, completed, talents]);
+  // Reuse the store's single source of truth for skill-point math (earned −
+  // invested, floored at 0) rather than re-deriving it here.
+  const availableSp = skillPoints().available;
 
   // Single source of truth for "career ready" — the Career Pack score
   // (lib/career), so the dashboard and /career never disagree.
