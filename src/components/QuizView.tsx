@@ -9,6 +9,7 @@ import { CheckCircle2, XCircle, ArrowRight } from "lucide-react";
 import type { Lesson, Module } from "@/lib/curriculum/types";
 import { lessonId } from "@/lib/curriculum";
 import { useGameStore } from "@/store/useGameStore";
+import { recordCompletion } from "@/lib/scoring";
 import { celebrate } from "@/lib/celebrate";
 import { useAccess } from "@/hooks/useAccess";
 import { useMounted } from "@/hooks/useMounted";
@@ -62,6 +63,10 @@ export function QuizView({
         setAwarded(true);
         completeLesson(id, lesson.xp);
         celebrate();
+        // Record server-side for canonical, forge-proof XP (best-effort;
+        // no-ops when signed out / no backend). Quizzes have no code to
+        // re-verify, so we use the direct RPC record.
+        void recordCompletion(module.slug, lesson.slug);
       }
       return next;
     });

@@ -18,6 +18,7 @@ import { DailyChallenge } from "@/components/features/retention/DailyChallenge";
 import { StreakHeatmap } from "@/components/features/retention/StreakHeatmap";
 import { EnableNotifications } from "@/components/features/push/EnableNotifications";
 import { RecommendedNextCard } from "@/components/features/onboarding/RecommendedNextCard";
+import { ReferralCard } from "@/components/features/referral/ReferralCard";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -197,6 +198,11 @@ export default function Dashboard() {
       {/* Talent build summary */}
       <div className="mt-4">
         <TalentBuildCard talents={talents} availableSp={availableSp} />
+      </div>
+
+      {/* Referral programme (self-hides when backend unconfigured / signed out) */}
+      <div className="mt-4">
+        <ReferralCard />
       </div>
 
       {/* Quick links to new features */}

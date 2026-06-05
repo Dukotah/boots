@@ -8,6 +8,7 @@ import {
   isSupabaseConfigured,
 } from "@/lib/supabase/client";
 import { useGameStore } from "@/store/useGameStore";
+import { track } from "@/lib/analytics/track";
 
 export default function LoginPage() {
   const user = useGameStore((s) => s.user);
@@ -24,6 +25,8 @@ export default function LoginPage() {
   async function github() {
     const sb = getSupabaseBrowserClient();
     if (!sb || !ageOk) return;
+    // Fire before the OAuth redirect so the event lands even as the tab navigates.
+    track("signup", { method: "github" });
     await sb.auth.signInWithOAuth({
       provider: "github",
       options: { redirectTo: `${origin}/dashboard` },
@@ -38,6 +41,7 @@ export default function LoginPage() {
       options: { emailRedirectTo: `${origin}/dashboard` },
     });
     setSent(true);
+    track("signup", { method: "magic_link" });
   }
 
   async function signOut() {

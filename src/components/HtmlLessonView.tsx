@@ -12,6 +12,7 @@ import { runHtml } from "@/lib/htmlRunner";
 import { type RunOutcome } from "@/lib/runner";
 import { celebrate } from "@/lib/celebrate";
 import { useGameStore } from "@/store/useGameStore";
+import { recordCompletion } from "@/lib/scoring";
 import { useAccess } from "@/hooks/useAccess";
 import { useMounted } from "@/hooks/useMounted";
 import { CodeEditor } from "./CodeEditor";
@@ -64,6 +65,9 @@ export function HtmlLessonView({
     if (result.results.length > 0 && result.results.every((r) => r.pass)) {
       completeLesson(id, lesson.xp);
       celebrate();
+      // Record server-side for canonical, forge-proof XP (best-effort;
+      // no-ops when signed out / no backend).
+      void recordCompletion(module.slug, lesson.slug);
     }
   }
 

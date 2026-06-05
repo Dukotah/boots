@@ -24,10 +24,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const setSession = useGameStore((s) => s.setSession);
   const setPro = useEntitlements((s) => s.setPro);
 
+  // Capture a ?ref=CODE on first load and stash it for the post-sign-in redeem.
+  // sessionStorage (not localStorage) is deliberate — it expires with the tab so
+  // a stale code never fires on an unrelated later sign-in.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const ref = new URLSearchParams(window.location.search).get("ref");
+    if (ref) sessionStorage.setItem("cantrip_ref", ref);
+  }, []);
+
   useEffect(() => {
     if (!isSupabaseConfigured) return;
     const sb = getSupabaseBrowserClient();
     if (!sb) return;
+
+    // Redeem a stored referral code once, right after the user signs in.
+    function redeemStoredReferral() {
+      if (typeof window === "undefined") return;
+      const code = sessionStorage.getItem("cantrip_ref");
+      if (!code) return;
+      sessionStorage.removeItem("cantrip_ref");
+      void fetch("/api/referrals", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ code }),
+      }).catch(() => undefined);
+    }
 
     // Load the user's Pro entitlement from their profile and mirror it into the
     // billing store (the single source of truth the paywall reads). Clears to
@@ -52,9 +74,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     // Subscribe to future auth changes (sign-in / sign-out / token refresh).
-    const { data: listener } = sb.auth.onAuthStateChange((_event, session) => {
+    const { data: listener } = sb.auth.onAuthStateChange((event, session) => {
       setSession(session);
       void syncEntitlement(session);
+      if (event === "SIGNED_IN") redeemStoredReferral();
     });
 
     return () => {

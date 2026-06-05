@@ -4,6 +4,13 @@
 // builds. `body` is real Markdown: H2/H3 headings, lists, and internal links to
 // live Cantrip routes that pull readers toward the courses.
 
+// Long-tail SEO posts authored as individual files under ./posts. They use a
+// type-only import of BlogPost (erased at build → no runtime import cycle).
+import reverseStringPost from "./posts/how-to-reverse-a-string-in-python";
+import bigOPost from "./posts/what-is-big-o-notation";
+import sqlJoinsPost from "./posts/sql-joins-explained";
+import closurePost from "./posts/what-is-a-closure-in-javascript";
+
 export type BlogPost = {
   slug: string;
   title: string;
@@ -835,6 +842,10 @@ None of those steps cost anything. All of them are how people actually learn.
 
 The barrier to learning to code was never money — it's consistency and focus. Free resources are more than good enough; the trick is to use them actively, follow a structured path, and build real things. [Start learning for free](/learn) and prove it to yourself.`,
   },
+  reverseStringPost,
+  bigOPost,
+  sqlJoinsPost,
+  closurePost,
 ];
 
 /** Look up a single post by its slug. Returns undefined if not found. */

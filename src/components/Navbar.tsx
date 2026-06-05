@@ -25,6 +25,7 @@ const NAV_LINKS: { href: string; label: string; desktop?: boolean }[] = [
   { href: "/events", label: "Events" },
   { href: "/tools", label: "Tools" },
   { href: "/blog", label: "Blog" },
+  { href: "/refer", label: "Refer" },
   { href: "/pricing", label: "Pricing", desktop: true },
 ];
 

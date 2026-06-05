@@ -8,6 +8,8 @@ import { ArrowRight, Compass, Play, Sparkles } from "lucide-react";
 import { useGameStore } from "@/store/useGameStore";
 import { GOALS, getGoal, goalPath, goalFirstLessonHref } from "@/lib/goals";
 import { pathStats } from "@/lib/paths";
+import { track } from "@/lib/analytics/track";
+import { useExperiment } from "@/hooks/useExperiment";
 
 // The real, persisted onboarding: pick a goal → we save it → we drop you into
 // your first lesson (the "60-second first win"). The saved goal then powers the
@@ -18,12 +20,18 @@ export function OnboardingFlow() {
   const dismissOnboarding = useGameStore((s) => s.dismissOnboarding);
   const [selected, setSelected] = useState<string | null>(null);
 
+  // A/B: does hiding the "skip" affordance lift onboarding completion? Variant
+  // 'off' hides it. Null until mounted → default to showing it (safe default).
+  const skipVariant = useExperiment("onboarding_skip_visible");
+  const showSkip = skipVariant !== "off";
+
   const goal = getGoal(selected);
   const path = goalPath(selected);
 
   function choose(id: string) {
     setSelected(id);
     setGoal(id); // persist immediately so a refresh keeps the choice
+    track("onboarding_goal_selected", { goal: id });
   }
 
   function startFirstWin() {
@@ -71,15 +79,17 @@ export function OnboardingFlow() {
                   </button>
                 ))}
               </div>
-              <button
-                onClick={() => {
-                  dismissOnboarding();
-                  router.push("/learn");
-                }}
-                className="mt-5 text-sm text-gray-500 hover:text-white"
-              >
-                Skip — just let me browse →
-              </button>
+              {showSkip && (
+                <button
+                  onClick={() => {
+                    dismissOnboarding();
+                    router.push("/learn");
+                  }}
+                  className="mt-5 text-sm text-gray-500 hover:text-white"
+                >
+                  Skip — just let me browse →
+                </button>
+              )}
             </motion.div>
           )}
 

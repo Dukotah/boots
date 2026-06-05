@@ -43,6 +43,7 @@ import {
   RESPEC_COST,
 } from "@/lib/talents";
 import type { PlayerStats } from "@/types/game";
+import { track } from "@/lib/analytics/track";
 
 /** Build the full stats snapshot (core resources + derived breadth) from state. */
 function buildStats(s: {
@@ -562,6 +563,14 @@ export const useGameStore = create<GameState>()(
         );
         if (gainedSkillPoints > 0) set({ recentSkillPoints: gainedSkillPoints });
         get().syncToServer();
+
+        // Funnel analytics (cookieless Plausible; no-ops when unconfigured).
+        // first_all_green is the activation "magic moment" — fire it only on the
+        // learner's very first completed lesson, not every fresh completion.
+        track("lesson_completed", { lesson_id: id, xp });
+        if (state.completed.length === 0) {
+          track("first_all_green", { lesson_id: id });
+        }
 
         return {
           gainedXp: xp,
