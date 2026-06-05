@@ -32,7 +32,8 @@ export const SHOP_ITEMS: ShopItem[] = [
   {
     id: "mystery-chest",
     name: "Mystery Chest",
-    description: "Spend gold for a random gold payout. Fortune favors the bold.",
+    description:
+      "A gamble: most chests pay 10–140 gold, but rare jackpots strike for up to 300. Fortune favors the bold.",
     icon: "🎁",
     cost: 50,
     kind: "chest",
