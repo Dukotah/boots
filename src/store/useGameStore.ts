@@ -178,6 +178,9 @@ export type GameState = {
   // ── guilds ──
   guildId: string | null;
   guildName: string | null;
+  // ── onboarding (learner intent chosen on first run; drives recommendations) ──
+  goal: string | null; // LearnerGoal id from lib/goals
+  onboarded: boolean; // has the learner seen + answered (or skipped) onboarding
   // ── sync revision (bumped on every server write; resolves last-writer-wins) ──
   rev: number;
   // ── transient UI signals (not persisted) ──
@@ -233,6 +236,10 @@ export type GameState = {
   joinGuild: (id: string, name: string) => void;
   /** Leave the current guild. */
   leaveGuild: () => void;
+  /** Record the learner's onboarding goal (marks onboarding complete). */
+  setGoal: (id: string | null) => void;
+  /** Mark onboarding as seen without choosing a goal (the "skip" path). */
+  dismissOnboarding: () => void;
   /** Resolve + roll the league season if it has expired (idempotent; call on mount). */
   checkSeason: () => void;
   clearLevelUp: () => void;
@@ -277,6 +284,8 @@ const INITIAL = {
   talents: [] as string[],
   guildId: null as string | null,
   guildName: null as string | null,
+  goal: null as string | null,
+  onboarded: false,
   rev: 0,
   lastLevelUp: null as number | null,
   recentAchievement: null as string | null,
@@ -781,6 +790,9 @@ export const useGameStore = create<GameState>()(
         get().syncToServer();
       },
 
+      setGoal: (id) => set({ goal: id, onboarded: true }),
+      dismissOnboarding: () => set({ onboarded: true }),
+
       clearLevelUp: () => set({ lastLevelUp: null }),
       clearRecentAchievement: () => set({ recentAchievement: null }),
       clearRecentSkillPoints: () => set({ recentSkillPoints: null }),
@@ -910,6 +922,8 @@ export const useGameStore = create<GameState>()(
         talents: s.talents,
         guildId: s.guildId,
         guildName: s.guildName,
+        goal: s.goal,
+        onboarded: s.onboarded,
         rev: s.rev,
       }),
       // A no-op migrate keeps an older persisted blob intact across version

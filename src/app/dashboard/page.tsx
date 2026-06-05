@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Flame, Zap, Trophy, Target, RotateCcw, Briefcase, RefreshCw } from "lucide-react";
 import { useGameStore, streakRepairCost } from "@/store/useGameStore";
@@ -16,8 +17,10 @@ import { DailyQuests } from "@/components/features/quests/DailyQuests";
 import { DailyChallenge } from "@/components/features/retention/DailyChallenge";
 import { StreakHeatmap } from "@/components/features/retention/StreakHeatmap";
 import { EnableNotifications } from "@/components/features/push/EnableNotifications";
+import { RecommendedNextCard } from "@/components/features/onboarding/RecommendedNextCard";
 
 export default function Dashboard() {
+  const router = useRouter();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
@@ -25,6 +28,16 @@ export default function Dashboard() {
   const gold = useGameStore((s) => s.gold);
   const streak = useGameStore((s) => s.streak);
   const completed = useGameStore((s) => s.completed);
+  const onboarded = useGameStore((s) => s.onboarded);
+
+  // First-run intercept: a brand-new learner (no progress, never onboarded) is
+  // sent to pick a goal before landing here. Existing users (any progress) are
+  // never redirected, even though `onboarded` defaults false for them.
+  useEffect(() => {
+    if (mounted && !onboarded && completed.length === 0) {
+      router.replace("/onboarding");
+    }
+  }, [mounted, onboarded, completed.length, router]);
   const talents = useGameStore((s) => s.talents);
   const skillPoints = useGameStore((s) => s.skillPoints);
   const dueReviews = useGameStore((s) => s.dueReviews);
@@ -83,6 +96,11 @@ export default function Dashboard() {
         <Link href={continueHref} className="btn-primary">
           <Target size={16} /> Continue learning
         </Link>
+      </div>
+
+      {/* Recommended next — the learner's chosen path (or a nudge to pick one) */}
+      <div className="mt-6">
+        <RecommendedNextCard />
       </div>
 
       {/* Stat cards */}
