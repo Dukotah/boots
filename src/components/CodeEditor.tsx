@@ -1,8 +1,24 @@
 "use client";
 
-import Editor from "@monaco-editor/react";
+import dynamic from "next/dynamic";
 import { useRef } from "react";
 import type { editor as MonacoEditor, IPosition } from "monaco-editor";
+
+// Load the Monaco wrapper only on the client, in its own async chunk. This keeps
+// the ~Monaco editor bundle out of the initial JS of every page that mounts a
+// CodeEditor (lessons, playground, visualizer) — it streams in on first render.
+const Editor = dynamic(() => import("@monaco-editor/react"), {
+  ssr: false,
+  loading: () => (
+    <div
+      role="status"
+      aria-label="Loading code editor"
+      className="flex h-full items-center justify-center text-sm text-gray-500"
+    >
+      Loading editor…
+    </div>
+  ),
+});
 
 export function CodeEditor({
   value,

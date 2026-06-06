@@ -58,6 +58,42 @@ import { aiSafetyKids } from "./ai-safety-kids";
 import { digitalCitizenship } from "./digital-citizenship";
 import { systemDesign } from "./system-design";
 import { portfolioProjects } from "./portfolio-projects";
+import { pythonDecorators } from "./python-decorators";
+import { pythonGenerators } from "./python-generators";
+import { pythonStatistics } from "./python-statistics";
+import { sqlWindowFunctions } from "./sql-window-functions";
+import { jsArrayMethods } from "./js-array-methods";
+import { httpAndRest } from "./http-and-rest";
+import { httpCaching } from "./http-caching";
+import { debuggingSkills } from "./debugging-skills";
+import { decisionTrees } from "./decision-trees";
+import { jsGenerators } from "./js-generators";
+import { jsProxyReflect } from "./js-proxy-reflect";
+import { tsMappedConditionalTypes } from "./ts-mapped-conditional-types";
+import { pythonTypeHints } from "./python-type-hints";
+import { pythonItertools } from "./python-itertools";
+import { pythonDatetime } from "./python-datetime";
+import { sqlRecursiveCtes } from "./sql-recursive-ctes";
+import { sqlCaseAndPivoting } from "./sql-case-and-pivoting";
+import { dbNormalization } from "./db-normalization";
+import { dbTransactionsAcid } from "./db-transactions-acid";
+import { slidingWindow } from "./sliding-window";
+import { greedyAlgorithms } from "./greedy-algorithms";
+import { graphsJs } from "./graphs-js";
+import { heapsPriorityQueuesJs } from "./heaps-priority-queues-js";
+import { fpCompositionPipelines } from "./fp-composition-pipelines";
+import { browserStorage } from "./browser-storage";
+import { numberSystems } from "./number-systems";
+import { bigOComplexity } from "./big-o-complexity";
+import { unitTestingFundamentals } from "./unit-testing-fundamentals";
+import { tddPractice } from "./tdd-practice";
+import { solidPrinciples } from "./solid-principles";
+import { behavioralPatterns } from "./behavioral-patterns";
+import { tsGenericsAdvanced } from "./ts-generics-advanced";
+import { webcryptoApi } from "./webcrypto-api";
+import { hashingAndIntegrity } from "./hashing-and-integrity";
+import { mlModelEvaluation } from "./ml-model-evaluation";
+import { numberTheory } from "./number-theory";
 
 // The whole curriculum. Add a module here and it shows up everywhere.
 // Order defines the Campaign Map progression (sequential unlock) — a difficulty ramp.
@@ -109,13 +145,23 @@ export const MODULES: Module[] = [
   pythonComprehensions,
   pythonOop,
   pythonAlgorithms,
+  pythonDecorators,
+  pythonGenerators,
+  pythonStatistics,
   // SQL track
   sql,
   sqlJoins,
   sqlAggregations,
   sqlSubqueries,
+  sqlWindowFunctions,
   // Tooling
   gitGithub,
+  // Web fundamentals
+  httpAndRest,
+  httpCaching,
+  debuggingSkills,
+  // JavaScript array methods
+  jsArrayMethods,
   // AI track
   aiLlms,
   promptEngineering,
@@ -123,6 +169,7 @@ export const MODULES: Module[] = [
   aiAgents,
   aiEmbeddings,
   aiEthics,
+  decisionTrees,
   // Cybersecurity track
   hackerMindset,
   passwordsAuth,
@@ -135,6 +182,34 @@ export const MODULES: Module[] = [
   internetForKids,
   aiSafetyKids,
   digitalCitizenship,
+  // Module-discovery batch (2026-06-04)
+  jsGenerators,
+  jsProxyReflect,
+  tsMappedConditionalTypes,
+  pythonTypeHints,
+  pythonItertools,
+  pythonDatetime,
+  sqlRecursiveCtes,
+  sqlCaseAndPivoting,
+  dbNormalization,
+  dbTransactionsAcid,
+  slidingWindow,
+  greedyAlgorithms,
+  graphsJs,
+  heapsPriorityQueuesJs,
+  fpCompositionPipelines,
+  browserStorage,
+  numberSystems,
+  bigOComplexity,
+  unitTestingFundamentals,
+  tddPractice,
+  solidPrinciples,
+  behavioralPatterns,
+  tsGenericsAdvanced,
+  webcryptoApi,
+  hashingAndIntegrity,
+  mlModelEvaluation,
+  numberTheory,
 ];
 
 export function getModule(slug: string): Module | undefined {
@@ -152,9 +227,9 @@ export function getLesson(
   return { module, lesson: module.lessons[index], index };
 }
 
-export function lessonId(moduleSlug: string, lessonSlug: string): string {
-  return `${moduleSlug}/${lessonSlug}`;
-}
+// Pure id helper lives in ./ids (no content imports) so client components can use
+// it without bundling the whole curriculum; re-exported here for server/barrel use.
+export { lessonId } from "./ids";
 
 export function totalLessons(): number {
   return MODULES.reduce((sum, m) => sum + m.lessons.length, 0);

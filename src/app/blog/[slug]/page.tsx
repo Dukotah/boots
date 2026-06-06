@@ -28,8 +28,19 @@ export function generateMetadata({
       type: "article",
       title: `${post.title} | ${SITE.name}`,
       description: post.description,
-      url: `/blog/${post.slug}`,
+      url: absoluteUrl(`/blog/${post.slug}`),
       publishedTime: post.date,
+      images: [
+        {
+          url: absoluteUrl(`/api/og?title=${encodeURIComponent(post.title)}&subtitle=${encodeURIComponent(post.description)}`),
+          width: 1200,
+          height: 630,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      images: [absoluteUrl(`/api/og?title=${encodeURIComponent(post.title)}&subtitle=${encodeURIComponent(post.description)}`)],
     },
   };
 }

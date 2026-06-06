@@ -7,9 +7,12 @@ import {
   LayoutDashboard,
   Map as MapIcon,
   BookOpen,
+  CalendarDays,
+  BarChart2,
   RefreshCw,
   Flag,
   Eye,
+  Hammer,
   Trophy,
   Swords,
   Skull,
@@ -26,6 +29,7 @@ import { MascotBoots } from "@/components/MascotBoots";
 import { useGameStore } from "@/store/useGameStore";
 import { levelFromXp } from "@/lib/levels";
 import { useMounted } from "@/hooks/useMounted";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
 
 type NavItem = {
   href: string;
@@ -38,11 +42,14 @@ const NAV: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/map", label: "Campaign Map", icon: MapIcon },
   { href: "/learn", label: "Courses", icon: BookOpen },
+  { href: "/daily", label: "Daily Challenge", icon: CalendarDays, badge: "New" },
+  { href: "/recap", label: "Weekly Recap", icon: BarChart2, badge: "New" },
   { href: "/review", label: "Review", icon: RefreshCw },
   { href: "/rooms", label: "Challenges", icon: Flag, badge: "New" },
   { href: "/visualize", label: "Visualizer", icon: Eye, badge: "New" },
   { href: "/quests", label: "Quests", icon: ScrollText },
   { href: "/achievements", label: "Achievements", icon: Trophy },
+  { href: "/projects", label: "Projects", icon: Hammer, badge: "New" },
   { href: "/career", label: "Career Pack", icon: Briefcase },
   { href: "/leagues", label: "Leagues", icon: Swords },
   { href: "/friends", label: "Friends", icon: Users },
@@ -59,6 +66,7 @@ export function Sidebar({
 }) {
   const pathname = usePathname();
   const mounted = useMounted();
+  const trapRef = useFocusTrap<HTMLElement>(open);
 
   const xp = useGameStore((s) => s.xp);
   const gold = useGameStore((s) => s.gold);
@@ -79,6 +87,14 @@ export function Sidebar({
       )}
 
       <aside
+        ref={trapRef}
+        role={open ? "dialog" : undefined}
+        aria-modal={open ? "true" : undefined}
+        aria-label={open ? "Navigation menu" : undefined}
+        tabIndex={-1}
+        onKeyDown={(e) => {
+          if (e.key === "Escape" && open) onClose?.();
+        }}
         className={[
           "fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-line bg-surface/80 backdrop-blur",
           "transition-transform duration-200 lg:translate-x-0",
@@ -115,6 +131,7 @@ export function Sidebar({
                 key={item.href}
                 href={item.href}
                 onClick={onClose}
+                aria-current={active ? "page" : undefined}
                 className={[
                   "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
                   active
@@ -176,7 +193,14 @@ export function Sidebar({
                 {mounted ? info.xpIntoLevel : 0}/{mounted ? info.xpForLevel : 80}
               </span>
             </div>
-            <div className="h-2 overflow-hidden rounded-full bg-surface-2">
+            <div
+              role="progressbar"
+              aria-label="XP progress"
+              aria-valuenow={mounted ? info.xpIntoLevel : 0}
+              aria-valuemin={0}
+              aria-valuemax={mounted ? info.xpForLevel : 80}
+              className="h-2 overflow-hidden rounded-full bg-surface-2"
+            >
               <motion.div
                 className="h-full rounded-full bg-gradient-to-r from-accent to-accent-soft"
                 initial={{ width: 0 }}

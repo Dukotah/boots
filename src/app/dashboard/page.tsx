@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { Flame, Zap, Trophy, Target, RotateCcw, Briefcase, RefreshCw } from "lucide-react";
 import { useGameStore, streakRepairCost } from "@/store/useGameStore";
 import { levelFromXp } from "@/lib/levels";
 import { MODULES, totalLessons, totalXpAvailable, lessonId } from "@/lib/curriculum";
+import { groupByTrack } from "@/lib/curriculum/tracks";
 import { deriveBreadth } from "@/lib/progress";
 import { computeReadiness } from "@/lib/career";
 import type { PlayerStats } from "@/types/game";
@@ -15,8 +17,12 @@ import { DailyQuests } from "@/components/features/quests/DailyQuests";
 import { DailyChallenge } from "@/components/features/retention/DailyChallenge";
 import { StreakHeatmap } from "@/components/features/retention/StreakHeatmap";
 import { EnableNotifications } from "@/components/features/push/EnableNotifications";
+import { RecommendedNextCard } from "@/components/features/onboarding/RecommendedNextCard";
+import { ReferralCard } from "@/components/features/referral/ReferralCard";
+import { PurchaseTracker } from "@/components/features/billing/PurchaseTracker";
 
 export default function Dashboard() {
+  const router = useRouter();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
@@ -24,6 +30,16 @@ export default function Dashboard() {
   const gold = useGameStore((s) => s.gold);
   const streak = useGameStore((s) => s.streak);
   const completed = useGameStore((s) => s.completed);
+  const onboarded = useGameStore((s) => s.onboarded);
+
+  // First-run intercept: a brand-new learner (no progress, never onboarded) is
+  // sent to pick a goal before landing here. Existing users (any progress) are
+  // never redirected, even though `onboarded` defaults false for them.
+  useEffect(() => {
+    if (mounted && !onboarded && completed.length === 0) {
+      router.replace("/onboarding");
+    }
+  }, [mounted, onboarded, completed.length, router]);
   const talents = useGameStore((s) => s.talents);
   const skillPoints = useGameStore((s) => s.skillPoints);
   const dueReviews = useGameStore((s) => s.dueReviews);
@@ -77,11 +93,20 @@ export default function Dashboard() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
+      {/* Fires the `purchase` analytics event when Stripe redirects back here. */}
+      <Suspense fallback={null}>
+        <PurchaseTracker />
+      </Suspense>
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-white">Your dashboard</h1>
         <Link href={continueHref} className="btn-primary">
           <Target size={16} /> Continue learning
         </Link>
+      </div>
+
+      {/* Recommended next — the learner's chosen path (or a nudge to pick one) */}
+      <div className="mt-6">
+        <RecommendedNextCard />
       </div>
 
       {/* Stat cards */}
@@ -180,6 +205,11 @@ export default function Dashboard() {
         <TalentBuildCard talents={talents} availableSp={availableSp} />
       </div>
 
+      {/* Referral programme (self-hides when backend unconfigured / signed out) */}
+      <div className="mt-4">
+        <ReferralCard />
+      </div>
+
       {/* Quick links to new features */}
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
         {[
@@ -224,43 +254,91 @@ export default function Dashboard() {
           </span>
         </div>
         <div className="space-y-3">
-          {MODULES.map((m) => {
-            const done = m.lessons.filter((l) =>
-              completed.includes(lessonId(m.slug, l.slug)),
-            ).length;
-            const mpct = Math.round((done / m.lessons.length) * 100);
-            const complete = done === m.lessons.length;
+          {groupByTrack(MODULES).map(({ track, modules }) => {
+            const tLessons = modules.reduce((s, m) => s + m.lessons.length, 0);
+            const tDone = modules.reduce(
+              (s, m) =>
+                s +
+                m.lessons.filter((l) =>
+                  completed.includes(lessonId(m.slug, l.slug)),
+                ).length,
+              0,
+            );
+            const tpct = tLessons ? Math.round((tDone / tLessons) * 100) : 0;
             return (
-              <div key={m.slug} className="space-y-1">
-              <Link
-                href={`/learn/${m.slug}`}
-                className="card flex items-center gap-4 hover:border-accent/60"
+              <details
+                key={track.id}
+                open={tDone > 0 && tDone < tLessons}
+                className="card group"
               >
-                <span className="text-3xl">{m.emoji}</span>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between">
-                    <p className="font-medium text-white">{m.title}</p>
-                    <span className="text-xs text-gray-400">
-                      {done}/{m.lessons.length}
-                    </span>
+                <summary className="flex cursor-pointer list-none items-center gap-3">
+                  <span className="text-2xl">{track.emoji}</span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between">
+                      <p className="font-semibold text-white">{track.label}</p>
+                      <span className="ml-2 shrink-0 text-xs text-gray-400">
+                        {tDone}/{tLessons} · {modules.length} courses
+                      </span>
+                    </div>
+                    <div className="mt-2 h-2 overflow-hidden rounded-full bg-surface-2">
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-accent to-accent-soft"
+                        style={{ width: `${tpct}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="mt-2 h-2 overflow-hidden rounded-full bg-surface-2">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-accent to-accent-soft"
-                      style={{ width: `${mpct}%` }}
-                    />
-                  </div>
+                  <span className="ml-1 shrink-0 text-gray-500 transition-transform group-open:rotate-90">
+                    ▸
+                  </span>
+                </summary>
+
+                <div className="mt-4 space-y-2">
+                  {modules.map((m) => {
+                    const done = m.lessons.filter((l) =>
+                      completed.includes(lessonId(m.slug, l.slug)),
+                    ).length;
+                    const mpct = Math.round((done / m.lessons.length) * 100);
+                    const complete = done === m.lessons.length;
+                    return (
+                      <div key={m.slug} className="space-y-1">
+                        <Link
+                          href={`/learn/${m.slug}`}
+                          className="flex items-center gap-4 rounded-lg border border-line/60 bg-surface-2/40 px-3 py-2 hover:border-accent/60"
+                        >
+                          <span className="text-2xl">{m.emoji}</span>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center justify-between">
+                              <p className="truncate text-sm font-medium text-white">
+                                {m.title}
+                              </p>
+                              <span className="ml-2 shrink-0 text-xs text-gray-400">
+                                {done}/{m.lessons.length}
+                              </span>
+                            </div>
+                            <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface-2">
+                              <div
+                                className="h-full rounded-full bg-gradient-to-r from-accent to-accent-soft"
+                                style={{ width: `${mpct}%` }}
+                              />
+                            </div>
+                          </div>
+                          {complete && (
+                            <span className="shrink-0 text-success">✓</span>
+                          )}
+                        </Link>
+                        {complete && (
+                          <Link
+                            href={`/certificate/${m.slug}`}
+                            className="inline-flex items-center gap-1 px-1 text-xs font-medium text-gold hover:underline"
+                          >
+                            🎓 View your certificate
+                          </Link>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
-              </Link>
-              {complete && (
-                <Link
-                  href={`/certificate/${m.slug}`}
-                  className="inline-flex items-center gap-1 px-1 text-xs font-medium text-gold hover:underline"
-                >
-                  🎓 View your certificate
-                </Link>
-              )}
-              </div>
+              </details>
             );
           })}
         </div>

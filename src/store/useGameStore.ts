@@ -43,6 +43,13 @@ import {
   RESPEC_COST,
 } from "@/lib/talents";
 import type { PlayerStats } from "@/types/game";
+import { track } from "@/lib/analytics/track";
+import {
+  pickDaily,
+  DAILY_BONUS_GOLD,
+  DAILY_BONUS_XP,
+  type DailyPick,
+} from "@/lib/daily";
 
 /** Build the full stats snapshot (core resources + derived breadth) from state. */
 function buildStats(s: {
@@ -155,6 +162,12 @@ export type GameState = {
   dailyXp: number;
   dailyLessons: number;
   claimedQuests: string[]; // quest ids claimed *today*
+  // ── daily challenge (the "problem of the day" loop) ──
+  // The day key whose challenge bonus was last claimed ("claimed today" ===
+  // dailyChallengeClaimed === todayKey()). Separate from the login streak.
+  dailyChallengeClaimed: string | null;
+  dailyChallengeStreak: number; // consecutive days the challenge was cleared
+  dailyChallengeBest: number; // best daily-challenge streak ever reached
   // ── active quest ──
   activeQuest: string | null;
   // ── leagues (weekly competitive season) ──
@@ -178,6 +191,9 @@ export type GameState = {
   // ── guilds ──
   guildId: string | null;
   guildName: string | null;
+  // ── onboarding (learner intent chosen on first run; drives recommendations) ──
+  goal: string | null; // LearnerGoal id from lib/goals
+  onboarded: boolean; // has the learner seen + answered (or skipped) onboarding
   // ── sync revision (bumped on every server write; resolves last-writer-wins) ──
   rev: number;
   // ── transient UI signals (not persisted) ──
@@ -195,6 +211,15 @@ export type GameState = {
   stats: () => PlayerStats;
   /** Today's activity, normalized (returns zeros if the stored day is stale). */
   today: () => DailySnapshot;
+  /** Today's deterministic challenge + the player's status on it. */
+  dailyChallenge: () => DailyPick & {
+    completed: boolean;
+    claimed: boolean;
+    streak: number;
+    best: number;
+    bonusGold: number;
+    bonusXp: number;
+  };
   /** Current league season snapshot: tier index, days left, XP earned this season. */
   season: () => { tier: number; daysLeft: number; weeklyXp: number };
   /** This season's activity, for weekly quests (zeros if the season is stale). */
@@ -213,6 +238,8 @@ export type GameState = {
   spendGold: (amount: number) => boolean;
   /** Claim a completed daily quest's reward (once per day). Returns true if claimed. */
   claimQuest: (questId: string) => boolean;
+  /** Claim today's daily-challenge bonus (requires the lesson genuinely done). Returns true if claimed. */
+  claimDailyChallenge: () => boolean;
   /** Claim a completed weekly quest's reward (once per season). Returns true if claimed. */
   claimWeeklyQuest: (questId: string) => boolean;
   /** Claim the next available step of a quest chain. Returns true if claimed. */
@@ -233,6 +260,10 @@ export type GameState = {
   joinGuild: (id: string, name: string) => void;
   /** Leave the current guild. */
   leaveGuild: () => void;
+  /** Record the learner's onboarding goal (marks onboarding complete). */
+  setGoal: (id: string | null) => void;
+  /** Mark onboarding as seen without choosing a goal (the "skip" path). */
+  dismissOnboarding: () => void;
   /** Resolve + roll the league season if it has expired (idempotent; call on mount). */
   checkSeason: () => void;
   clearLevelUp: () => void;
@@ -262,6 +293,9 @@ const INITIAL = {
   dailyXp: 0,
   dailyLessons: 0,
   claimedQuests: [] as string[],
+  dailyChallengeClaimed: null as string | null,
+  dailyChallengeStreak: 0,
+  dailyChallengeBest: 0,
   activeQuest: null as string | null,
   weeklyXp: 0,
   weeklyLessons: 0,
@@ -277,6 +311,8 @@ const INITIAL = {
   talents: [] as string[],
   guildId: null as string | null,
   guildName: null as string | null,
+  goal: null as string | null,
+  onboarded: false,
   rev: 0,
   lastLevelUp: null as number | null,
   recentAchievement: null as string | null,
@@ -309,6 +345,12 @@ type ProfileSnapshot = {
   streak_freezes: number;
   guild_id: string | null;
   guild_name: string | null;
+  // ── new in 0007 ──
+  goal: string | null;
+  onboarded: boolean;
+  daily_challenge_claimed: string | null;
+  daily_challenge_streak: number;
+  daily_challenge_best: number;
   // Monotonic sync revision — bumped on every write; used for last-writer-wins.
   rev: number;
 };
@@ -316,7 +358,9 @@ type ProfileSnapshot = {
 const PROFILE_COLUMNS =
   "xp, gold, streak, last_active_day, completed, achievements, active_quest, " +
   "weekly_xp, league_tier, season_start, cosmetics, talents, equipped, " +
-  "streak_freezes, guild_id, guild_name, rev";
+  "streak_freezes, guild_id, guild_name, " +
+  "goal, onboarded, daily_challenge_claimed, daily_challenge_streak, " +
+  "daily_challenge_best, rev";
 
 async function upsertProfile(userId: string, snap: ProfileSnapshot): Promise<void> {
   const sb = getSupabaseBrowserClient();
@@ -354,6 +398,21 @@ export const useGameStore = create<GameState>()(
           xp: fresh ? s.dailyXp : 0,
           lessons: fresh ? s.dailyLessons : 0,
           streak: s.streak,
+        };
+      },
+
+      dailyChallenge: () => {
+        const s = get();
+        const today = todayKey();
+        const pick = pickDaily(today);
+        return {
+          ...pick,
+          completed: s.completed.includes(pick.id),
+          claimed: s.dailyChallengeClaimed === today,
+          streak: s.dailyChallengeStreak,
+          best: s.dailyChallengeBest,
+          bonusGold: DAILY_BONUS_GOLD,
+          bonusXp: DAILY_BONUS_XP,
         };
       },
 
@@ -554,6 +613,14 @@ export const useGameStore = create<GameState>()(
         if (gainedSkillPoints > 0) set({ recentSkillPoints: gainedSkillPoints });
         get().syncToServer();
 
+        // Funnel analytics (cookieless Plausible; no-ops when unconfigured).
+        // first_all_green is the activation "magic moment" — fire it only on the
+        // learner's very first completed lesson, not every fresh completion.
+        track("lesson_completed", { lesson_id: id, xp });
+        if (state.completed.length === 0) {
+          track("first_all_green", { lesson_id: id });
+        }
+
         return {
           gainedXp: xp,
           gainedGold,
@@ -595,6 +662,32 @@ export const useGameStore = create<GameState>()(
           weeklyXp: s.weeklyXp + (quest.rewardXp ?? 0),
           claimedQuests: [...claimed, questId],
         }));
+        grantAchievements(get, set);
+        get().syncToServer();
+        return true;
+      },
+
+      claimDailyChallenge: () => {
+        const today = todayKey();
+        const pick = pickDaily(today);
+        // Integrity: the bonus is only payable once the lesson is GENUINELY
+        // completed — never on a deep-link visit. Mirrors the achievement rule.
+        if (!get().completed.includes(pick.id)) return false;
+        if (get().dailyChallengeClaimed === today) return false; // already claimed
+        const prev = get().dailyChallengeClaimed;
+        // Streak continues only if the previous claim was exactly yesterday.
+        const continued = prev !== null && dayDiff(prev, today) === 1;
+        const streak = continued ? get().dailyChallengeStreak + 1 : 1;
+        set((s) => ({
+          gold: s.gold + DAILY_BONUS_GOLD,
+          xp: s.xp + DAILY_BONUS_XP,
+          // Daily-challenge XP counts toward the weekly league, same as quest XP.
+          weeklyXp: s.weeklyXp + DAILY_BONUS_XP,
+          dailyChallengeClaimed: today,
+          dailyChallengeStreak: streak,
+          dailyChallengeBest: Math.max(s.dailyChallengeBest, streak),
+        }));
+        track("daily_challenge_completed", { streak });
         grantAchievements(get, set);
         get().syncToServer();
         return true;
@@ -781,6 +874,15 @@ export const useGameStore = create<GameState>()(
         get().syncToServer();
       },
 
+      setGoal: (id) => {
+        set({ goal: id, onboarded: true });
+        get().syncToServer();
+      },
+      dismissOnboarding: () => {
+        set({ onboarded: true });
+        get().syncToServer();
+      },
+
       clearLevelUp: () => set({ lastLevelUp: null }),
       clearRecentAchievement: () => set({ recentAchievement: null }),
       clearRecentSkillPoints: () => set({ recentSkillPoints: null }),
@@ -822,6 +924,12 @@ export const useGameStore = create<GameState>()(
             streak_freezes: s.streakFreezes,
             guild_id: s.guildId,
             guild_name: s.guildName,
+            // ── new in 0007 ──
+            goal: s.goal,
+            onboarded: s.onboarded,
+            daily_challenge_claimed: s.dailyChallengeClaimed,
+            daily_challenge_streak: s.dailyChallengeStreak,
+            daily_challenge_best: s.dailyChallengeBest,
             rev,
           });
           set({ syncStatus: "idle" });
@@ -872,6 +980,25 @@ export const useGameStore = create<GameState>()(
           lastActiveDay: local.lastActiveDay ?? remote.last_active_day,
           activeQuest: local.activeQuest ?? remote.active_quest,
           seasonStart: local.seasonStart ?? remote.season_start,
+          // ── new in 0007: goal / onboarding ──
+          // `onboarded` is a one-way flag: once true on either side, stay true.
+          onboarded: local.onboarded || (remote.onboarded ?? false),
+          // `goal` — newest writer wins; fall back to whichever side has a value.
+          goal: remoteNewer ? remote.goal ?? local.goal : local.goal ?? remote.goal,
+          // ── new in 0007: daily challenge ──
+          // All-time best is a high-water mark — always keep the max.
+          dailyChallengeBest: Math.max(
+            local.dailyChallengeBest,
+            remote.daily_challenge_best ?? 0,
+          ),
+          // Streak + claim token are time-sensitive (reset on a missed day), so
+          // the newest writer reflects ground truth.
+          dailyChallengeStreak: remoteNewer
+            ? remote.daily_challenge_streak ?? local.dailyChallengeStreak
+            : local.dailyChallengeStreak,
+          dailyChallengeClaimed: remoteNewer
+            ? remote.daily_challenge_claimed ?? local.dailyChallengeClaimed
+            : local.dailyChallengeClaimed,
           rev: Math.max(local.rev, remote.rev ?? 0),
         });
         get().syncToServer(); // push the merged result back (bumps rev again)
@@ -895,6 +1022,9 @@ export const useGameStore = create<GameState>()(
         dailyXp: s.dailyXp,
         dailyLessons: s.dailyLessons,
         claimedQuests: s.claimedQuests,
+        dailyChallengeClaimed: s.dailyChallengeClaimed,
+        dailyChallengeStreak: s.dailyChallengeStreak,
+        dailyChallengeBest: s.dailyChallengeBest,
         activeQuest: s.activeQuest,
         weeklyXp: s.weeklyXp,
         weeklyLessons: s.weeklyLessons,
@@ -910,6 +1040,8 @@ export const useGameStore = create<GameState>()(
         talents: s.talents,
         guildId: s.guildId,
         guildName: s.guildName,
+        goal: s.goal,
+        onboarded: s.onboarded,
         rev: s.rev,
       }),
       // A no-op migrate keeps an older persisted blob intact across version

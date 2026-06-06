@@ -98,8 +98,8 @@ export function GithubJournalCard() {
             </p>
           )}
           <p className="mt-2 text-xs text-gray-500">
-            You choose exactly one repo Boots can write to. Revoke anytime in your
-            GitHub settings.
+            You choose exactly one repo Cantrip can write to. Revoke anytime in
+            your GitHub settings.
           </p>
         </div>
       ) : (

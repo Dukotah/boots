@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getCheatsheet, CHEATSHEETS } from "@/lib/cheatsheets";
 import { breadcrumbJsonLd } from "@/lib/seo";
+import { absoluteUrl } from "@/lib/site";
 import { JsonLd } from "@/components/seo/JsonLd";
 
 export function generateStaticParams() {
@@ -25,7 +26,18 @@ export function generateMetadata({
       type: "article",
       title: `${c.title} | Cantrip`,
       description: c.description,
-      url: `/cheatsheet/${c.slug}`,
+      url: absoluteUrl(`/cheatsheet/${c.slug}`),
+      images: [
+        {
+          url: absoluteUrl(`/api/og?title=${encodeURIComponent(c.title)}&subtitle=${encodeURIComponent(c.description)}`),
+          width: 1200,
+          height: 630,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      images: [absoluteUrl(`/api/og?title=${encodeURIComponent(c.title)}&subtitle=${encodeURIComponent(c.description)}`)],
     },
   };
 }

@@ -7,8 +7,9 @@ import remarkGfm from "remark-gfm";
 import { motion } from "framer-motion";
 import { CheckCircle2, XCircle, ArrowRight } from "lucide-react";
 import type { Lesson, Module } from "@/lib/curriculum/types";
-import { lessonId } from "@/lib/curriculum";
+import { lessonId } from "@/lib/curriculum/ids";
 import { useGameStore } from "@/store/useGameStore";
+import { verifyQuizCompletion } from "@/lib/scoring";
 import { celebrate } from "@/lib/celebrate";
 import { useAccess } from "@/hooks/useAccess";
 import { useMounted } from "@/hooks/useMounted";
@@ -62,6 +63,10 @@ export function QuizView({
         setAwarded(true);
         completeLesson(id, lesson.xp);
         celebrate();
+        // Record server-side for canonical, forge-proof XP (best-effort;
+        // no-ops when signed out / no backend). The server re-checks the
+        // submitted answers against the key before awarding.
+        void verifyQuizCompletion(module.slug, lesson.slug, next as number[]);
       }
       return next;
     });
@@ -84,7 +89,7 @@ export function QuizView({
 
       {gated ? (
         <div className="mt-6">
-          <ProGate />
+          <ProGate source="pro_gate_quiz" />
         </div>
       ) : (
         <div className="mt-6 space-y-5">

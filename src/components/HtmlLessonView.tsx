@@ -7,11 +7,12 @@ import remarkGfm from "remark-gfm";
 import { motion } from "framer-motion";
 import { Play, RotateCcw, Eye, ArrowRight, CheckCircle2, Loader2, Lock } from "lucide-react";
 import type { Lesson, Module } from "@/lib/curriculum/types";
-import { lessonId } from "@/lib/curriculum";
+import { lessonId } from "@/lib/curriculum/ids";
 import { runHtml } from "@/lib/htmlRunner";
 import { type RunOutcome } from "@/lib/runner";
 import { celebrate } from "@/lib/celebrate";
 import { useGameStore } from "@/store/useGameStore";
+import { recordCompletion } from "@/lib/scoring";
 import { useAccess } from "@/hooks/useAccess";
 import { useMounted } from "@/hooks/useMounted";
 import { CodeEditor } from "./CodeEditor";
@@ -64,6 +65,9 @@ export function HtmlLessonView({
     if (result.results.length > 0 && result.results.every((r) => r.pass)) {
       completeLesson(id, lesson.xp);
       celebrate();
+      // Record server-side for canonical, forge-proof XP (best-effort;
+      // no-ops when signed out / no backend).
+      void recordCompletion(module.slug, lesson.slug);
     }
   }
 
@@ -245,7 +249,7 @@ export function HtmlLessonView({
         )}
 
         {gated ? (
-          <ProGate />
+          <ProGate source="pro_gate_html_lesson" />
         ) : (
           <div className="card min-h-[140px] p-0">
             <TestResults

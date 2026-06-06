@@ -62,7 +62,54 @@ import { aiSafetyKids } from "../src/lib/curriculum/ai-safety-kids.ts";
 import { digitalCitizenship } from "../src/lib/curriculum/digital-citizenship.ts";
 import { systemDesign } from "../src/lib/curriculum/system-design.ts";
 import { portfolioProjects } from "../src/lib/curriculum/portfolio-projects.ts";
+import { pythonDecorators } from "../src/lib/curriculum/python-decorators.ts";
+import { pythonGenerators } from "../src/lib/curriculum/python-generators.ts";
+import { sqlWindowFunctions } from "../src/lib/curriculum/sql-window-functions.ts";
+import { jsArrayMethods } from "../src/lib/curriculum/js-array-methods.ts";
+import { httpAndRest } from "../src/lib/curriculum/http-and-rest.ts";
+import { debuggingSkills } from "../src/lib/curriculum/debugging-skills.ts";
 import type { Lesson, Module } from "../src/lib/curriculum/types.ts";
+import { jsGenerators } from "../src/lib/curriculum/js-generators.ts";
+import { jsProxyReflect } from "../src/lib/curriculum/js-proxy-reflect.ts";
+import { tsMappedConditionalTypes } from "../src/lib/curriculum/ts-mapped-conditional-types.ts";
+import { pythonTypeHints } from "../src/lib/curriculum/python-type-hints.ts";
+import { pythonItertools } from "../src/lib/curriculum/python-itertools.ts";
+import { pythonDatetime } from "../src/lib/curriculum/python-datetime.ts";
+import { pythonStatistics } from "../src/lib/curriculum/python-statistics.ts";
+import { sqlRecursiveCtes } from "../src/lib/curriculum/sql-recursive-ctes.ts";
+import { sqlCaseAndPivoting } from "../src/lib/curriculum/sql-case-and-pivoting.ts";
+import { dbNormalization } from "../src/lib/curriculum/db-normalization.ts";
+import { dbTransactionsAcid } from "../src/lib/curriculum/db-transactions-acid.ts";
+import { slidingWindow } from "../src/lib/curriculum/sliding-window.ts";
+import { greedyAlgorithms } from "../src/lib/curriculum/greedy-algorithms.ts";
+import { graphsJs } from "../src/lib/curriculum/graphs-js.ts";
+import { heapsPriorityQueuesJs } from "../src/lib/curriculum/heaps-priority-queues-js.ts";
+import { fpCompositionPipelines } from "../src/lib/curriculum/fp-composition-pipelines.ts";
+import { httpCaching } from "../src/lib/curriculum/http-caching.ts";
+import { browserStorage } from "../src/lib/curriculum/browser-storage.ts";
+import { numberSystems } from "../src/lib/curriculum/number-systems.ts";
+import { bigOComplexity } from "../src/lib/curriculum/big-o-complexity.ts";
+import { unitTestingFundamentals } from "../src/lib/curriculum/unit-testing-fundamentals.ts";
+import { tddPractice } from "../src/lib/curriculum/tdd-practice.ts";
+import { solidPrinciples } from "../src/lib/curriculum/solid-principles.ts";
+import { behavioralPatterns } from "../src/lib/curriculum/behavioral-patterns.ts";
+import { tsGenericsAdvanced } from "../src/lib/curriculum/ts-generics-advanced.ts";
+import { webcryptoApi } from "../src/lib/curriculum/webcrypto-api.ts";
+import { hashingAndIntegrity } from "../src/lib/curriculum/hashing-and-integrity.ts";
+import { mlModelEvaluation } from "../src/lib/curriculum/ml-model-evaluation.ts";
+import { decisionTrees } from "../src/lib/curriculum/decision-trees.ts";
+import { numberTheory } from "../src/lib/curriculum/number-theory.ts";
+
+// ---------------------------------------------------------------------------
+// KNOWN_PRESOLVED — lessons whose starterCode intentionally passes all tests.
+// Add entries as "moduleSlug/lessonSlug" to suppress the pre-solved gate for
+// that lesson. Entries here still trigger a warning so they stay visible and
+// can be cleaned up over time; they just do NOT fail the build.
+// ---------------------------------------------------------------------------
+const KNOWN_PRESOLVED: ReadonlySet<string> = new Set<string>([
+  // Example (remove once the lesson is fixed):
+  // "beginner/hello-world",
+]);
 
 // Keep in sync with src/lib/curriculum/index.ts. (New module? Add it here too.)
 const MODULES: Module[] = [
@@ -123,6 +170,43 @@ const MODULES: Module[] = [
   digitalCitizenship,
   systemDesign,
   portfolioProjects,
+  pythonDecorators,
+  pythonGenerators,
+  sqlWindowFunctions,
+  jsArrayMethods,
+  httpAndRest,
+  debuggingSkills,
+  // Module-discovery batch (2026-06-04)
+  jsGenerators,
+  jsProxyReflect,
+  tsMappedConditionalTypes,
+  pythonTypeHints,
+  pythonItertools,
+  pythonDatetime,
+  pythonStatistics,
+  sqlRecursiveCtes,
+  sqlCaseAndPivoting,
+  dbNormalization,
+  dbTransactionsAcid,
+  slidingWindow,
+  greedyAlgorithms,
+  graphsJs,
+  heapsPriorityQueuesJs,
+  fpCompositionPipelines,
+  httpCaching,
+  browserStorage,
+  numberSystems,
+  bigOComplexity,
+  unitTestingFundamentals,
+  tddPractice,
+  solidPrinciples,
+  behavioralPatterns,
+  tsGenericsAdvanced,
+  webcryptoApi,
+  hashingAndIntegrity,
+  mlModelEvaluation,
+  decisionTrees,
+  numberTheory,
 ];
 
 function stringify(v: unknown): string {
@@ -161,6 +245,8 @@ async function testPasses(code: string, test: { code: string }): Promise<boolean
 }
 
 const errors: string[] = [];
+// Warnings do not cause a non-zero exit; used for KNOWN_PRESOLVED notices.
+const warnings: string[] = [];
 
 async function checkLesson(mod: Module, lesson: Lesson, seen: Set<string>) {
   const where = `${mod.slug}/${lesson.slug}`;
@@ -208,8 +294,13 @@ async function checkLesson(mod: Module, lesson: Lesson, seen: Set<string>) {
   if (language !== "js") {
     if (language === "sql" && (!lesson.setup || !lesson.setup.trim()))
       errors.push(`${where}: SQL lesson needs a "setup" (schema + seed data)`);
-    if (lesson.starterCode.trim() === lesson.solution.trim())
-      errors.push(`${where}: starterCode is identical to the solution (lesson is pre-solved)`);
+    if (lesson.starterCode.trim() === lesson.solution.trim()) {
+      if (KNOWN_PRESOLVED.has(where)) {
+        warnings.push(`${where}: starterCode is identical to the solution (allowlisted, but should be fixed)`);
+      } else {
+        errors.push(`${where}: starterCode is identical to the solution (lesson is pre-solved)`);
+      }
+    }
     return;
   }
 
@@ -219,16 +310,25 @@ async function checkLesson(mod: Module, lesson: Lesson, seen: Set<string>) {
       errors.push(`${where}: solution FAILS test "${t.name}"`);
   }
 
-  // ── quality: starter must NOT already pass every test (no pre-solved lessons) ──
+  // ── quality: starter must FAIL at least one test (no pre-solved lessons) ──
+  // We stop on the first failing test to avoid running more test code than
+  // necessary — never introduce an unbounded loop here.
   let starterPassesAll = true;
   for (const t of lesson.tests) {
     if (!(await testPasses(lesson.starterCode, t))) {
       starterPassesAll = false;
-      break;
+      break; // one failure is enough — starter is not pre-solved
     }
   }
-  if (starterPassesAll)
-    errors.push(`${where}: starterCode already passes all tests (lesson is pre-solved)`);
+  if (starterPassesAll) {
+    if (KNOWN_PRESOLVED.has(where)) {
+      warnings.push(
+        `${where}: starterCode already passes all tests (allowlisted pre-solved — please fix)`,
+      );
+    } else {
+      errors.push(`${where}: starterCode already passes all tests (lesson is pre-solved)`);
+    }
+  }
 }
 
 let lessonCount = 0;
@@ -245,15 +345,29 @@ async function main() {
     }
   }
 
+  if (warnings.length) {
+    console.log("⚠️  Curriculum warnings (allowlisted — fix these):\n");
+    for (const w of warnings) console.log("  ~ " + w);
+    console.log();
+  }
+
   if (errors.length) {
     console.log("❌ Curriculum check failed:\n");
     for (const e of errors) console.log("  • " + e);
     console.log(`\n${errors.length} problem(s) across ${lessonCount} lessons.`);
+    if (warnings.length)
+      console.log(
+        `(${warnings.length} additional warning(s) for allowlisted pre-solved lessons — see above)`,
+      );
     process.exit(1);
   }
 
+  const warnNote =
+    warnings.length
+      ? ` (${warnings.length} allowlisted pre-solved warning(s) — see above)`
+      : "";
   console.log(
-    `✅ Curriculum OK — ${MODULES.length} modules, ${lessonCount} lessons, ${testCount} tests all green.`,
+    `✅ Curriculum OK — ${MODULES.length} modules, ${lessonCount} lessons, ${testCount} tests all green.${warnNote}`,
   );
 }
 

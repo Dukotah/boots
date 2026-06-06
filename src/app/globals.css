@@ -24,7 +24,9 @@ body {
 @layer components {
   .btn {
     @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2
-      font-medium transition-all duration-150 active:scale-95;
+      font-medium transition-all duration-150 active:scale-95
+      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent
+      focus-visible:ring-offset-2 focus-visible:ring-offset-canvas;
   }
   .btn-primary {
     @apply btn bg-accent text-white shadow-glow hover:bg-accent-soft;
@@ -71,4 +73,18 @@ body {
 .hint-highlight-gutter {
   background: rgba(234, 179, 8, 0.4);
   width: 3px !important;
+}
+
+/* Accessibility: honor the OS "reduce motion" setting globally (WCAG 2.3.3).
+   Framer Motion is also configured with reducedMotion="user" in the root
+   layout; this is the CSS backstop for transitions/animations everywhere. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -1,13 +1,20 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Lock, Check } from "lucide-react";
 import { UpgradeButton } from "./UpgradeButton";
+import { track } from "@/lib/analytics/track";
 
 // Paywall shown in place of the interactive controls when a free user reaches a
 // Pro-only lesson. Reading the lesson stays free — this only gates run/grade.
-export function ProGate() {
+export function ProGate({ source = "pro_gate_lesson" }: { source?: string }) {
+  // Fire once on mount so every distinct context is measured separately.
+  useEffect(() => {
+    track("paywall_viewed", { source });
+  }, [source]);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}

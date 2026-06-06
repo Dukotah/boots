@@ -8,6 +8,7 @@ import {
   isSupabaseConfigured,
 } from "@/lib/supabase/client";
 import { useGameStore } from "@/store/useGameStore";
+import { track } from "@/lib/analytics/track";
 
 export default function LoginPage() {
   const user = useGameStore((s) => s.user);
@@ -24,6 +25,8 @@ export default function LoginPage() {
   async function github() {
     const sb = getSupabaseBrowserClient();
     if (!sb || !ageOk) return;
+    // Fire before the OAuth redirect so the event lands even as the tab navigates.
+    track("signup", { method: "github" });
     await sb.auth.signInWithOAuth({
       provider: "github",
       options: { redirectTo: `${origin}/dashboard` },
@@ -38,6 +41,7 @@ export default function LoginPage() {
       options: { emailRedirectTo: `${origin}/dashboard` },
     });
     setSent(true);
+    track("signup", { method: "magic_link" });
   }
 
   async function signOut() {
@@ -107,7 +111,7 @@ export default function LoginPage() {
         disabled={!ageOk}
         className="btn-primary mt-4 w-full justify-center py-3 disabled:opacity-40"
       >
-        <Github size={18} /> Continue with GitHub
+        <Github size={18} aria-hidden="true" /> Continue with GitHub
       </button>
 
       <div className="my-6 flex items-center gap-3 text-xs text-gray-600">
@@ -116,11 +120,15 @@ export default function LoginPage() {
 
       {sent ? (
         <div className="flex items-center justify-center gap-2 rounded-xl border border-success/40 bg-success/10 px-4 py-3 text-sm text-success">
-          <Check size={16} /> Check your inbox for a magic link.
+          <Check size={16} aria-hidden="true" /> Check your inbox for a magic link.
         </div>
       ) : (
         <div className="space-y-2">
+          <label htmlFor="login-email" className="sr-only">
+            Email address
+          </label>
           <input
+            id="login-email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -132,7 +140,7 @@ export default function LoginPage() {
             disabled={!email || !ageOk}
             className="btn-ghost w-full justify-center py-2.5 disabled:opacity-40"
           >
-            <Mail size={16} /> Email me a magic link
+            <Mail size={16} aria-hidden="true" /> Email me a magic link
           </button>
         </div>
       )}

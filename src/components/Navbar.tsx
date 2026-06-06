@@ -6,6 +6,7 @@ import { Flame, Zap, Menu, X } from "lucide-react";
 import { useGameStore } from "@/store/useGameStore";
 import { levelFromXp } from "@/lib/levels";
 import { MascotBoots } from "./MascotBoots";
+import { NotificationBell } from "@/components/features/notifications/NotificationBell";
 import { useEffect, useState } from "react";
 
 // Routes that render their own AppShell chrome (sidebar) — hide the top Navbar there.
@@ -15,9 +16,13 @@ const APP_SHELL_ROUTES = ["/map"];
 // lists them all so no route is unreachable on a phone.
 const NAV_LINKS: { href: string; label: string; desktop?: boolean }[] = [
   { href: "/learn", label: "Learn", desktop: true },
+  { href: "/daily", label: "Daily", desktop: true },
+  { href: "/recap", label: "Recap" },
+  { href: "/notifications", label: "Notifications" },
   { href: "/review", label: "Review" },
   { href: "/paths", label: "Paths", desktop: true },
   { href: "/skill-tree", label: "Skill Tree", desktop: true },
+  { href: "/projects", label: "Projects", desktop: true },
   { href: "/career", label: "Career", desktop: true },
   { href: "/playground", label: "Playground", desktop: true },
   { href: "/leaderboard", label: "Leaderboard" },
@@ -25,6 +30,9 @@ const NAV_LINKS: { href: string; label: string; desktop?: boolean }[] = [
   { href: "/events", label: "Events" },
   { href: "/tools", label: "Tools" },
   { href: "/blog", label: "Blog" },
+  { href: "/refer", label: "Refer" },
+  { href: "/teams", label: "Teams" },
+  { href: "/account", label: "Account" },
   { href: "/pricing", label: "Pricing", desktop: true },
 ];
 
@@ -48,7 +56,10 @@ export function Navbar() {
   if (hidden) return null;
 
   return (
-    <header className="sticky top-0 z-40 border-b border-line bg-canvas/80 backdrop-blur">
+    <header
+      className="sticky top-0 z-40 border-b border-line bg-canvas/80 backdrop-blur"
+      onKeyDown={(e) => { if (e.key === "Escape" && open) setOpen(false); }}
+    >
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <Link href="/" className="flex items-center gap-2">
           <MascotBoots size={34} />
@@ -74,18 +85,20 @@ export function Navbar() {
           {mounted && (
             <Link
               href="/dashboard"
+              aria-label={`Dashboard — ${streak} day streak, level ${info.level}`}
               className="flex items-center gap-3 rounded-full border border-line bg-surface-2 px-3 py-1.5"
             >
-              <span className="flex items-center gap-1 text-sm font-semibold text-gold">
-                <Flame size={15} />
+              <span aria-hidden="true" className="flex items-center gap-1 text-sm font-semibold text-gold">
+                <Flame size={15} aria-hidden="true" />
                 {streak}
               </span>
-              <span className="flex items-center gap-1 text-sm font-semibold text-accent-soft">
-                <Zap size={15} />
+              <span aria-hidden="true" className="flex items-center gap-1 text-sm font-semibold text-accent-soft">
+                <Zap size={15} aria-hidden="true" />
                 Lv {info.level}
               </span>
             </Link>
           )}
+          {mounted && <NotificationBell />}
           {mounted && !user && (
             <Link
               href="/login"
@@ -104,7 +117,7 @@ export function Navbar() {
             aria-controls="mobile-nav"
             className="rounded-lg p-1.5 text-gray-300 hover:bg-surface-2 hover:text-white sm:hidden"
           >
-            {open ? <X size={20} /> : <Menu size={20} />}
+            {open ? <X size={20} aria-hidden="true" /> : <Menu size={20} aria-hidden="true" />}
           </button>
         </div>
       </nav>

@@ -14,7 +14,17 @@ import type {
   PlayerStats,
 } from "@/types/game";
 
-export const ACHIEVEMENTS: Achievement[] = [
+/**
+ * Extended achievement definition with an optional progress descriptor.
+ * `progress` is purely presentational — the unlock predicate (`check`) is the
+ * single source of truth for when an achievement fires. Progress is only shown
+ * on LOCKED non-secret cards, so players can see how close they are.
+ */
+export type AchievementDef = Achievement & {
+  progress?: (stats: PlayerStats) => { current: number; goal: number };
+};
+
+export const ACHIEVEMENTS: AchievementDef[] = [
   // ─────────────────────────── Milestones ───────────────────────────
   {
     id: "first-blood",
@@ -25,6 +35,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     category: "milestones",
     rewardGold: 10,
     check: (s) => s.completedCount >= 1,
+    progress: (s) => ({ current: Math.min(s.completedCount, 1), goal: 1 }),
   },
   {
     id: "apprentice",
@@ -35,6 +46,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     category: "milestones",
     rewardGold: 25,
     check: (s) => s.completedCount >= 5,
+    progress: (s) => ({ current: Math.min(s.completedCount, 5), goal: 5 }),
   },
   {
     id: "scholar",
@@ -46,6 +58,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     rewardXp: 50,
     rewardGold: 50,
     check: (s) => s.completedCount >= 15,
+    progress: (s) => ({ current: Math.min(s.completedCount, 15), goal: 15 }),
   },
   {
     id: "journeyman",
@@ -57,6 +70,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     rewardXp: 75,
     rewardGold: 75,
     check: (s) => s.completedCount >= 30,
+    progress: (s) => ({ current: Math.min(s.completedCount, 30), goal: 30 }),
   },
   {
     id: "centurion",
@@ -68,6 +82,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     rewardXp: 250,
     rewardGold: 250,
     check: (s) => s.completedCount >= 100,
+    progress: (s) => ({ current: Math.min(s.completedCount, 100), goal: 100 }),
   },
   {
     id: "level-five",
@@ -78,6 +93,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     category: "milestones",
     rewardGold: 75,
     check: (s) => s.level >= 5,
+    progress: (s) => ({ current: Math.min(s.level, 5), goal: 5 }),
   },
   {
     id: "level-ten",
@@ -88,6 +104,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     category: "milestones",
     rewardGold: 120,
     check: (s) => s.level >= 10,
+    progress: (s) => ({ current: Math.min(s.level, 10), goal: 10 }),
   },
   {
     id: "level-twentyfive",
@@ -99,6 +116,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     rewardXp: 300,
     rewardGold: 300,
     check: (s) => s.level >= 25,
+    progress: (s) => ({ current: Math.min(s.level, 25), goal: 25 }),
   },
   {
     id: "archmage",
@@ -109,6 +127,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     category: "milestones",
     rewardGold: 1000,
     check: (s) => s.level >= 60,
+    progress: (s) => ({ current: Math.min(s.level, 60), goal: 60 }),
   },
 
   // ──────────────────────────── Streaks ────────────────────────────
@@ -121,6 +140,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     category: "streaks",
     rewardGold: 20,
     check: (s) => s.streak >= 3,
+    progress: (s) => ({ current: Math.min(s.streak, 3), goal: 3 }),
   },
   {
     id: "wildfire",
@@ -132,6 +152,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     rewardXp: 100,
     rewardGold: 100,
     check: (s) => s.streak >= 7,
+    progress: (s) => ({ current: Math.min(s.streak, 7), goal: 7 }),
   },
   {
     id: "fortnight",
@@ -143,6 +164,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     rewardXp: 150,
     rewardGold: 150,
     check: (s) => s.streak >= 14,
+    progress: (s) => ({ current: Math.min(s.streak, 14), goal: 14 }),
   },
   {
     id: "inferno",
@@ -154,6 +176,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     rewardXp: 400,
     rewardGold: 400,
     check: (s) => s.streak >= 30,
+    progress: (s) => ({ current: Math.min(s.streak, 30), goal: 30 }),
   },
 
   // ──────────────────────────── Breadth ────────────────────────────
@@ -166,6 +189,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     category: "breadth",
     rewardGold: 60,
     check: (s) => s.languages.length >= 2,
+    progress: (s) => ({ current: Math.min(s.languages.length, 2), goal: 2 }),
   },
   {
     id: "polyglot",
@@ -177,6 +201,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     rewardXp: 150,
     rewardGold: 150,
     check: (s) => s.languages.length >= 3,
+    progress: (s) => ({ current: Math.min(s.languages.length, 3), goal: 3 }),
   },
   {
     id: "explorer",
@@ -187,6 +212,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     category: "breadth",
     rewardGold: 80,
     check: (s) => s.modulesTouched >= 5,
+    progress: (s) => ({ current: Math.min(s.modulesTouched, 5), goal: 5 }),
   },
   {
     id: "globetrotter",
@@ -198,6 +224,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     rewardXp: 200,
     rewardGold: 200,
     check: (s) => s.modulesTouched >= 15,
+    progress: (s) => ({ current: Math.min(s.modulesTouched, 15), goal: 15 }),
   },
 
   // ──────────────────────────── Mastery ────────────────────────────
@@ -211,6 +238,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     rewardXp: 100,
     rewardGold: 100,
     check: (s) => s.completedModules.length >= 1,
+    progress: (s) => ({ current: Math.min(s.completedModules.length, 1), goal: 1 }),
   },
   {
     id: "triple-crown",
@@ -222,6 +250,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     rewardXp: 250,
     rewardGold: 250,
     check: (s) => s.completedModules.length >= 3,
+    progress: (s) => ({ current: Math.min(s.completedModules.length, 3), goal: 3 }),
   },
   {
     id: "decathlete",
@@ -233,6 +262,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     rewardXp: 600,
     rewardGold: 600,
     check: (s) => s.completedModules.length >= 10,
+    progress: (s) => ({ current: Math.min(s.completedModules.length, 10), goal: 10 }),
   },
   {
     id: "js-master",
@@ -290,6 +320,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     rewardXp: 150,
     rewardGold: 150,
     check: (s) => s.completedCount >= 50,
+    progress: (s) => ({ current: Math.min(s.completedCount, 50), goal: 50 }),
   },
   {
     id: "lessons-250",
@@ -301,6 +332,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     rewardXp: 500,
     rewardGold: 500,
     check: (s) => s.completedCount >= 250,
+    progress: (s) => ({ current: Math.min(s.completedCount, 250), goal: 250 }),
   },
   {
     id: "level-forty",
@@ -312,6 +344,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     rewardXp: 400,
     rewardGold: 400,
     check: (s) => s.level >= 40,
+    progress: (s) => ({ current: Math.min(s.level, 40), goal: 40 }),
   },
 
   // ───────────────────────────── Streaks ─────────────────────────────
@@ -325,6 +358,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     rewardXp: 600,
     rewardGold: 600,
     check: (s) => s.streak >= 50,
+    progress: (s) => ({ current: Math.min(s.streak, 50), goal: 50 }),
   },
   {
     id: "streak-5",
@@ -335,6 +369,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     category: "streaks",
     rewardGold: 30,
     check: (s) => s.streak >= 5,
+    progress: (s) => ({ current: Math.min(s.streak, 5), goal: 5 }),
   },
   {
     id: "streak-21",
@@ -346,6 +381,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     rewardXp: 200,
     rewardGold: 200,
     check: (s) => s.streak >= 21,
+    progress: (s) => ({ current: Math.min(s.streak, 21), goal: 21 }),
   },
 
   // ───────────────────────────── Wealth ─────────────────────────────
@@ -357,6 +393,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     rarity: "rare",
     category: "wealth",
     check: (s) => s.gold >= 250,
+    progress: (s) => ({ current: Math.min(s.gold, 250), goal: 250 }),
   },
   {
     id: "dragon-hoard",
@@ -366,6 +403,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     rarity: "epic",
     category: "wealth",
     check: (s) => s.gold >= 1000,
+    progress: (s) => ({ current: Math.min(s.gold, 1000), goal: 1000 }),
   },
   {
     id: "merchant",
@@ -377,6 +415,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     // No XP reward: a gold-gated achievement granting XP would be a
     // gold → XP → leaderboard bridge (pay-to-win). The badge is the reward.
     check: (s) => s.gold >= 5000,
+    progress: (s) => ({ current: Math.min(s.gold, 5000), goal: 5000 }),
   },
 
   // ─────────────────────────── Career ───────────────────────────────
@@ -441,6 +480,15 @@ export const ACHIEVEMENTS: Achievement[] = [
       ["ai-llms", "ai-agents", "prompt-engineering", "ai-apps", "ai-safety", "ai-ethics", "ai-embeddings"].filter(
         (m) => s.completedModules.includes(m),
       ).length >= 3,
+    progress: (s) => ({
+      current: Math.min(
+        ["ai-llms", "ai-agents", "prompt-engineering", "ai-apps", "ai-safety", "ai-ethics", "ai-embeddings"].filter(
+          (m) => s.completedModules.includes(m),
+        ).length,
+        3,
+      ),
+      goal: 3,
+    }),
   },
   {
     id: "career-security",
@@ -463,6 +511,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     rewardXp: 1000,
     rewardGold: 1000,
     check: (s) => s.completedModules.length >= 5,
+    progress: (s) => ({ current: Math.min(s.completedModules.length, 5), goal: 5 }),
   },
 
   // ─────────────────────────── Challenger ───────────────────────────
@@ -475,6 +524,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     category: "challenger",
     rewardGold: 100,
     check: (s) => s.level >= 5,
+    progress: (s) => ({ current: Math.min(s.level, 5), goal: 5 }),
   },
   {
     id: "league-silver",
@@ -485,6 +535,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     category: "challenger",
     rewardGold: 150,
     check: (s) => s.level >= 8,
+    progress: (s) => ({ current: Math.min(s.level, 8), goal: 8 }),
   },
   {
     id: "league-gold",
@@ -496,6 +547,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     rewardXp: 200,
     rewardGold: 200,
     check: (s) => s.level >= 16,
+    progress: (s) => ({ current: Math.min(s.level, 16), goal: 16 }),
   },
   {
     id: "league-diamond",
@@ -507,6 +559,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     rewardXp: 500,
     rewardGold: 500,
     check: (s) => s.level >= 30,
+    progress: (s) => ({ current: Math.min(s.level, 30), goal: 30 }),
   },
   {
     id: "daily-5",
@@ -638,6 +691,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     rewardXp: 300,
     rewardGold: 300,
     check: (s) => s.completedModules.length >= 5,
+    progress: (s) => ({ current: Math.min(s.completedModules.length, 5), goal: 5 }),
   },
 
   // More breadth
@@ -651,6 +705,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     rewardXp: 300,
     rewardGold: 300,
     check: (s) => s.modulesTouched >= 20,
+    progress: (s) => ({ current: Math.min(s.modulesTouched, 20), goal: 20 }),
   },
   {
     id: "breadth-4langs",
@@ -662,6 +717,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     rewardXp: 200,
     rewardGold: 200,
     check: (s) => s.languages.length >= 4,
+    progress: (s) => ({ current: Math.min(s.languages.length, 4), goal: 4 }),
   },
 
   // ───────────────────────────── Secret ─────────────────────────────
@@ -717,7 +773,7 @@ export const ACHIEVEMENTS: Achievement[] = [
 
 const BY_ID = new Map(ACHIEVEMENTS.map((a) => [a.id, a]));
 
-export function getAchievement(id: string): Achievement | undefined {
+export function getAchievement(id: string): AchievementDef | undefined {
   return BY_ID.get(id);
 }
 
@@ -742,7 +798,7 @@ export const ACHIEVEMENT_CATEGORIES: {
 /** Achievements in a given category, in catalog order. */
 export function achievementsByCategory(
   category: AchievementCategory,
-): Achievement[] {
+): AchievementDef[] {
   return ACHIEVEMENTS.filter(
     (a) => (a.category ?? "milestones") === category,
   );

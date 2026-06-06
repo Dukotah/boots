@@ -29,7 +29,18 @@ export function generateMetadata({
       type: "website",
       title: `${path.title} — Cantrip`,
       description: path.description,
-      url: `/paths/${path.slug}`,
+      url: absoluteUrl(`/paths/${path.slug}`),
+      images: [
+        {
+          url: absoluteUrl(`/api/og?title=${encodeURIComponent(path.title)}&subtitle=${encodeURIComponent(path.description)}`),
+          width: 1200,
+          height: 630,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      images: [absoluteUrl(`/api/og?title=${encodeURIComponent(path.title)}&subtitle=${encodeURIComponent(path.description)}`)],
     },
   };
 }

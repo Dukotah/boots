@@ -1,17 +1,31 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Check } from "lucide-react";
 import { motion } from "framer-motion";
 import { PLANS, type PlanId } from "@/lib/billing/plans";
 import { UpgradeButton } from "./UpgradeButton";
 import { useEntitlements } from "@/store/useEntitlements";
 import { useMounted } from "@/hooks/useMounted";
+import { track } from "@/lib/analytics/track";
+import { useExperiment } from "@/hooks/useExperiment";
 
 export function PricingPlans() {
   const [cycle, setCycle] = useState<PlanId>("annual");
   const plan = PLANS[cycle];
+
+  // A/B: which billing cycle is selected by default on first view?
+  const pricingVariant = useExperiment("pricing_annual_default");
+  useEffect(() => {
+    if (pricingVariant === "monthly_first") setCycle("monthly");
+    else if (pricingVariant === "annual_first") setCycle("annual");
+  }, [pricingVariant]);
+
+  // Funnel: the learner saw the paywall (fires once on mount).
+  useEffect(() => {
+    track("paywall_viewed", { source: "pricing_page" });
+  }, []);
 
   return (
     <div className="mt-10">

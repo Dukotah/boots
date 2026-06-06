@@ -17,6 +17,7 @@ import {
   Briefcase,
   Code2,
   Users,
+  Hammer,
 } from "lucide-react";
 import { useGameStore } from "@/store/useGameStore";
 import { useMounted } from "@/hooks/useMounted";
@@ -25,6 +26,7 @@ import { ACHIEVEMENTS, ACHIEVEMENT_CATEGORIES } from "@/lib/achievements";
 import { MODULES } from "@/lib/curriculum";
 import { deriveBreadth } from "@/lib/progress";
 import { computeReadiness, CAREER_MODULES } from "@/lib/career";
+import { completedProjects } from "@/lib/projects";
 import { TalentBuildCard } from "@/components/features/talents/TalentBuildCard";
 import { SITE } from "@/lib/site";
 import type { PlayerStats } from "@/types/game";
@@ -304,6 +306,9 @@ export default function PublicProfilePage() {
     data.completed.some((id) => id.startsWith(mod.slug + "/")),
   );
 
+  // Shipped portfolio projects — the "I built this" credential.
+  const shippedProjects = completedProjects(data.completed);
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 space-y-5">
 
@@ -452,6 +457,56 @@ export default function PublicProfilePage() {
           </p>
         )}
       </motion.div>
+
+      {/* Portfolio Projects — shipped capstone builds */}
+      {shippedProjects.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.12 }}
+          className="card"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Hammer size={18} className="text-accent-soft" />
+              <h2 className="font-bold text-white">Projects</h2>
+            </div>
+            <span className="text-xs text-gray-500">
+              {shippedProjects.length} shipped
+            </span>
+          </div>
+          <div className="space-y-2.5">
+            {shippedProjects.map((p) => (
+              <Link
+                key={p.id}
+                href={p.href}
+                className="group flex items-start gap-3 rounded-xl border border-line bg-canvas/40 p-3 transition hover:border-accent/50"
+              >
+                <CheckCircle size={16} className="mt-0.5 shrink-0 text-success" />
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium text-white group-hover:text-accent-soft">
+                    {p.title}
+                  </p>
+                  <p className="text-sm text-gray-400">{p.demonstrates}</p>
+                  <div className="mt-1.5 flex flex-wrap gap-1.5">
+                    <span className="rounded bg-surface-2 px-1.5 py-0.5 text-[10px] font-medium text-gray-400">
+                      {p.language}
+                    </span>
+                    {p.tags.map((t) => (
+                      <span
+                        key={t}
+                        className="rounded bg-surface-2 px-1.5 py-0.5 text-[10px] text-gray-400"
+                      >
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </motion.div>
+      )}
 
       {/* Talent Build */}
       {data.talents && data.talents.length > 0 && (

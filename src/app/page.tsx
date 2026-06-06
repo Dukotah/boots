@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Landing } from "@/components/features/marketing/Landing";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { websiteJsonLd, organizationJsonLd } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: { absolute: "Cantrip — Learn to Code & Land the Career, Gamified" },
@@ -8,5 +10,11 @@ export const metadata: Metadata = {
 };
 
 export default function Home() {
-  return <Landing />;
+  return (
+    <>
+      <JsonLd data={websiteJsonLd()} />
+      <JsonLd data={organizationJsonLd()} />
+      <Landing />
+    </>
+  );
 }

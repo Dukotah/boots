@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Award, Share2, Check, Printer, Lock, ArrowRight } from "lucide-react";
+import { Award, Printer, Lock, ArrowRight } from "lucide-react";
 import { getPath, pathModules, pathStats } from "@/lib/paths";
 import { lessonId } from "@/lib/curriculum";
 import { certVerifyCode } from "@/lib/career";
@@ -10,6 +10,7 @@ import { useGameStore } from "@/store/useGameStore";
 import { useMounted } from "@/hooks/useMounted";
 import { MascotBoots } from "@/components/MascotBoots";
 import { SITE } from "@/lib/site";
+import { CertShareButtons } from "./CertShareButtons";
 
 export function Certificate({ slug }: { slug: string }) {
   const path = getPath(slug);
@@ -17,7 +18,6 @@ export function Certificate({ slug }: { slug: string }) {
   const completed = useGameStore((s) => s.completed);
   const user = useGameStore((s) => s.user);
   const [name, setName] = useState("");
-  const [copied, setCopied] = useState(false);
 
   if (!path) {
     return (
@@ -49,12 +49,6 @@ export function Certificate({ slug }: { slug: string }) {
     month: "long",
     day: "numeric",
   });
-
-  function share() {
-    navigator.clipboard?.writeText(`${SITE.url}/certificate/path/${path!.slug}`);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  }
 
   if (!mounted) {
     return <div className="text-gray-500">Loading…</div>;
@@ -101,10 +95,6 @@ export function Certificate({ slug }: { slug: string }) {
           />
         </div>
         <div className="flex gap-2">
-          <button onClick={share} className="btn-ghost text-sm">
-            {copied ? <Check size={15} /> : <Share2 size={15} />}
-            {copied ? "Copied" : "Share"}
-          </button>
           <button onClick={() => window.print()} className="btn-primary text-sm">
             <Printer size={15} /> Print / Save PDF
           </button>
@@ -162,6 +152,12 @@ export function Certificate({ slug }: { slug: string }) {
           </div>
         </div>
       </div>
+
+      <CertShareButtons
+        certPath={`/certificate/path/${path.slug}`}
+        certName={`${path.title} Path`}
+        verifyCode={code}
+      />
 
       <p className="mt-4 text-center text-xs text-gray-500 print:hidden">
         Share your achievement, or{" "}

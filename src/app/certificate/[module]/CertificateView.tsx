@@ -1,15 +1,16 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Share2, Check, Lock } from "lucide-react";
+import { Lock } from "lucide-react";
 import type { Module } from "@/lib/curriculum/types";
 import { lessonId } from "@/lib/curriculum";
+import { certVerifyCode } from "@/lib/career";
 import { useGameStore } from "@/store/useGameStore";
 import { useMounted } from "@/hooks/useMounted";
 import { MascotBoots } from "@/components/MascotBoots";
 import { SITE } from "@/lib/site";
+import { CertShareButtons } from "@/components/features/certificate/CertShareButtons";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -17,7 +18,6 @@ export function CertificateView({ module }: { module: Module }) {
   const mounted = useMounted();
   const completed = useGameStore((s) => s.completed);
   const user = useGameStore((s) => s.user);
-  const [copied, setCopied] = useState(false);
 
   const done = module.lessons.filter((l) =>
     completed.includes(lessonId(module.slug, l.slug)),
@@ -25,12 +25,7 @@ export function CertificateView({ module }: { module: Module }) {
   const total = module.lessons.length;
   const earned = mounted && done === total;
   const handle = user?.email?.split("@")[0] ?? "a Cantrip learner";
-
-  function share() {
-    navigator.clipboard?.writeText(`${SITE.url}/certificate/${module.slug}`);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  }
+  const code = certVerifyCode(module.slug, handle);
 
   if (!mounted) {
     return <div className="mx-auto mt-10 h-80 max-w-2xl rounded-2xl border border-line" />;
@@ -84,13 +79,25 @@ export function CertificateView({ module }: { module: Module }) {
           {total} lessons completed · {dateStr}
         </p>
         <div className="mt-6 text-4xl">🎓</div>
+
+        {/* Verify code — shown on the face of the certificate */}
+        <div className="mt-6 border-t border-line/40 pt-4">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-500">
+            Credential ID
+          </p>
+          <p className="mt-0.5 font-mono text-sm font-semibold tracking-wider text-accent-soft">
+            {code}
+          </p>
+        </div>
       </motion.div>
 
-      <div className="mt-5 flex justify-center gap-3">
-        <button onClick={share} className="btn-primary">
-          {copied ? <Check size={15} /> : <Share2 size={15} />}
-          {copied ? "Link copied" : "Share certificate"}
-        </button>
+      <CertShareButtons
+        certPath={`/certificate/${module.slug}`}
+        certName={module.title}
+        verifyCode={code}
+      />
+
+      <div className="mt-4 flex justify-center gap-3 print:hidden">
         <Link href="/learn" className="btn-ghost">
           More courses
         </Link>

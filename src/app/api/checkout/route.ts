@@ -43,7 +43,9 @@ export async function POST(req: Request) {
     mode: "subscription",
     "line_items[0][price]": priceId,
     "line_items[0][quantity]": "1",
-    success_url: `${origin}/dashboard?upgraded=1`,
+    // Include the plan in the success URL so the client-side PurchaseTracker
+    // component can fire track("purchase", { plan }) without a server round-trip.
+    success_url: `${origin}/dashboard?upgraded=1&plan=${plan}`,
     cancel_url: `${origin}/pricing?canceled=1`,
     allow_promotion_codes: "true",
   });

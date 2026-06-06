@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Loader2, Sparkles } from "lucide-react";
 import { startCheckout } from "@/lib/billing/checkout";
 import type { PlanId } from "@/lib/billing/plans";
+import { track } from "@/lib/analytics/track";
 
 export function UpgradeButton({
   plan = "annual",
@@ -20,6 +21,7 @@ export function UpgradeButton({
   async function go() {
     setLoading(true);
     setError(null);
+    track("checkout_started", { plan });
     const result = await startCheckout(plan);
     if (!result.ok) {
       setError(result.error);

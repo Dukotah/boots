@@ -6,8 +6,12 @@ import {
   ACHIEVEMENTS,
   ACHIEVEMENT_CATEGORIES,
   achievementsByCategory,
+  type AchievementDef,
 } from "@/lib/achievements";
-import type { Achievement } from "@/types/game";
+import { deriveBreadth } from "@/lib/progress";
+import { levelFromXp } from "@/lib/levels";
+import type { PlayerStats } from "@/types/game";
+import { AchievementProgressBar } from "@/components/features/achievements/AchievementProgressBar";
 
 const RARITY: Record<string, string> = {
   common: "border-gray-500/40 text-gray-300",
@@ -20,10 +24,29 @@ const RARITY: Record<string, string> = {
 export default function AchievementsPage() {
   const mounted = useMounted();
   const unlocked = useGameStore((s) => s.achievements);
+  const xp = useGameStore((s) => s.xp);
+  const gold = useGameStore((s) => s.gold);
+  const streak = useGameStore((s) => s.streak);
+  const completed = useGameStore((s) => s.completed);
+
   const have = new Set(mounted ? unlocked : []);
   const earned = have.size;
   const total = ACHIEVEMENTS.length;
   const pct = Math.round((earned / total) * 100);
+
+  // Build a PlayerStats snapshot so progress fns can read it. Only computed
+  // client-side after mount to avoid SSR mismatches with localStorage state.
+  const stats: PlayerStats | null = mounted
+    ? {
+        xp,
+        level: levelFromXp(xp).level,
+        gold,
+        streak,
+        completedCount: completed.length,
+        completedIds: completed,
+        ...deriveBreadth(completed),
+      }
+    : null;
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10">
@@ -62,7 +85,12 @@ export default function AchievementsPage() {
             </div>
             <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {items.map((a) => (
-                <Badge key={a.id} achievement={a} got={have.has(a.id)} />
+                <Badge
+                  key={a.id}
+                  achievement={a}
+                  got={have.has(a.id)}
+                  stats={stats}
+                />
               ))}
             </div>
           </section>
@@ -75,9 +103,11 @@ export default function AchievementsPage() {
 function Badge({
   achievement: a,
   got,
+  stats,
 }: {
-  achievement: Achievement;
+  achievement: AchievementDef;
   got: boolean;
+  stats: PlayerStats | null;
 }) {
   // Secret badges stay masked until earned.
   const hidden = a.secret && !got;
@@ -86,6 +116,10 @@ function Badge({
     ? "Keep playing to reveal this one…"
     : a.description;
   const icon = got ? a.icon : hidden ? "❓" : "🔒";
+
+  // Derive progress for locked non-secret cards that have a progress fn.
+  const progressData =
+    !got && !hidden && stats && a.progress ? a.progress(stats) : null;
 
   return (
     <div
@@ -112,6 +146,14 @@ function Badge({
             </span>
           ) : null}
         </div>
+      ) : null}
+
+      {/* Progress bar — only on locked non-secret cards that expose a progress fn */}
+      {progressData ? (
+        <AchievementProgressBar
+          current={progressData.current}
+          goal={progressData.goal}
+        />
       ) : null}
 
       <span className="mt-3 rounded-full bg-white/5 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide">

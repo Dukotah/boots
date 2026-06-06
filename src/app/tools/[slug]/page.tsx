@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getTool, TOOLS } from "@/lib/tools";
 import { breadcrumbJsonLd } from "@/lib/seo";
+import { absoluteUrl } from "@/lib/site";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { RegexTester } from "@/components/features/tools/RegexTester";
 import { JsonFormatter } from "@/components/features/tools/JsonFormatter";
@@ -42,7 +43,18 @@ export function generateMetadata({
       type: "website",
       title: `${tool.title} | Cantrip`,
       description: tool.description,
-      url: `/tools/${tool.slug}`,
+      url: absoluteUrl(`/tools/${tool.slug}`),
+      images: [
+        {
+          url: absoluteUrl(`/api/og?title=${encodeURIComponent(tool.title)}&subtitle=${encodeURIComponent(tool.description)}`),
+          width: 1200,
+          height: 630,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      images: [absoluteUrl(`/api/og?title=${encodeURIComponent(tool.title)}&subtitle=${encodeURIComponent(tool.description)}`)],
     },
   };
 }

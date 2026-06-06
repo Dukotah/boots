@@ -6,6 +6,7 @@ import remarkGfm from "remark-gfm";
 import { ROOMS, getRoom, roomXp } from "@/lib/rooms";
 import type { RoomDifficulty } from "@/lib/rooms/types";
 import { breadcrumbJsonLd } from "@/lib/seo";
+import { absoluteUrl } from "@/lib/site";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { RoomView } from "@/components/rooms/RoomView";
 
@@ -31,7 +32,18 @@ export function generateMetadata({ params }: { params: { slug: string } }): Meta
       type: "website",
       title: `${room.title} — Cantrip Challenge Room`,
       description: room.blurb,
-      url: `/rooms/${room.slug}`,
+      url: absoluteUrl(`/rooms/${room.slug}`),
+      images: [
+        {
+          url: absoluteUrl(`/api/og?title=${encodeURIComponent(room.title)}&subtitle=${encodeURIComponent(room.blurb)}`),
+          width: 1200,
+          height: 630,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      images: [absoluteUrl(`/api/og?title=${encodeURIComponent(room.title)}&subtitle=${encodeURIComponent(room.blurb)}`)],
     },
   };
 }
