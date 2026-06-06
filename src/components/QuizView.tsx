@@ -7,7 +7,7 @@ import remarkGfm from "remark-gfm";
 import { motion } from "framer-motion";
 import { CheckCircle2, XCircle, ArrowRight } from "lucide-react";
 import type { Lesson, Module } from "@/lib/curriculum/types";
-import { lessonId } from "@/lib/curriculum";
+import { lessonId } from "@/lib/curriculum/ids";
 import { useGameStore } from "@/store/useGameStore";
 import { recordCompletion } from "@/lib/scoring";
 import { celebrate } from "@/lib/celebrate";

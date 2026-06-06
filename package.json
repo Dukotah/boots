@@ -14,7 +14,8 @@
     "check:logic": "node --experimental-strip-types scripts/check-logic.ts",
     "new:lesson": "node --experimental-strip-types scripts/new-lesson.ts",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.100.1",

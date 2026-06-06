@@ -227,9 +227,9 @@ export function getLesson(
   return { module, lesson: module.lessons[index], index };
 }
 
-export function lessonId(moduleSlug: string, lessonSlug: string): string {
-  return `${moduleSlug}/${lessonSlug}`;
-}
+// Pure id helper lives in ./ids (no content imports) so client components can use
+// it without bundling the whole curriculum; re-exported here for server/barrel use.
+export { lessonId } from "./ids";
 
 export function totalLessons(): number {
   return MODULES.reduce((sum, m) => sum + m.lessons.length, 0);

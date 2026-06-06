@@ -13,7 +13,7 @@ import {
   X,
 } from "lucide-react";
 import type { Module } from "@/lib/curriculum/types";
-import { lessonId } from "@/lib/curriculum";
+import { lessonId } from "@/lib/curriculum/ids";
 import { useGameStore } from "@/store/useGameStore";
 import { useMounted } from "@/hooks/useMounted";
 
