@@ -12,6 +12,7 @@ export default function robots(): MetadataRoute.Robots {
       // keep them out of the index so crawl budget goes to real content.
       disallow: [
         "/api/",
+        "/login",
         "/dashboard",
         "/account",
         "/profile",

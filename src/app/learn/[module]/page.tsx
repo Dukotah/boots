@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { getModule, MODULES } from "@/lib/curriculum";
 import { langMeta } from "@/lib/curriculum/lang";
 import { courseJsonLd, breadcrumbJsonLd } from "@/lib/seo";
+import { absoluteUrl } from "@/lib/site";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { LessonList } from "./LessonList";
 
@@ -28,7 +29,18 @@ export function generateMetadata({
       type: "website",
       title: `${title} — Cantrip`,
       description: module.tagline,
-      url: `/learn/${module.slug}`,
+      url: absoluteUrl(`/learn/${module.slug}`),
+      images: [
+        {
+          url: absoluteUrl(`/api/og?title=${encodeURIComponent(title)}&subtitle=${encodeURIComponent(module.tagline)}`),
+          width: 1200,
+          height: 630,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      images: [absoluteUrl(`/api/og?title=${encodeURIComponent(title)}&subtitle=${encodeURIComponent(module.tagline)}`)],
     },
   };
 }

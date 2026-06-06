@@ -54,3 +54,20 @@ Running log, newest first. Glance here anytime.
   focus-trap-react for drawers/modals (new dep), per-page OG images, JSON-LD
   Website/Organization. Founder call: ship single-file wins, log the rest.
 - Green: tsc, 312 tests, build = 1492 static pages. Pushed to PR #17.
+
+## 2026-06-06 (fleet round 3 — audit follow-ups, 5 agents)
+- Cleared the deferred SEO + a11y audit items via 5 disjoint agents + integration:
+  - **A11y focus traps:** dep-free `useFocusTrap` hook → mobile Sidebar drawer,
+    lesson course-map drawer, account delete modal (role=dialog + aria-modal +
+    Escape + focus restore). aria-current on active nav; progressbar roles on
+    XP/quest bars; aria-pressed on regex flags; explicit input labels; aria-label
+    on the streak pill; Escape-closes the mobile menu.
+  - **SEO noindex:** 21 co-located `layout.tsx` with `robots: noindex` for private
+    routes (+ I added /login). robots.ts now also disallows /login.
+  - **SEO OG images:** per-page OG/Twitter cards via /api/og on 8 content routes;
+    absolute OG urls.
+  - **Structured data:** WebSite+SearchAction & Organization JSON-LD on the
+    homepage; fixed courseJsonLd (dropped misused numberOfCredits); canonical on
+    /pricing. Fixed the org logo ref to the real asset (/icon.svg).
+- Green: tsc, 312 tests, clean build. (First build hit a transient OOM; `rm -rf
+  .next` rebuild passed.) Pushed to PR #17.

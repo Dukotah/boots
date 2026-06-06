@@ -2,6 +2,7 @@ import { notFound, permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getLesson, getModule, MODULES } from "@/lib/curriculum";
 import { lessonJsonLd, breadcrumbJsonLd } from "@/lib/seo";
+import { absoluteUrl } from "@/lib/site";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { LessonView } from "@/components/LessonView";
 import { QuizView } from "@/components/QuizView";
@@ -32,7 +33,18 @@ export function generateMetadata({
       type: "article",
       title: `${title} | Cantrip`,
       description: lesson.blurb,
-      url: path,
+      url: absoluteUrl(path),
+      images: [
+        {
+          url: absoluteUrl(`/api/og?title=${encodeURIComponent(title)}&subtitle=${encodeURIComponent(lesson.blurb ?? "")}`),
+          width: 1200,
+          height: 630,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      images: [absoluteUrl(`/api/og?title=${encodeURIComponent(title)}&subtitle=${encodeURIComponent(lesson.blurb ?? "")}`)],
     },
   };
 }

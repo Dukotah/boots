@@ -16,6 +16,7 @@ import type { Module } from "@/lib/curriculum/types";
 import { lessonId } from "@/lib/curriculum/ids";
 import { useGameStore } from "@/store/useGameStore";
 import { useMounted } from "@/hooks/useMounted";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
 
 // The course progress map: every lesson in the current course, in order, with a
 // green check on the ones you've cleared and the current quest highlighted.
@@ -36,6 +37,7 @@ export function LessonSidebar({
   // Collapsed by default on mobile; the desktop column starts open.
   const [openDesktop, setOpenDesktop] = useState(true);
   const [openMobile, setOpenMobile] = useState(false);
+  const mobileTrapRef = useFocusTrap<HTMLDivElement>(openMobile);
 
   const doneCount = module.lessons.filter((l) =>
     mounted ? completed.includes(lessonId(module.slug, l.slug)) : false,
@@ -168,6 +170,14 @@ export function LessonSidebar({
               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             />
             <motion.div
+              ref={mobileTrapRef}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Course map"
+              tabIndex={-1}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") setOpenMobile(false);
+              }}
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}

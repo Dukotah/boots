@@ -28,7 +28,7 @@ export function courseJsonLd(module: Module): Record<string, unknown> {
       courseMode: "online",
       courseWorkload: `PT${Math.max(1, module.lessons.length * 15)}M`,
     },
-    numberOfCredits: module.lessons.length,
+    educationalCredentialAwarded: `${module.title} Certificate of Completion`,
   };
 }
 
@@ -45,6 +45,36 @@ export function breadcrumbJsonLd(
       name: it.name,
       item: absoluteUrl(it.path),
     })),
+  };
+}
+
+/** WebSite schema with SearchAction — enables Google's sitelinks search box. */
+export function websiteJsonLd(): Record<string, unknown> {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: SITE.name,
+    url: SITE.url,
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${SITE.url}/how-to?q={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
+    },
+  };
+}
+
+/** Organization schema — tells Google about the brand entity. */
+export function organizationJsonLd(): Record<string, unknown> {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: SITE.name,
+    url: SITE.url,
+    logo: `${SITE.url}/icon.svg`,
+    sameAs: [`https://twitter.com/${SITE.twitter.replace(/^@/, "")}`],
   };
 }
 

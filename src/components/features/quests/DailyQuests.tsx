@@ -44,12 +44,19 @@ export function DailyQuests() {
                     {q.title}
                   </p>
                   <span className="flex items-center gap-1 text-xs font-semibold text-gold">
-                    <Coins size={12} /> {q.rewardGold}
+                    <Coins size={12} aria-hidden="true" /> {q.rewardGold}
                     {q.rewardXp ? ` · ${q.rewardXp} XP` : ""}
                   </span>
                 </div>
                 <div className="mt-2 flex items-center gap-2">
-                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-surface-2">
+                  <div
+                    role="progressbar"
+                    aria-label={q.title}
+                    aria-valuenow={progress}
+                    aria-valuemin={0}
+                    aria-valuemax={q.goal}
+                    className="h-2 flex-1 overflow-hidden rounded-full bg-surface-2"
+                  >
                     <motion.div
                       className="h-full rounded-full bg-gradient-to-r from-accent to-accent-soft"
                       initial={{ width: 0 }}

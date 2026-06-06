@@ -14,7 +14,14 @@ export function XPBar({ info }: { info: LevelInfo }) {
           {info.xpIntoLevel}/{info.xpForLevel} XP
         </span>
       </div>
-      <div className="h-3 w-full overflow-hidden rounded-full border border-line bg-surface-2">
+      <div
+        role="progressbar"
+        aria-label="XP progress"
+        aria-valuenow={info.xpIntoLevel}
+        aria-valuemin={0}
+        aria-valuemax={info.xpForLevel}
+        className="h-3 w-full overflow-hidden rounded-full border border-line bg-surface-2"
+      >
         <motion.div
           className="h-full rounded-full bg-gradient-to-r from-accent to-accent-soft shadow-glow"
           initial={{ width: 0 }}
@@ -25,3 +32,4 @@ export function XPBar({ info }: { info: LevelInfo }) {
     </div>
   );
 }
+

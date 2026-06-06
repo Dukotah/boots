@@ -79,6 +79,7 @@ export function RegexTester() {
             <button
               key={f.key}
               onClick={() => toggleFlag(f.key)}
+              aria-pressed={flags.includes(f.key)}
               className={[
                 "rounded-lg px-2.5 py-1 text-xs font-medium transition",
                 flags.includes(f.key)

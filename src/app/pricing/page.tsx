@@ -5,6 +5,8 @@ export const metadata: Metadata = {
   title: "Pricing",
   description:
     "Start free. Go Pro for the full game: every interactive lesson, the AI tutor, leagues, and boss battles. From $9/mo billed annually.",
+  alternates: { canonical: "/pricing" },
+  robots: { index: true, follow: true },
 };
 
 export default function Pricing() {

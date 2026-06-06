@@ -33,7 +33,18 @@ export function generateMetadata({
       type: "article",
       title: `${h.title} | Cantrip`,
       description,
-      url: `/how-to/${h.slug}`,
+      url: absoluteUrl(`/how-to/${h.slug}`),
+      images: [
+        {
+          url: absoluteUrl(`/api/og?title=${encodeURIComponent(h.title)}&subtitle=${encodeURIComponent(h.blurb)}`),
+          width: 1200,
+          height: 630,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      images: [absoluteUrl(`/api/og?title=${encodeURIComponent(h.title)}&subtitle=${encodeURIComponent(h.blurb)}`)],
     },
   };
 }
