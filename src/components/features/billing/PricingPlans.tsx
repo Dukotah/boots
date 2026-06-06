@@ -48,8 +48,9 @@ export function PricingPlans() {
         <Tier name="Free" price="$0" cadence="forever">
           <Features
             items={[
-              "Read every lesson",
-              "First 2 lessons per course, interactive",
+                "Read every lesson",
+                "First 3 lessons of every course, interactive",
+                "+1 free lesson per day of streak (up to 6 more)",
               "XP, gold, streak & level tracking",
               "Public profile & activity heatmap",
               "Daily quests & achievements",
