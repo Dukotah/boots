@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, CalendarDays, CheckCircle2, Coins, Flame } from "lucide-react";
-import { pickDaily, todayDailyKey, DAILY_BONUS_GOLD } from "@/lib/daily";
+import { ArrowRight, CalendarDays, CheckCircle2, Clock, Coins, Flame } from "lucide-react";
+import { pickDaily, todayDailyKey, deriveDailyMeta, DAILY_BONUS_GOLD } from "@/lib/daily";
 import { useGameStore } from "@/store/useGameStore";
 import { useMounted } from "@/hooks/useMounted";
 
@@ -22,6 +22,7 @@ export function DailyChallenge() {
 
   const today = todayDailyKey();
   const pick = pickDaily(today);
+  const meta = deriveDailyMeta(pick);
   const done = completed.includes(pick.id);
   const claimed = claimedDay === today;
 
@@ -46,7 +47,22 @@ export function DailyChallenge() {
         </div>
       </div>
 
-      <Link href={pick.href} className="group mt-3 flex items-center gap-4">
+      {/* Difficulty badge + estimated time */}
+      <div className="mt-2 flex items-center gap-2">
+        <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${meta.difficultyColor}`}>
+          {meta.difficulty}
+        </span>
+        <span className="flex items-center gap-0.5 text-[10px] text-gray-500">
+          <Clock size={10} /> ~{meta.estimatedMinutes} min
+        </span>
+        {meta.tags.slice(1, 2).map((tag) => (
+          <span key={tag} className="rounded-full bg-surface-2 px-2 py-0.5 text-[10px] text-gray-400">
+            {tag}
+          </span>
+        ))}
+      </div>
+
+      <Link href={pick.href} className="group mt-2.5 flex items-center gap-4">
         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-accent/20 text-2xl">
           {pick.module.emoji}
         </div>

@@ -6,6 +6,7 @@ import {
   ArrowRight,
   CalendarDays,
   CheckCircle2,
+  Clock,
   Coins,
   Flame,
   Share2,
@@ -15,7 +16,9 @@ import {
   pickDaily,
   todayDailyKey,
   recentDailyPicks,
-  dailyShareText,
+  deriveDailyMeta,
+  streakMilestoneMessage,
+  richDailyShareText,
   DAILY_BONUS_GOLD,
   DAILY_BONUS_XP,
 } from "@/lib/daily";
@@ -41,12 +44,14 @@ export default function DailyChallengePage() {
 
   const today = todayDailyKey();
   const pick = pickDaily(today);
+  const meta = deriveDailyMeta(pick);
+  const milestone = streakMilestoneMessage(streak);
   const done = completed.includes(pick.id);
   const claimed = claimedDay === today;
   const recent = recentDailyPicks(7).slice(1); // exclude today (shown above)
 
   async function share() {
-    const text = dailyShareText(streak);
+    const text = richDailyShareText(streak, pick, meta);
     const url =
       typeof window !== "undefined" ? `${window.location.origin}/daily` : "";
     try {
@@ -90,11 +95,43 @@ export default function DailyChallengePage() {
         </div>
       </div>
 
+      {/* Milestone banner — only shown at notable thresholds */}
+      {milestone && (
+        <div className="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-2.5 text-sm font-medium text-amber-300">
+          {milestone}
+        </div>
+      )}
+
       {/* Today's challenge */}
       <div className="card mt-4 bg-gradient-to-br from-accent/15 to-fuchsia-500/5">
-        <p className="text-xs font-semibold uppercase tracking-wide text-accent-soft">
-          Today · {pick.module.title}
-        </p>
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-semibold uppercase tracking-wide text-accent-soft">
+            Today · {pick.module.title}
+          </p>
+          <div className="flex items-center gap-2">
+            <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${meta.difficultyColor}`}>
+              {meta.difficulty}
+            </span>
+            <span className="flex items-center gap-1 text-[10px] text-gray-500">
+              <Clock size={11} /> ~{meta.estimatedMinutes} min
+            </span>
+          </div>
+        </div>
+
+        {/* Tech tags */}
+        {meta.tags.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {meta.tags.map((tag) => (
+              <span
+                key={tag}
+                className="rounded-full bg-surface-2 px-2 py-0.5 text-[10px] text-gray-400"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+
         <Link href={pick.href} className="group mt-3 flex items-center gap-4">
           <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-accent/20 text-3xl">
             {pick.module.emoji}

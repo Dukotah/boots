@@ -6,6 +6,7 @@ import { Flame, Zap, Menu, X } from "lucide-react";
 import { useGameStore } from "@/store/useGameStore";
 import { levelFromXp } from "@/lib/levels";
 import { MascotBoots } from "./MascotBoots";
+import { NotificationBell } from "@/components/features/notifications/NotificationBell";
 import { useEffect, useState } from "react";
 
 // Routes that render their own AppShell chrome (sidebar) — hide the top Navbar there.
@@ -16,6 +17,8 @@ const APP_SHELL_ROUTES = ["/map"];
 const NAV_LINKS: { href: string; label: string; desktop?: boolean }[] = [
   { href: "/learn", label: "Learn", desktop: true },
   { href: "/daily", label: "Daily", desktop: true },
+  { href: "/recap", label: "Recap" },
+  { href: "/notifications", label: "Notifications" },
   { href: "/review", label: "Review" },
   { href: "/paths", label: "Paths", desktop: true },
   { href: "/skill-tree", label: "Skill Tree", desktop: true },
@@ -91,6 +94,7 @@ export function Navbar() {
               </span>
             </Link>
           )}
+          {mounted && <NotificationBell />}
           {mounted && !user && (
             <Link
               href="/login"
