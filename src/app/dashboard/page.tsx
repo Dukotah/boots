@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Flame, Zap, Trophy, Target, RotateCcw, Briefcase, RefreshCw } from "lucide-react";
-import { useGameStore } from "@/store/useGameStore";
+import { useGameStore, streakRepairCost } from "@/store/useGameStore";
 import { levelFromXp } from "@/lib/levels";
 import { MODULES, totalLessons, totalXpAvailable, lessonId } from "@/lib/curriculum";
 import { deriveBreadth } from "@/lib/progress";
@@ -27,6 +27,8 @@ export default function Dashboard() {
   const talents = useGameStore((s) => s.talents);
   const skillPoints = useGameStore((s) => s.skillPoints);
   const dueReviews = useGameStore((s) => s.dueReviews);
+  const lostStreak = useGameStore((s) => s.lostStreak);
+  const repairStreak = useGameStore((s) => s.repairStreak);
   const reset = useGameStore((s) => s.reset);
 
   const info = levelFromXp(xp);
@@ -70,6 +72,9 @@ export default function Dashboard() {
   // otherwise easy to miss (it lives on its own /review page).
   const dueCount = dueReviews().length;
 
+  // A streak broken by a missed day is recoverable for gold (lib store).
+  const repairCost = lostStreak ? streakRepairCost(lostStreak) : 0;
+
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
       <div className="flex items-center justify-between">
@@ -112,6 +117,31 @@ export default function Dashboard() {
           <p className="text-sm text-gray-400">career ready · Career Pack →</p>
         </Link>
       </div>
+
+      {/* Streak repair — a broken streak is recoverable for gold. Urgent, so it
+          sits right under the stat cards and only appears when there's one to fix. */}
+      {lostStreak && lostStreak >= 2 && (
+        <div className="card mt-4 flex flex-col gap-3 border-danger/40 bg-danger/5 sm:flex-row sm:items-center">
+          <Flame className="shrink-0 text-danger" />
+          <div className="min-w-0 flex-1">
+            <p className="font-semibold text-white">
+              Your {lostStreak}-day streak broke
+            </p>
+            <p className="text-sm text-gray-400">
+              {gold >= repairCost
+                ? "Repair it and carry on right where you left off."
+                : `You need ${repairCost} gold to repair it — earn a little more first.`}
+            </p>
+          </div>
+          <button
+            onClick={() => repairStreak()}
+            disabled={gold < repairCost}
+            className="btn-primary shrink-0 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Flame size={15} /> Repair streak · {repairCost}g
+          </button>
+        </div>
+      )}
 
       {/* Level progress */}
       <div className="card mt-4">
