@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { Check, Layers, Clock, Target } from "lucide-react";
-import { getPath, pathModules, pathStats, PATHS } from "@/lib/paths";
+import { getPath, pathModules, pathStats, pathSkillTags, PATHS } from "@/lib/paths";
 import { lessonId } from "@/lib/curriculum";
 import { breadcrumbJsonLd } from "@/lib/seo";
 import { absoluteUrl } from "@/lib/site";
@@ -46,7 +46,12 @@ export default function PathPage({ params }: { params: { slug: string } }) {
 
   const mods = pathModules(path);
   const stats = pathStats(path);
-  const estHours = Math.max(1, Math.round((stats.lessons * 12) / 60));
+  // ~12 min/lesson, rounded to the nearest 5 hours (min 5).
+  const estHours = Math.max(
+    5,
+    Math.round((stats.lessons * 12) / 60 / 5) * 5,
+  );
+  const skills = pathSkillTags(path);
 
   // ItemList structured data — the ordered course sequence.
   const itemList = {
@@ -131,8 +136,15 @@ export default function PathPage({ params }: { params: { slug: string } }) {
 
       {/* Roadmap */}
       <section className="mt-8">
-        <h2 className="mb-4 text-lg font-semibold text-white">The roadmap</h2>
-        <PathRoadmap modules={roadmap} pathSlug={path.slug} />
+        <h2 className="mb-4 text-lg font-semibold text-white">
+          The roadmap <span className="text-sm font-normal text-gray-500">— complete each quest in order</span>
+        </h2>
+        <PathRoadmap
+          modules={roadmap}
+          pathSlug={path.slug}
+          skills={skills}
+          estHours={estHours}
+        />
       </section>
     </div>
   );

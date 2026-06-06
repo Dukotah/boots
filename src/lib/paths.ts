@@ -436,3 +436,42 @@ export function pathProgress(path: Path, completed: string[]): PathProgress {
 export function completedPaths(completed: string[]): Path[] {
   return PATHS.filter((p) => pathProgress(p, completed).complete);
 }
+
+// Words to drop when condensing a module title into a short skill chip.
+const SKILL_STOPWORDS = new Set([
+  "foundations",
+  "fundamentals",
+  "basics",
+  "intro",
+  "introduction",
+  "the",
+  "and",
+  "with",
+  "for",
+  "to",
+  "of",
+  "a",
+  "&",
+]);
+
+/**
+ * Short, deduped skill chips for a path (e.g. ["JavaScript", "Strings", "OOP"]),
+ * derived from its module titles — keeps the first meaningful token of each.
+ */
+export function pathSkillTags(path: Path, max = 8): string[] {
+  const tags: string[] = [];
+  const seen = new Set<string>();
+  for (const m of pathModules(path)) {
+    // First token of the title that isn't a filler word.
+    const token =
+      m.title
+        .split(/[\s&]+/)
+        .find((w) => w && !SKILL_STOPWORDS.has(w.toLowerCase())) ?? m.title;
+    const key = token.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    tags.push(token);
+    if (tags.length >= max) break;
+  }
+  return tags;
+}
