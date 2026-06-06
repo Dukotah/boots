@@ -5,7 +5,7 @@ import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { motion } from "framer-motion";
-import { Play, RotateCcw, Lightbulb, ArrowRight, CheckCircle2, Loader2, Lock } from "lucide-react";
+import { Play, RotateCcw, Lightbulb, ArrowRight, CheckCircle2, Loader2, Lock, Sparkles } from "lucide-react";
 import type { Lesson, Module } from "@/lib/curriculum/types";
 import { lessonId } from "@/lib/curriculum";
 import { lessonLanguage, langMeta } from "@/lib/curriculum/lang";
@@ -25,6 +25,8 @@ import { ProGate } from "./features/billing/ProGate";
 import { AskBoots } from "./features/tutor/AskBoots";
 import { TutorPanel } from "./TutorPanel";
 import { CodeReview } from "./quality/CodeReview";
+import { LessonSidebar } from "./LessonSidebar";
+import { LessonNav } from "./LessonNav";
 import { summarizeLesson } from "@/lib/tutor/prompt";
 import type { TutorContext } from "@/lib/tutor/types";
 
@@ -50,6 +52,9 @@ export function LessonView({
   const hints = lesson.hints ?? [];
   const hintCode = lesson.hintCode ?? [];
   const blocks = lesson.blocks ?? [];
+  // Bumped to ask AskBoots to open + scroll into view (the "Explain this to me"
+  // affordance). Starts at 0 so the panel stays closed on first render.
+  const [explainSignal, setExplainSignal] = useState(0);
 
   const insertRef = useRef<((text: string) => void) | null>(null);
   const highlightRef = useRef<((startLine: number, endLine: number) => void) | null>(null);
@@ -136,8 +141,10 @@ export function LessonView({
 
     if (result.results.every((r) => r.pass)) {
       const wasDone = alreadyDone;
-      completeLesson(id, lesson.xp);
-      celebrate();
+      const reward = completeLesson(id, lesson.xp);
+      // Confetti only on the *first* clear — re-running a finished quest awards
+      // no XP, so don't re-fire the celebration.
+      if (reward.gainedXp > 0) celebrate();
       // Server re-runs the code and awards canonical XP (best-effort; degrades
       // gracefully when signed out / no backend / non-JS lesson).
       void verifyCompletion(module.slug, lesson.slug, code);
@@ -154,10 +161,19 @@ export function LessonView({
   }
 
   return (
-    <div className="mx-auto grid max-w-7xl gap-4 px-4 py-6 lg:grid-cols-2">
+    <div className="mx-auto flex max-w-[88rem] gap-4 px-4 py-6">
       <LevelUpToast />
       <SkillPointToast />
 
+      {/* Course progress map — inline column on desktop, drawer on mobile.
+          `contents` on mobile so the wrapper claims no flex gap (its children
+          are fixed-position there). */}
+      <div className="contents lg:block lg:w-64 lg:shrink-0">
+        <LessonSidebar module={module} currentSlug={lesson.slug} />
+      </div>
+
+      {/* Content + editor keep the original responsive two-up layout. */}
+      <div className="grid min-w-0 flex-1 gap-4 lg:grid-cols-2">
       {/* Left: lesson content */}
       <section className="card max-h-[calc(100vh-7rem)] overflow-y-auto lg:sticky lg:top-20">
         <Link
@@ -171,8 +187,18 @@ export function LessonView({
             {lesson.content}
           </ReactMarkdown>
         </div>
-        <div className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-accent/15 px-3 py-1 text-xs font-semibold text-accent-soft">
-          ⚡ {lesson.xp} XP
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/15 px-3 py-1 text-xs font-semibold text-accent-soft">
+            ⚡ {lesson.xp} XP
+          </span>
+          {/* Surfaces the Socratic tutor below — guides, never hands over the
+              answer. (Pro-gated inside AskBoots; the gate is preserved.) */}
+          <button
+            onClick={() => setExplainSignal((n) => n + 1)}
+            className="inline-flex items-center gap-1.5 rounded-full border border-accent/40 bg-accent/10 px-3 py-1 text-xs font-semibold text-accent-soft transition-colors hover:bg-accent/20"
+          >
+            <Sparkles size={13} /> Explain this to me
+          </button>
         </div>
 
         {/* Beginner code blocks — drag or tap them into the editor */}
@@ -346,12 +372,29 @@ export function LessonView({
           </div>
         )}
 
-        {/* Socratic AI tutor — hints, never the answer (Pro) */}
-        <AskBoots module={module} lesson={lesson} language={language} code={code} />
+        {/* Socratic AI tutor — hints, never the answer (Pro). Opened by the
+            "Explain this to me" button via openSignal. */}
+        <AskBoots
+          module={module}
+          lesson={lesson}
+          language={language}
+          code={code}
+          openSignal={explainSignal}
+        />
 
         {/* Free on-device tutor — inline card, runs in the learner's browser, $0 to the platform */}
         <TutorPanel context={tutorContext} />
+
+        {/* Prev / Next quest navigation — Next is emphasized once you pass. */}
+        <div className="mt-1 border-t border-line pt-3">
+          <LessonNav
+            module={module}
+            currentSlug={lesson.slug}
+            passed={allPass || alreadyDone}
+          />
+        </div>
       </section>
+      </div>
     </div>
   );
 }
