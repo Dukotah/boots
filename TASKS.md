@@ -28,8 +28,9 @@ Status: ⬜ todo · 🔄 doing · ✅ done · ⚠️ owner-gated
   lesson, learn, leaderboard, account, teams).
 
 ## Go-live readiness
-- ⬜ **P1.8** Reconcile `docs/go-live.md` with migrations 0005–0007 and the new
-  routes/crons; confirm every external dep graceful-degrades.
+- ✅ **P1.8** Reconciled `docs/go-live.md`: migrations now `0001→0007` (added 0006
+  referrals + 0007 client-state with an updated verify query), `/teams` waitlist
+  table note, and a §9 Sentry activation pointer.
 
 ---
 _When Phase 1 tasks are all ✅ and the DoD is met, plan Phase 2 here._

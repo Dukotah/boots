@@ -19,5 +19,11 @@ Running log, newest first. Glance here anytime.
 - **P1.6 done:** added 9 component tests (XPBar, TestResults, AchievementProgressBar)
   + `test:coverage` script; fixed the vitest JSX runtime. **Suite now 200 tests, all
   green.** tsc clean, build 1490 pages.
-- Next: P1.3/P1.4 server-validate quiz/HTML completion (integrity), then P1.2
-  bundle analysis. Opening the Phase-1 PR now.
+- **Phase-1 PR opened: #17** (base `main`). CI running; verified green locally.
+  Per DECISIONS, do not merge until migrations 0005–0007 are applied live.
+- **P1.8 done:** go-live runbook reconciled to migrations 0001→0007 (+0006/0007
+  notes, updated verify query, /teams table note, §9 Sentry pointer).
+- Phase-1 status: P1.1 ✅ (guard), P1.6 ✅ (200 tests), P1.8 ✅. Remaining:
+  P1.2 (bundle analysis), P1.3/P1.4 (server-validate quiz/HTML), P1.5 (XP
+  anti-cheat), P1.7 (robustness states), P1.6b (store-connected component tests).
+- Next up: P1.3/P1.4 server integrity (the core "trustworthy" DoD item).

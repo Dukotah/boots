@@ -20,7 +20,18 @@ adds `talents`, `cosmetics`, `equipped`, `streak_freezes`, `guild_id`,
 `guild_name`, and `rev`. Without it, skill-tree/cosmetic sync and the new public
 build card silently no-op (the writes are best-effort try/catch).
 
-Apply them in order (`0001` → `0005`). Two ways:
+Two later migrations must also be applied:
+- **`0006`** — referrals table (powers `/refer` + `/api/referrals`).
+- **`0007`** — adds `goal`, `onboarded`, `daily_challenge_claimed`,
+  `daily_challenge_streak`, `daily_challenge_best` to `profiles` so onboarding
+  goal + Daily Challenge streak survive a device switch. Without it those fields
+  stay localStorage-only (graceful — sync is best-effort try/catch).
+
+> The `/teams` waitlist (`/api/teams-waitlist`) needs its own table (SQL in
+> `docs/teams-design.md`) before it persists; until then it returns
+> `{ ok: true, skipped: true }` harmlessly.
+
+Apply them in order (`0001` → `0007`). Two ways:
 
 **A. Supabase SQL editor (quickest):** open each file under
 `supabase/migrations/`, paste into the SQL editor, run. All are idempotent
@@ -36,8 +47,9 @@ Verify in the SQL editor:
 ```sql
 select column_name from information_schema.columns
 where table_name = 'profiles'
-  and column_name in ('talents','cosmetics','equipped','streak_freezes','guild_name','rev');
--- expect all 6 rows
+  and column_name in ('talents','cosmetics','equipped','streak_freezes','guild_name','rev',
+                      'goal','onboarded','daily_challenge_streak','daily_challenge_best');
+-- expect all 10 rows (the last 4 confirm migration 0007)
 ```
 
 ---
@@ -114,6 +126,12 @@ on a test account before announcing.
 ## 8. Analytics (optional)
 
 `NEXT_PUBLIC_PLAUSIBLE_DOMAIN` to enable the (cookieless) Plausible script.
+
+## 9. Error tracking (optional, recommended)
+
+Config files (`sentry.client.config.ts` / `sentry.server.config.ts`) are committed
+and no-op until activated. To turn on: `npm i @sentry/nextjs` and set `SENTRY_DSN`
++ `NEXT_PUBLIC_SENTRY_DSN`. Full steps in [`observability.md`](./observability.md).
 
 ---
 
