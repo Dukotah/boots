@@ -2,6 +2,14 @@
 
 One line per meaningful decision, newest first. Why, not just what.
 
+- **2026-06-06** — **Merged PR #17 → `main`** (merge commit 240fb5a) at the owner's
+  explicit instruction to deploy. This triggers a Vercel prod deploy. *Why: the
+  owner gate I'd been holding for is now cleared. The app graceful-degrades if DB
+  migrations 0005–0007 aren't applied yet (sync is best-effort try/catch), so the
+  deploy won't crash — but the migrations + env secrets should be applied for full
+  functionality (see docs/go-live.md). Used a merge commit to preserve the 17-commit
+  history.*
+
 - **2026-06-06** — On the SEO/a11y audits, ship the **single-file, zero-dep wins**
   now (button focus rings, global reduced-motion, skip link, robots disallow,
   sitemap /about) and defer the multi-file / new-dep items (per-page noindex
