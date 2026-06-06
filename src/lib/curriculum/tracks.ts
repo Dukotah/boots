@@ -12,13 +12,16 @@
 import type { Module } from "./types";
 
 export type TrackId =
+  | "getting-started"
   | "foundations"
   | "js-deep-dives"
   | "frameworks"
   | "backend"
   | "interview"
   | "python"
+  | "python-deep-dives"
   | "sql"
+  | "sql-deep-dives"
   | "ai"
   | "cybersecurity"
   | "career"
@@ -40,6 +43,13 @@ export type Track = {
 // ramp (fundamentals → deep dives → interview prep) followed by the other langs.
 export const TRACKS: Track[] = [
   {
+    id: "getting-started",
+    label: "Getting Started",
+    blurb: "Brand new to code? Begin here with a gentle intro and the building blocks of the web.",
+    emoji: "🚀",
+    modules: ["beginner", "html", "css"],
+  },
+  {
     id: "foundations",
     label: "JavaScript Foundations",
     blurb: "Start here — variables, functions, objects, and the core building blocks.",
@@ -49,9 +59,22 @@ export const TRACKS: Track[] = [
   {
     id: "js-deep-dives",
     label: "JavaScript Deep Dives",
-    blurb: "Sharpen specific skills: recursion, regex, error handling, JSON, and math.",
+    blurb:
+      "Sharpen specific skills: closures, recursion, regex, async, collections, web APIs, and TypeScript.",
     emoji: "🔬",
-    modules: ["recursion", "regex", "error-handling", "json", "math"],
+    modules: [
+      "closures",
+      "recursion",
+      "regex",
+      "error-handling",
+      "json",
+      "data-formats",
+      "collections",
+      "async",
+      "web-apis",
+      "math",
+      "typescript",
+    ],
   },
   {
     id: "frameworks",
@@ -89,11 +112,30 @@ export const TRACKS: Track[] = [
     modules: ["python", "python-data"],
   },
   {
+    id: "python-deep-dives",
+    label: "Python Deep Dives",
+    blurb: "Level up your Python: strings, comprehensions, classes, and algorithms.",
+    emoji: "🧪",
+    modules: [
+      "python-strings",
+      "python-comprehensions",
+      "python-oop",
+      "python-algorithms",
+    ],
+  },
+  {
     id: "sql",
     label: "SQL & Data",
     blurb: "Query, filter, and join your way through real databases in the browser.",
     emoji: "🗃️",
     modules: ["sql", "sql-joins"],
+  },
+  {
+    id: "sql-deep-dives",
+    label: "SQL Deep Dives",
+    blurb: "Go further with SQL: aggregations, grouping, and subqueries.",
+    emoji: "📊",
+    modules: ["sql-aggregations", "sql-subqueries"],
   },
   {
     id: "ai",

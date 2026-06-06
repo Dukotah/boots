@@ -1,6 +1,6 @@
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
-import { getLesson, MODULES } from "@/lib/curriculum";
+import { getLesson, getModule, MODULES } from "@/lib/curriculum";
 import { lessonJsonLd, breadcrumbJsonLd } from "@/lib/seo";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { LessonView } from "@/components/LessonView";
@@ -43,7 +43,20 @@ export default function LessonPage({
   params: { module: string; lesson: string };
 }) {
   const found = getLesson(params.module, params.lesson);
-  if (!found) notFound();
+  if (!found) {
+    // Resilience: a purely-numeric segment (e.g. /learn/javascript/1 or /01)
+    // is treated as a 1-based index into the module's lessons and permanently
+    // redirected to its canonical slug URL. Out-of-range → notFound().
+    if (/^\d+$/.test(params.lesson)) {
+      const module = getModule(params.module);
+      const n = Number(params.lesson);
+      const target = module && n >= 1 ? module.lessons[n - 1] : undefined;
+      if (target) {
+        permanentRedirect(`/learn/${module!.slug}/${target.slug}`);
+      }
+    }
+    notFound();
+  }
 
   const { module, lesson, index } = found;
   const next = module.lessons[index + 1];
