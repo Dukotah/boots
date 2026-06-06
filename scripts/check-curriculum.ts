@@ -62,6 +62,11 @@ import { aiSafetyKids } from "../src/lib/curriculum/ai-safety-kids.ts";
 import { digitalCitizenship } from "../src/lib/curriculum/digital-citizenship.ts";
 import { systemDesign } from "../src/lib/curriculum/system-design.ts";
 import { portfolioProjects } from "../src/lib/curriculum/portfolio-projects.ts";
+import { react } from "../src/lib/curriculum/react.ts";
+import { node } from "../src/lib/curriculum/node.ts";
+import { go } from "../src/lib/curriculum/go.ts";
+import { rust } from "../src/lib/curriculum/rust.ts";
+import { docker } from "../src/lib/curriculum/docker.ts";
 import type { Lesson, Module } from "../src/lib/curriculum/types.ts";
 
 // Keep in sync with src/lib/curriculum/index.ts. (New module? Add it here too.)
@@ -123,6 +128,11 @@ const MODULES: Module[] = [
   digitalCitizenship,
   systemDesign,
   portfolioProjects,
+  react,
+  node,
+  go,
+  rust,
+  docker,
 ];
 
 function stringify(v: unknown): string {

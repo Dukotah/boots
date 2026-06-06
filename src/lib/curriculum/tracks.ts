@@ -17,6 +17,7 @@ export type TrackId =
   | "js-deep-dives"
   | "frameworks"
   | "backend"
+  | "systems"
   | "interview"
   | "python"
   | "python-deep-dives"
@@ -89,6 +90,13 @@ export const TRACKS: Track[] = [
     blurb: "Server-side JavaScript: Node.js, Express, routing, middleware, and REST APIs.",
     emoji: "🖥️",
     modules: ["node"],
+  },
+  {
+    id: "systems",
+    label: "Systems & DevOps",
+    blurb: "Compiled languages and shipping: Go, Rust, and Docker — the production toolkit.",
+    emoji: "⚙️",
+    modules: ["go", "rust", "docker"],
   },
   {
     id: "interview",
