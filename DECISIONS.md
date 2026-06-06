@@ -2,6 +2,17 @@
 
 One line per meaningful decision, newest first. Why, not just what.
 
+- **2026-06-06** — Defer server-side grading of **HTML** lessons (P1.4). *Why:
+  their tests assert against `getComputedStyle` in a rendered iframe; jsdom does
+  no real CSS layout, so a server grader would reject genuinely-correct work and
+  block XP — worse than the current optimistic record. Faithful grading needs a
+  headless browser (Playwright); filed as future infra. HTML joins Python/SQL in
+  the optimistic-record bucket.*
+- **2026-06-06** — Quiz grading lives in a pure `lib/quizGrade.ts` (not inline in
+  the route, not in client `lib/scoring`). *Why: keeps the route thin, lets the
+  integrity logic be unit-tested in isolation, and stays server-safe (no client
+  directive).*
+
 - **2026-06-06** — Do NOT auto-merge to `main` / deploy to prod yet. Open clean,
   CI-green PRs per phase, but gate the actual merge on owner-only go-live steps
   (apply migrations 0005–0007, set service secrets). *Why: merging triggers a

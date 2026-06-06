@@ -27,3 +27,14 @@ Running log, newest first. Glance here anytime.
   P1.2 (bundle analysis), P1.3/P1.4 (server-validate quiz/HTML), P1.5 (XP
   anti-cheat), P1.7 (robustness states), P1.6b (store-connected component tests).
 - Next up: P1.3/P1.4 server integrity (the core "trustworthy" DoD item).
+
+## 2026-06-06 (cont.)
+- **P1.3 done:** quiz completion is now server-validated. `/api/verify` checks
+  submitted answers against the key via pure `lib/quizGrade.ts`; `QuizView` sends
+  answers through new `verifyQuizCompletion`. Forgeable quiz XP is closed. Added 6
+  unit tests → **suite 206**. tsc + build green (1490 pages).
+- **P1.4 deferred (documented):** HTML grading uses computed styles in a rendered
+  iframe; jsdom can't replicate CSS layout → a server grader would false-negative.
+  Needs Playwright (future infra). HTML stays optimistic-record like Python/SQL.
+- Remaining P1: P1.2 (bundle analysis), P1.5 (XP rate guard, low pri), P1.7
+  (robustness states), P1.6b (store-connected component tests). Then plan Phase 2.

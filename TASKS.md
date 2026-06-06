@@ -12,9 +12,17 @@ Status: ⬜ todo · 🔄 doing · ✅ done · ⚠️ owner-gated
   `react-markdown`, all app-wide), and target them. Re-aim the < 500 kB goal here.
 
 ## Integrity
-- ⬜ **P1.3** Server-validate quiz completion (extend `/api/verify` + `scoring`).
-- ⬜ **P1.4** Server-validate HTML-lesson completion.
-- ⬜ **P1.5** Basic XP anti-cheat: clamp/flag impossible XP rate on the server path.
+- ✅ **P1.3** Server-validate quiz completion. `/api/verify` now checks submitted
+  answers against the key (pure `lib/quizGrade.ts`, 6 unit tests) and awards XP
+  only on all-correct; `QuizView` sends answers via `verifyQuizCompletion`.
+- ⛔ **P1.4** Server-validate HTML completion — **deferred (documented).** HTML
+  tests use `getComputedStyle` on a rendered iframe; jsdom can't replicate CSS
+  layout, so a server grader would false-negative and wrongly block XP. Needs a
+  headless browser (Playwright) — a separate infra task. HTML stays in the
+  optimistic-record bucket with Python/SQL until then.
+- ⬜ **P1.5** Basic XP anti-cheat: rate/anomaly guard. (Lower priority — the
+  `complete_lesson` RPC already awards canonical XP server-side and dedupes, so
+  XP isn't inflatable per lesson; the residual vector is bulk-completion speed.)
 
 ## Test coverage
 - ✅ **P1.6** Component tests for core presentational UI: `XPBar`, `TestResults`,

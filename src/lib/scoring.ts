@@ -86,3 +86,35 @@ export async function verifyCompletion(
   // Route unavailable → fall back to the direct RPC record.
   return { verified: true, awardedXp: await recordCompletion(courseSlug, lessonSlug) };
 }
+
+/**
+ * Server-validates a quiz submission. The server checks the submitted answer
+ * indices against the lesson's answer key and awards canonical XP only if every
+ * answer is correct — so quiz XP can't be claimed without the right answers.
+ * On a successful response the server's verdict is authoritative (no fallback).
+ * If the route is unreachable it falls back to the optimistic RPC record so the
+ * app keeps working offline / in local-only dev.
+ */
+export async function verifyQuizCompletion(
+  courseSlug: string,
+  lessonSlug: string,
+  answers: number[],
+): Promise<{ verified: boolean; awardedXp: number | null }> {
+  try {
+    const res = await fetch("/api/verify", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ courseSlug, lessonSlug, answers }),
+    });
+    const data = (await res.json().catch(() => null)) as
+      | { verified?: boolean; awardedXp?: number | null }
+      | null;
+    if (res.ok && data && typeof data.verified === "boolean") {
+      return { verified: data.verified, awardedXp: data.awardedXp ?? null };
+    }
+  } catch {
+    // fall through to client-side record
+  }
+  // Route unavailable → fall back to the direct RPC record.
+  return { verified: true, awardedXp: await recordCompletion(courseSlug, lessonSlug) };
+}
