@@ -15,6 +15,7 @@ const APP_SHELL_ROUTES = ["/map"];
 // lists them all so no route is unreachable on a phone.
 const NAV_LINKS: { href: string; label: string; desktop?: boolean }[] = [
   { href: "/learn", label: "Learn", desktop: true },
+  { href: "/review", label: "Review" },
   { href: "/paths", label: "Paths", desktop: true },
   { href: "/skill-tree", label: "Skill Tree", desktop: true },
   { href: "/career", label: "Career", desktop: true },

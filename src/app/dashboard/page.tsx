@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { Flame, Zap, Trophy, Target, RotateCcw, Briefcase } from "lucide-react";
+import { Flame, Zap, Trophy, Target, RotateCcw, Briefcase, RefreshCw } from "lucide-react";
 import { useGameStore } from "@/store/useGameStore";
 import { levelFromXp } from "@/lib/levels";
 import { MODULES, totalLessons, totalXpAvailable, lessonId } from "@/lib/curriculum";
@@ -26,6 +26,7 @@ export default function Dashboard() {
   const completed = useGameStore((s) => s.completed);
   const talents = useGameStore((s) => s.talents);
   const skillPoints = useGameStore((s) => s.skillPoints);
+  const dueReviews = useGameStore((s) => s.dueReviews);
   const reset = useGameStore((s) => s.reset);
 
   const info = levelFromXp(xp);
@@ -64,6 +65,10 @@ export default function Dashboard() {
   if (!mounted) {
     return <div className="mx-auto max-w-5xl px-4 py-10 text-gray-500">Loading…</div>;
   }
+
+  // Spaced-repetition reviews coming due — surfaced here because the feature is
+  // otherwise easy to miss (it lives on its own /review page).
+  const dueCount = dueReviews().length;
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
@@ -113,6 +118,28 @@ export default function Dashboard() {
         <XPBar info={info} />
       </div>
 
+      {/* Reviews due — spaced repetition. Only shown when something is actually
+          due, so it reads as a real call to action, not noise. */}
+      {dueCount > 0 && (
+        <Link
+          href="/review"
+          className="card mt-4 flex items-center gap-4 border-accent/40 bg-accent/5 transition-colors hover:border-accent/70"
+        >
+          <RefreshCw className="text-accent-soft" />
+          <div className="min-w-0 flex-1">
+            <p className="font-semibold text-white">
+              {dueCount} {dueCount === 1 ? "review" : "reviews"} due
+            </p>
+            <p className="text-sm text-gray-400">
+              Re-solve what you&apos;ve learned to lock it in — and earn review gold.
+            </p>
+          </div>
+          <span className="btn-primary shrink-0">
+            <RefreshCw size={15} /> Review now
+          </span>
+        </Link>
+      )}
+
       {/* Challenge of the day */}
       <div className="mt-4">
         <DailyChallenge />
@@ -124,7 +151,7 @@ export default function Dashboard() {
       </div>
 
       {/* Quick links to new features */}
-      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
+      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
         {[
           { href: "/guilds", icon: "🛡️", label: "Guilds", desc: "Team competition" },
           { href: "/events", icon: "🎉", label: "Events", desc: "Seasonal challenges" },
@@ -133,6 +160,7 @@ export default function Dashboard() {
           { href: "/leagues", icon: "⚔️", label: "Leagues", desc: "Weekly ranking" },
           { href: "/paths", icon: "🎯", label: "Career Paths", desc: "Job-ready tracks" },
           { href: "/skill-tree", icon: "🌳", label: "Skill Tree", desc: "Unlock abilities" },
+          { href: "/review", icon: "🔁", label: "Review", desc: "Spaced repetition" },
         ].map((item) => (
           <Link
             key={item.href}
