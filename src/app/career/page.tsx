@@ -370,6 +370,21 @@ export default function CareerPage() {
             </ResumeSection>
           )}
 
+          {resume.projects.length > 0 && (
+            <ResumeSection title="Projects">
+              <ul className="space-y-1.5">
+                {resume.projects.map((p) => (
+                  <li key={p.title} className="text-sm text-gray-700">
+                    <span className="font-semibold text-gray-900">
+                      {p.title}
+                    </span>{" "}
+                    — {p.demonstrates}
+                  </li>
+                ))}
+              </ul>
+            </ResumeSection>
+          )}
+
           {resume.credentials.length > 0 && (
             <ResumeSection title="Certifications">
               <ul className="space-y-1.5">

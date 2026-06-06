@@ -20,23 +20,13 @@ import {
 } from "@/lib/paths";
 import { levelFromXp } from "@/lib/levels";
 import { SITE } from "@/lib/site";
+import { completedProjects } from "@/lib/projects";
 import type { PlayerStats } from "@/types/game";
 
-// ── Language display names ───────────────────────────────────────────────────
-// Breadth records languages by their short code (lib/progress). Map the ones our
-// curriculum actually uses to résumé-worthy names; unknown codes title-case.
-const LANGUAGE_NAMES: Record<string, string> = {
-  js: "JavaScript",
-  ts: "TypeScript",
-  py: "Python",
-  sql: "SQL",
-  html: "HTML & CSS",
-  bash: "Shell / Bash",
-};
-
-export function languageName(code: string): string {
-  return LANGUAGE_NAMES[code] ?? code.charAt(0).toUpperCase() + code.slice(1);
-}
+// Language display names live in lib/languages (shared with lib/projects without
+// a cycle); re-exported here so existing import sites keep working.
+import { languageName } from "@/lib/languages";
+export { languageName };
 
 // The job-relevant modules surfaced as a concrete "skills you can show an
 // employer" grid (public profile). This is a display list of what counts as
@@ -222,6 +212,8 @@ export type ResumeData = {
   skills: string[];
   /** Titles of fully completed courses. */
   courses: string[];
+  /** Shipped portfolio projects (title + what each demonstrates). */
+  projects: { title: string; demonstrates: string }[];
   /** Earned path certificates with verification codes. */
   credentials: ResumeCredential[];
   highlights: string[];
@@ -241,6 +233,11 @@ export function buildResume(stats: PlayerStats, name: string): ResumeData {
   const courses = stats.completedModules
     .map((slug) => getModule(slug)?.title)
     .filter((t): t is string => Boolean(t));
+
+  const projects = completedProjects(stats.completedIds).map((p) => ({
+    title: p.title,
+    demonstrates: p.demonstrates,
+  }));
 
   const credentials: ResumeCredential[] = pathsDone.map((p) => ({
     pathSlug: p.slug,
@@ -272,6 +269,7 @@ export function buildResume(stats: PlayerStats, name: string): ResumeData {
     summary,
     skills,
     courses,
+    projects,
     credentials,
     highlights,
   };
@@ -289,6 +287,14 @@ export function resumeMarkdown(r: ResumeData): string {
   if (r.skills.length) {
     lines.push("## Skills");
     lines.push(r.skills.map((s) => `\`${s}\``).join(" · "));
+    lines.push("");
+  }
+
+  if (r.projects.length) {
+    lines.push("## Projects");
+    for (const p of r.projects) {
+      lines.push(`- **${p.title}** — ${p.demonstrates}`);
+    }
     lines.push("");
   }
 

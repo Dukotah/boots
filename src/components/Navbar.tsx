@@ -19,6 +19,7 @@ const NAV_LINKS: { href: string; label: string; desktop?: boolean }[] = [
   { href: "/review", label: "Review" },
   { href: "/paths", label: "Paths", desktop: true },
   { href: "/skill-tree", label: "Skill Tree", desktop: true },
+  { href: "/projects", label: "Projects", desktop: true },
   { href: "/career", label: "Career", desktop: true },
   { href: "/playground", label: "Playground", desktop: true },
   { href: "/leaderboard", label: "Leaderboard" },
