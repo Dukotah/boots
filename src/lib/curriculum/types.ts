@@ -49,6 +49,12 @@ export type Lesson = {
   tests?: TestCase[];
   // Defaults to "js" when omitted (keeps every existing JS lesson valid).
   language?: LessonLanguage;
+  // Optional exact phrasing for the programmatic-SEO "how-to" page, slotting
+  // into "How to <howToTitle> in <Language>" (e.g. "write Express middleware"
+  // → "How to write Express middleware in JavaScript"). When omitted, the
+  // how-to generator derives a grammatical phrase from `title`. Plain and
+  // search-friendly — no RPG tone here.
+  howToTitle?: string;
   // SQL only: schema + seed data executed before the student's query runs.
   setup?: string;
 

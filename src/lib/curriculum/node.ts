@@ -301,6 +301,7 @@ assertEquals(app.handle("/missing"), "404");`,
     {
       slug: "routing",
       title: "Routing",
+      howToTitle: "set up Express routing",
       blurb: "Map method + path to the right handler.",
       xp: 40,
       content: `# Routing
@@ -347,6 +348,7 @@ Anything else returns \`"notFound"\`.`,
     {
       slug: "middleware",
       title: "Middleware",
+      howToTitle: "write Express middleware",
       blurb: "Compose functions that transform a request in turn.",
       xp: 40,
       content: `# Middleware

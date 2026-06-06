@@ -9,6 +9,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   ListChecks,
+  HelpCircle,
   X,
 } from "lucide-react";
 import type { Module } from "@/lib/curriculum/types";
@@ -73,6 +74,11 @@ export function LessonSidebar({
                 {String(i + 1).padStart(2, "0")}
               </span>
               <span className={isCurrent ? "font-semibold" : ""}>{l.title}</span>
+              {l.kind === "quiz" && (
+                <span className="ml-1.5 inline-flex items-center gap-0.5 rounded-full bg-accent/15 px-1.5 py-0.5 align-middle text-[9px] font-semibold uppercase tracking-wide text-accent-soft">
+                  <HelpCircle size={9} /> Quiz
+                </span>
+              )}
             </span>
           </Link>
         );
