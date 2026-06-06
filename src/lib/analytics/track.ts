@@ -26,6 +26,7 @@ export type FunnelEvent =
   | "lesson_started"
   | "lesson_completed"
   | "first_all_green"
+  | "daily_challenge_completed"
   | "streak_milestone"
   | "paywall_viewed"
   | "checkout_started"
@@ -60,6 +61,11 @@ type EventProps = {
   first_all_green: {
     /** "moduleSlug/lessonSlug" */
     lesson_id: string;
+  };
+  /** Fired when a learner claims the daily-challenge bonus (genuine completion). */
+  daily_challenge_completed: {
+    /** The daily-challenge streak length after this claim. */
+    streak: number;
   };
   streak_milestone: {
     /** Current streak length, e.g. 7, 30, 100 */

@@ -44,6 +44,12 @@ import {
 } from "@/lib/talents";
 import type { PlayerStats } from "@/types/game";
 import { track } from "@/lib/analytics/track";
+import {
+  pickDaily,
+  DAILY_BONUS_GOLD,
+  DAILY_BONUS_XP,
+  type DailyPick,
+} from "@/lib/daily";
 
 /** Build the full stats snapshot (core resources + derived breadth) from state. */
 function buildStats(s: {
@@ -156,6 +162,12 @@ export type GameState = {
   dailyXp: number;
   dailyLessons: number;
   claimedQuests: string[]; // quest ids claimed *today*
+  // ── daily challenge (the "problem of the day" loop) ──
+  // The day key whose challenge bonus was last claimed ("claimed today" ===
+  // dailyChallengeClaimed === todayKey()). Separate from the login streak.
+  dailyChallengeClaimed: string | null;
+  dailyChallengeStreak: number; // consecutive days the challenge was cleared
+  dailyChallengeBest: number; // best daily-challenge streak ever reached
   // ── active quest ──
   activeQuest: string | null;
   // ── leagues (weekly competitive season) ──
@@ -199,6 +211,15 @@ export type GameState = {
   stats: () => PlayerStats;
   /** Today's activity, normalized (returns zeros if the stored day is stale). */
   today: () => DailySnapshot;
+  /** Today's deterministic challenge + the player's status on it. */
+  dailyChallenge: () => DailyPick & {
+    completed: boolean;
+    claimed: boolean;
+    streak: number;
+    best: number;
+    bonusGold: number;
+    bonusXp: number;
+  };
   /** Current league season snapshot: tier index, days left, XP earned this season. */
   season: () => { tier: number; daysLeft: number; weeklyXp: number };
   /** This season's activity, for weekly quests (zeros if the season is stale). */
@@ -217,6 +238,8 @@ export type GameState = {
   spendGold: (amount: number) => boolean;
   /** Claim a completed daily quest's reward (once per day). Returns true if claimed. */
   claimQuest: (questId: string) => boolean;
+  /** Claim today's daily-challenge bonus (requires the lesson genuinely done). Returns true if claimed. */
+  claimDailyChallenge: () => boolean;
   /** Claim a completed weekly quest's reward (once per season). Returns true if claimed. */
   claimWeeklyQuest: (questId: string) => boolean;
   /** Claim the next available step of a quest chain. Returns true if claimed. */
@@ -270,6 +293,9 @@ const INITIAL = {
   dailyXp: 0,
   dailyLessons: 0,
   claimedQuests: [] as string[],
+  dailyChallengeClaimed: null as string | null,
+  dailyChallengeStreak: 0,
+  dailyChallengeBest: 0,
   activeQuest: null as string | null,
   weeklyXp: 0,
   weeklyLessons: 0,
@@ -364,6 +390,21 @@ export const useGameStore = create<GameState>()(
           xp: fresh ? s.dailyXp : 0,
           lessons: fresh ? s.dailyLessons : 0,
           streak: s.streak,
+        };
+      },
+
+      dailyChallenge: () => {
+        const s = get();
+        const today = todayKey();
+        const pick = pickDaily(today);
+        return {
+          ...pick,
+          completed: s.completed.includes(pick.id),
+          claimed: s.dailyChallengeClaimed === today,
+          streak: s.dailyChallengeStreak,
+          best: s.dailyChallengeBest,
+          bonusGold: DAILY_BONUS_GOLD,
+          bonusXp: DAILY_BONUS_XP,
         };
       },
 
@@ -613,6 +654,32 @@ export const useGameStore = create<GameState>()(
           weeklyXp: s.weeklyXp + (quest.rewardXp ?? 0),
           claimedQuests: [...claimed, questId],
         }));
+        grantAchievements(get, set);
+        get().syncToServer();
+        return true;
+      },
+
+      claimDailyChallenge: () => {
+        const today = todayKey();
+        const pick = pickDaily(today);
+        // Integrity: the bonus is only payable once the lesson is GENUINELY
+        // completed — never on a deep-link visit. Mirrors the achievement rule.
+        if (!get().completed.includes(pick.id)) return false;
+        if (get().dailyChallengeClaimed === today) return false; // already claimed
+        const prev = get().dailyChallengeClaimed;
+        // Streak continues only if the previous claim was exactly yesterday.
+        const continued = prev !== null && dayDiff(prev, today) === 1;
+        const streak = continued ? get().dailyChallengeStreak + 1 : 1;
+        set((s) => ({
+          gold: s.gold + DAILY_BONUS_GOLD,
+          xp: s.xp + DAILY_BONUS_XP,
+          // Daily-challenge XP counts toward the weekly league, same as quest XP.
+          weeklyXp: s.weeklyXp + DAILY_BONUS_XP,
+          dailyChallengeClaimed: today,
+          dailyChallengeStreak: streak,
+          dailyChallengeBest: Math.max(s.dailyChallengeBest, streak),
+        }));
+        track("daily_challenge_completed", { streak });
         grantAchievements(get, set);
         get().syncToServer();
         return true;
@@ -916,6 +983,9 @@ export const useGameStore = create<GameState>()(
         dailyXp: s.dailyXp,
         dailyLessons: s.dailyLessons,
         claimedQuests: s.claimedQuests,
+        dailyChallengeClaimed: s.dailyChallengeClaimed,
+        dailyChallengeStreak: s.dailyChallengeStreak,
+        dailyChallengeBest: s.dailyChallengeBest,
         activeQuest: s.activeQuest,
         weeklyXp: s.weeklyXp,
         weeklyLessons: s.weeklyLessons,

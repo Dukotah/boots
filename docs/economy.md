@@ -18,6 +18,7 @@ reintroduce one.
 | Prospector talents | +10% / +15% lesson gold; +15 first-lesson/day | `gold-mult`, `daily-gold` in `lib/talents`. |
 | Scholar talents | +8 / +14 gold per **due** review | `review-gold`. Gated by the Leitner interval — a lesson only pays again once its review is genuinely due, so it can't be farmed by re-completing the same lesson. |
 | Quests / chains | per-quest `rewardGold` | `lib/quests`. |
+| Daily challenge | +20 gold (+15 XP) per day | `DAILY_BONUS_GOLD` in `lib/daily`. Bounded: at most once/day, and only payable on a *genuine* completion of that day's lesson (`claimDailyChallenge` checks `completed`). The pull is the streak, not the payout. |
 | Boss battles | per-boss `rewardGold` | `lib/boss`. |
 | Achievements | 10–1000 | `lib/achievements`. One-time. |
 | Mystery chest | weighted, EV ≈ 46 | A gamble, not a faucet — see below. |

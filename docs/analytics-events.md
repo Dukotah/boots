@@ -106,6 +106,22 @@ may be too hard or the instructions unclear.
 
 ---
 
+### `daily_challenge_completed`
+
+**When it fires:** When a learner claims the daily-challenge bonus on `/daily`
+or the dashboard card. Only fires on a genuine claim — the store requires that
+day's challenge lesson to be in `completed[]` first (`claimDailyChallenge`).
+
+| Prop | Type | Example | Notes |
+|------|------|---------|-------|
+| `streak` | number | `1`, `5`, `30` | Daily-challenge streak length after this claim |
+
+**Plausible tip:** The daily challenge is a re-engagement surface (LeetCode /
+Brilliant pattern). Rising `streak` values mean the loop is sticky; a fat tail
+at `streak=1` with few repeats means people try it once and don't return.
+
+---
+
 ### `streak_milestone`
 
 **When it fires:** After a lesson completion when the learner's streak crosses
