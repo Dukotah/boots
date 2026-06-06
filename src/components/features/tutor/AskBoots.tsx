@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Send, Lock, Loader2 } from "lucide-react";
@@ -20,11 +20,15 @@ export function AskBoots({
   lesson,
   language,
   code,
+  // Bump this counter from a parent (e.g. an "Explain this to me" button) to
+  // open the panel and scroll it into view. Optional + backward-compatible.
+  openSignal,
 }: {
   module: Module;
   lesson: Lesson;
   language: LessonLanguage;
   code: string;
+  openSignal?: number;
 }) {
   const mounted = useMounted();
   const isPro = useEntitlements((s) => s.isPro);
@@ -33,6 +37,14 @@ export function AskBoots({
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  // React to the parent's open signal: reveal the panel and scroll to it.
+  useEffect(() => {
+    if (openSignal === undefined || openSignal === 0) return;
+    setOpen(true);
+    rootRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [openSignal]);
 
   // Until hydrated, assume locked to avoid flashing the panel to free users.
   const locked = !mounted || !isPro;
@@ -87,7 +99,7 @@ export function AskBoots({
   }
 
   return (
-    <div className="card p-0">
+    <div ref={rootRef} className="card p-0">
       <button
         onClick={() => setOpen((o) => !o)}
         className="flex w-full items-center gap-2 px-4 py-3 text-left"
