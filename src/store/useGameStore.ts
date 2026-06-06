@@ -112,6 +112,15 @@ function dayDiff(a: string, b: string): number {
 /** Gold awarded alongside XP for a fresh lesson completion. Convenience currency. */
 const GOLD_PER_XP = 0.5;
 
+/**
+ * Gold cost to repair a broken streak of `lost` days: 25 gold per lost day,
+ * capped at 500 so a long streak never becomes unaffordable. The cap makes
+ * repair a meaningful-but-attainable gold sink rather than a hard paywall.
+ */
+export function streakRepairCost(lost: number): number {
+  return Math.min(500, Math.max(0, Math.round(lost)) * 25);
+}
+
 export type SyncStatus = "idle" | "syncing" | "error";
 
 export type CompletionResult = {
@@ -137,6 +146,10 @@ export type GameState = {
   activeDays: string[];
   // ── streak protection (bought in the shop, auto-consumed on a missed day) ──
   streakFreezes: number;
+  // The streak value that was just broken by a missed day and is still
+  // recoverable via repairStreak() (null = nothing to repair). Set the moment a
+  // gap-reset happens on the next completion; cleared on repair or a clean day.
+  lostStreak: number | null;
   // ── daily activity (resets each local day) — powers Daily Quests ──
   dailyDay: string | null;
   dailyXp: number;
@@ -206,6 +219,8 @@ export type GameState = {
   claimChainStep: (chainId: string, stepId: string) => boolean;
   /** Claim the reward for defeating this week's boss. Returns true if claimed. */
   claimBoss: (bossId: string) => boolean;
+  /** Pay gold to restore a streak broken by a missed day. Returns true if repaired. */
+  repairStreak: () => boolean;
   /** Buy a shop item. Returns a result describing the outcome (e.g. chest payout). */
   buyItem: (itemId: string) => { ok: boolean; chestGold?: number; owned?: boolean };
   /** Equip an owned cosmetic into its slot (toggles off if already equipped). */
@@ -242,6 +257,7 @@ const INITIAL = {
   lastActiveDay: null as string | null,
   activeDays: [] as string[],
   streakFreezes: 0,
+  lostStreak: null as number | null,
   dailyDay: null as string | null,
   dailyXp: 0,
   dailyLessons: 0,
@@ -420,16 +436,28 @@ export const useGameStore = create<GameState>()(
         // Streak Freeze is in inventory, which is auto-consumed to save it).
         let streak = state.streak;
         let streakFreezes = state.streakFreezes;
+        // Carry any still-pending repair forward by default; clear it whenever the
+        // day resolves cleanly (continued, frozen, or first-ever).
+        let lostStreak = state.lostStreak;
         if (state.lastActiveDay === null) {
           streak = 1;
+          lostStreak = null;
         } else {
           const diff = dayDiff(state.lastActiveDay, today);
-          if (diff === 0) streak = state.streak || 1;
-          else if (diff === 1) streak = state.streak + 1;
-          else if (streakFreezes > 0) {
+          if (diff === 0) streak = state.streak || 1; // same day → keep pending repair
+          else if (diff === 1) {
+            streak = state.streak + 1;
+            lostStreak = null;
+          } else if (streakFreezes > 0) {
             streak = state.streak + 1; // freeze saves the streak
             streakFreezes -= 1;
-          } else streak = 1;
+            lostStreak = null;
+          } else {
+            // Gap with no freeze → the streak breaks. Remember it (if it was worth
+            // keeping) so the learner can pay to repair it.
+            lostStreak = state.streak >= 2 ? state.streak : null;
+            streak = 1;
+          }
         }
 
         // Re-completing refreshes the streak but never re-awards XP. The Scholar
@@ -447,6 +475,7 @@ export const useGameStore = create<GameState>()(
             gold: state.gold + reviewGold,
             streak,
             streakFreezes,
+            lostStreak,
             lastActiveDay: today,
             activeDays: state.activeDays.includes(today)
               ? state.activeDays
@@ -500,6 +529,7 @@ export const useGameStore = create<GameState>()(
           completed: [...state.completed, id],
           streak,
           streakFreezes,
+          lostStreak,
           lastActiveDay: today,
           activeDays: state.activeDays.includes(today)
             ? state.activeDays
@@ -629,6 +659,19 @@ export const useGameStore = create<GameState>()(
           claimedBosses: [...x.claimedBosses, bossId],
         }));
         grantAchievements(get, set);
+        get().syncToServer();
+        return true;
+      },
+
+      repairStreak: () => {
+        const s = get();
+        const lost = s.lostStreak;
+        if (!lost || lost < 2) return false; // nothing recoverable
+        const cost = streakRepairCost(lost);
+        if (s.gold < cost) return false;
+        // Restore the broken streak and credit today on top (mirrors how a freeze
+        // would have carried it through the missed day), then clear the pending repair.
+        set({ gold: s.gold - cost, streak: lost + 1, lostStreak: null });
         get().syncToServer();
         return true;
       },
@@ -847,6 +890,7 @@ export const useGameStore = create<GameState>()(
         lastActiveDay: s.lastActiveDay,
         activeDays: s.activeDays,
         streakFreezes: s.streakFreezes,
+        lostStreak: s.lostStreak,
         dailyDay: s.dailyDay,
         dailyXp: s.dailyXp,
         dailyLessons: s.dailyLessons,
