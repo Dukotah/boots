@@ -21,6 +21,9 @@ import { math } from "./math";
 import { typescript } from "./typescript";
 import { react } from "./react";
 import { node } from "./node";
+import { go } from "./go";
+import { rust } from "./rust";
+import { docker } from "./docker";
 import { algorithms } from "./algorithms";
 import { dataStructures } from "./data-structures";
 import { dynamicProgramming } from "./dynamic-programming";
@@ -93,6 +96,10 @@ export const MODULES: Module[] = [
   react,
   // Backend
   node,
+  // Systems languages & DevOps
+  go,
+  rust,
+  docker,
   // CS fundamentals & interview
   algorithms,
   dataStructures,
