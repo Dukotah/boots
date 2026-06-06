@@ -19,6 +19,8 @@ import { asyncJs } from "./async";
 import { webApis } from "./web-apis";
 import { math } from "./math";
 import { typescript } from "./typescript";
+import { react } from "./react";
+import { node } from "./node";
 import { algorithms } from "./algorithms";
 import { dataStructures } from "./data-structures";
 import { dynamicProgramming } from "./dynamic-programming";
@@ -87,6 +89,10 @@ export const MODULES: Module[] = [
   math,
   // TypeScript
   typescript,
+  // Frontend frameworks
+  react,
+  // Backend
+  node,
   // CS fundamentals & interview
   algorithms,
   dataStructures,

@@ -14,6 +14,8 @@ import type { Module } from "./types";
 export type TrackId =
   | "foundations"
   | "js-deep-dives"
+  | "frameworks"
+  | "backend"
   | "interview"
   | "python"
   | "sql"
@@ -50,6 +52,20 @@ export const TRACKS: Track[] = [
     blurb: "Sharpen specific skills: recursion, regex, error handling, JSON, and math.",
     emoji: "🔬",
     modules: ["recursion", "regex", "error-handling", "json", "math"],
+  },
+  {
+    id: "frameworks",
+    label: "Frontend Frameworks",
+    blurb: "Build interactive UIs with React — components, props, state, and hooks.",
+    emoji: "⚛️",
+    modules: ["react"],
+  },
+  {
+    id: "backend",
+    label: "Backend",
+    blurb: "Server-side JavaScript: Node.js, Express, routing, middleware, and REST APIs.",
+    emoji: "🖥️",
+    modules: ["node"],
   },
   {
     id: "interview",
