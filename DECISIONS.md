@@ -2,6 +2,17 @@
 
 One line per meaningful decision, newest first. Why, not just what.
 
+- **2026-06-06** — On the SEO/a11y audits, ship the **single-file, zero-dep wins**
+  now (button focus rings, global reduced-motion, skip link, robots disallow,
+  sitemap /about) and defer the multi-file / new-dep items (per-page noindex
+  layouts ×20, focus-trap-react for drawers, per-page OG images). *Why: the
+  single-file fixes capture most of the value immediately and verify cleanly; the
+  rest are tracked in docs/seo-audit.md + docs/a11y-audit.md as follow-ups.*
+- **2026-06-06** — Notifications + recap derive entirely from existing store state
+  with read-state in their own localStorage key — no store schema change. *Why:
+  keeps them shippable now with zero migration/sync risk; can promote to synced
+  state later if cross-device read-state matters.*
+
 - **2026-06-06** — Defer server-side grading of **HTML** lessons (P1.4). *Why:
   their tests assert against `getComputedStyle` in a rendered iframe; jsdom does
   no real CSS layout, so a server grader would reject genuinely-correct work and

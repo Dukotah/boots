@@ -37,4 +37,20 @@ Running log, newest first. Glance here anytime.
   iframe; jsdom can't replicate CSS layout → a server grader would false-negative.
   Needs Playwright (future infra). HTML stays optimistic-record like Python/SQL.
 - Remaining P1: P1.2 (bundle analysis), P1.5 (XP rate guard, low pri), P1.7
-  (robustness states), P1.6b (store-connected component tests). Then plan Phase 2.
+  (robustness states). Then plan Phase 2.
+
+## 2026-06-06 (fleet round 2 — 7 agents)
+- Ran a 7-agent fleet (disjoint ownership). Integrated all:
+  - **NOTIFS:** in-app notifications center (derived feed + bell) → /notifications.
+  - **RECAP:** "Your week in code" → /recap.
+  - **CERTS:** Add-to-LinkedIn + verify link + Credential ID (Phase 2 credential).
+  - **DAILY v2:** difficulty/tags/est-time/milestone copy (additive).
+  - **TESTS:** +94 → **suite now 312 tests** (fixed 2 blind-test bugs).
+  - **SEO + A11Y audits** → docs/seo-audit.md, docs/a11y-audit.md.
+- Applied highest-value single-file audit wins: focus-visible ring on buttons +
+  global prefers-reduced-motion (CSS) + framer MotionConfig; skip-to-content link
+  + main landmark; robots.ts now disallows all private routes; /about in sitemap.
+- Deferred (documented in audits): per-page noindex layouts (~20 files),
+  focus-trap-react for drawers/modals (new dep), per-page OG images, JSON-LD
+  Website/Organization. Founder call: ship single-file wins, log the rest.
+- Green: tsc, 312 tests, build = 1492 static pages. Pushed to PR #17.

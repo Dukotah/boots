@@ -8,7 +8,32 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/dashboard", "/api/"],
+      // Private/app-shell surfaces render as empty hydration shells to crawlers —
+      // keep them out of the index so crawl budget goes to real content.
+      disallow: [
+        "/api/",
+        "/dashboard",
+        "/account",
+        "/profile",
+        "/career",
+        "/leaderboard",
+        "/achievements",
+        "/shop",
+        "/guilds",
+        "/events",
+        "/leagues",
+        "/boss",
+        "/friends",
+        "/quests",
+        "/skill-tree",
+        "/projects",
+        "/review",
+        "/refer",
+        "/recap",
+        "/notifications",
+        "/onboarding",
+        "/offline",
+      ],
     },
     sitemap: absoluteUrl("/sitemap.xml"),
   };

@@ -5,6 +5,7 @@ import { Footer } from "@/components/layout/Footer";
 import { AuthProvider } from "@/components/AuthProvider";
 import { PwaRegister } from "@/components/PwaRegister";
 import { Analytics } from "@/components/Analytics";
+import { ReducedMotionProvider } from "@/components/ReducedMotionProvider";
 import { SITE } from "@/lib/site";
 
 // Default social-share card (branded). Per-page metadata overrides this.
@@ -66,13 +67,24 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen">
+        {/* Keyboard users can jump past the nav to content (WCAG 2.4.1). */}
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-[100] focus:rounded-lg focus:bg-surface focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white focus:ring-2 focus:ring-accent"
+        >
+          Skip to main content
+        </a>
         <Analytics />
-        <AuthProvider>
-          <PwaRegister />
-          <Navbar />
-          <main className="min-h-[60vh]">{children}</main>
-          <Footer />
-        </AuthProvider>
+        <ReducedMotionProvider>
+          <AuthProvider>
+            <PwaRegister />
+            <Navbar />
+            <main id="main-content" className="min-h-[60vh]">
+              {children}
+            </main>
+            <Footer />
+          </AuthProvider>
+        </ReducedMotionProvider>
       </body>
     </html>
   );
