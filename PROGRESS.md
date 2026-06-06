@@ -2,6 +2,25 @@
 
 Running log, newest first. Glance here anytime.
 
+## 2026-06-06 (LIVE — go-live results)
+- **Merged PR #17 → main; Vercel prod deploy succeeded. Site is live at
+  https://boots-delta.vercel.app.**
+- Migrations 0005/0006/0007 applied to live Supabase (via browser): 11/11 profiles
+  columns present, referrals table present.
+- **Bug found + fixed:** migration 0006 used `ALTER TABLE … ADD CONSTRAINT IF NOT
+  EXISTS` (invalid Postgres — would fail `supabase db push`). Rewrote it to an
+  inlined `CREATE TABLE` constraint (matches what was hand-applied to prod).
+- Stripe verified safe-absent: checkout/webhook return 501, entitlements default
+  free, upgrade button shows a friendly message — no crashes.
+- **Action items for owner (dashboard):**
+  1. Set `NEXT_PUBLIC_SITE_URL=https://boots-delta.vercel.app` in Vercel
+     (currently Missing — needed for magic-link callbacks, OG images, referral URLs).
+  2. Configure Supabase Auth → URL Configuration: Site URL + redirect allowlist
+     = https://boots-delta.vercel.app (so magic-link / OAuth sign-in works).
+  3. Re-run the smoke test on the live domain (browser ext blocked sub-routes).
+- Optional services still unset (graceful): ANTHROPIC, RESEND, VAPID, PLAUSIBLE,
+  SENTRY. BYOK/on-device tutor works without ANTHROPIC.
+
 ## 2026-06-06
 - **Owner-operator mode engaged.** Read the codebase; wrote `VISION.md`,
   `ROADMAP.md` (phased), `TASKS.md` (Phase 1), `DECISIONS.md`, this log.

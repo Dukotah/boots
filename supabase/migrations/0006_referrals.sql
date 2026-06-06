@@ -26,7 +26,11 @@ create table if not exists public.referrals (
                               check (status in ('pending', 'completed')),
   reward_granted  boolean     not null default false,
   created_at      timestamptz not null default now(),
-  completed_at    timestamptz
+  completed_at    timestamptz,
+  -- No self-referrals. Inlined here (not a separate ALTER … ADD CONSTRAINT IF
+  -- NOT EXISTS, which Postgres does not support) so the migration runs clean on
+  -- `supabase db push` and stays idempotent via `create table if not exists`.
+  constraint referrals_no_self_refer check (referrer_id is null or referrer_id <> referred_id)
 );
 
 -- Each user has exactly one referral code (no duplicates; UPSERT safe).
@@ -41,11 +45,6 @@ create unique index if not exists referrals_referred_idx
 -- Fast lookup: all referrals by referrer.
 create index if not exists referrals_referrer_idx
   on public.referrals (referrer_id);
-
--- No self-referrals.
-alter table public.referrals
-  add constraint if not exists referrals_no_self_refer
-  check (referrer_id != referred_id);
 
 -- RLS -------------------------------------------------------------------------
 alter table public.referrals enable row level security;
