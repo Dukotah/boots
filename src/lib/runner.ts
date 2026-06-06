@@ -1,4 +1,3 @@
-import { transform } from "sucrase";
 import type { Lesson, TestCase, LessonLanguage } from "./curriculum/types";
 import type { TestResult } from "@/workers/codeRunner";
 
@@ -30,26 +29,32 @@ export function runLesson(
     return import("./sqlRunner").then((m) => m.runSql(code, lesson));
   }
   if (language === "ts") {
-    // Strip the types to JS with sucrase, then run through the same Worker as JS.
-    // A type/syntax error surfaces as a failing run rather than a crash.
-    let js: string;
-    try {
-      js = transform(code, { transforms: ["typescript"] }).code;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      return Promise.resolve({
-        timedOut: false,
-        results: tests.map((t) => ({
-          name: t.name,
-          pass: false,
-          error: `TypeScript error: ${message}`,
-          logs: [],
-        })),
-      });
-    }
-    return runJs(js, tests);
+    return runTs(code, tests);
   }
   return runJs(code, tests);
+}
+
+// TypeScript: strip the types to JS with sucrase, then run through the same
+// Worker as JS. Sucrase is dynamically imported so JS/Python/SQL lesson pages
+// never bundle it. A type/syntax error surfaces as a failing run, not a crash.
+async function runTs(code: string, tests: TestCase[]): Promise<RunOutcome> {
+  let js: string;
+  try {
+    const { transform } = await import("sucrase");
+    js = transform(code, { transforms: ["typescript"] }).code;
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    return {
+      timedOut: false,
+      results: tests.map((t) => ({
+        name: t.name,
+        pass: false,
+        error: `TypeScript error: ${message}`,
+        logs: [],
+      })),
+    };
+  }
+  return runJs(js, tests);
 }
 
 // ── Playground: run code freely and capture output (no grading) ───────────────

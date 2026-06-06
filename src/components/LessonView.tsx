@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -22,9 +23,20 @@ import { TestResults } from "./TestResults";
 import { LevelUpToast } from "./LevelUpToast";
 import { SkillPointToast } from "./SkillPointToast";
 import { ProGate } from "./features/billing/ProGate";
-import { AskBoots } from "./features/tutor/AskBoots";
-import { TutorPanel } from "./TutorPanel";
-import { CodeReview } from "./quality/CodeReview";
+// Tutor panels + code review are interaction-gated and heavy — load them in
+// their own client chunks so they're not in the initial lesson bundle.
+const AskBoots = dynamic(
+  () => import("./features/tutor/AskBoots").then((m) => m.AskBoots),
+  { ssr: false },
+);
+const TutorPanel = dynamic(
+  () => import("./TutorPanel").then((m) => m.TutorPanel),
+  { ssr: false },
+);
+const CodeReview = dynamic(
+  () => import("./quality/CodeReview").then((m) => m.CodeReview),
+  { ssr: false },
+);
 import { LessonSidebar } from "./LessonSidebar";
 import { LessonNav } from "./LessonNav";
 import { summarizeLesson } from "@/lib/tutor/prompt";
