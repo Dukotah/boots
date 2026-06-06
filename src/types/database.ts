@@ -44,6 +44,11 @@ export type Database = {
           streak_freezes: number;
           guild_id: string | null;
           guild_name: string | null;
+          goal: string | null;
+          onboarded: boolean;
+          daily_challenge_claimed: string | null;
+          daily_challenge_streak: number;
+          daily_challenge_best: number;
           rev: number;
           is_pro: boolean;
           stripe_customer_id: string | null;
@@ -75,6 +80,11 @@ export type Database = {
           streak_freezes?: number;
           guild_id?: string | null;
           guild_name?: string | null;
+          goal?: string | null;
+          onboarded?: boolean;
+          daily_challenge_claimed?: string | null;
+          daily_challenge_streak?: number;
+          daily_challenge_best?: number;
           rev?: number;
           is_pro?: boolean;
           stripe_customer_id?: string | null;

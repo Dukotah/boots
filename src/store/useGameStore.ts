@@ -345,6 +345,12 @@ type ProfileSnapshot = {
   streak_freezes: number;
   guild_id: string | null;
   guild_name: string | null;
+  // ── new in 0007 ──
+  goal: string | null;
+  onboarded: boolean;
+  daily_challenge_claimed: string | null;
+  daily_challenge_streak: number;
+  daily_challenge_best: number;
   // Monotonic sync revision — bumped on every write; used for last-writer-wins.
   rev: number;
 };
@@ -352,7 +358,9 @@ type ProfileSnapshot = {
 const PROFILE_COLUMNS =
   "xp, gold, streak, last_active_day, completed, achievements, active_quest, " +
   "weekly_xp, league_tier, season_start, cosmetics, talents, equipped, " +
-  "streak_freezes, guild_id, guild_name, rev";
+  "streak_freezes, guild_id, guild_name, " +
+  "goal, onboarded, daily_challenge_claimed, daily_challenge_streak, " +
+  "daily_challenge_best, rev";
 
 async function upsertProfile(userId: string, snap: ProfileSnapshot): Promise<void> {
   const sb = getSupabaseBrowserClient();
@@ -866,8 +874,14 @@ export const useGameStore = create<GameState>()(
         get().syncToServer();
       },
 
-      setGoal: (id) => set({ goal: id, onboarded: true }),
-      dismissOnboarding: () => set({ onboarded: true }),
+      setGoal: (id) => {
+        set({ goal: id, onboarded: true });
+        get().syncToServer();
+      },
+      dismissOnboarding: () => {
+        set({ onboarded: true });
+        get().syncToServer();
+      },
 
       clearLevelUp: () => set({ lastLevelUp: null }),
       clearRecentAchievement: () => set({ recentAchievement: null }),
@@ -910,6 +924,12 @@ export const useGameStore = create<GameState>()(
             streak_freezes: s.streakFreezes,
             guild_id: s.guildId,
             guild_name: s.guildName,
+            // ── new in 0007 ──
+            goal: s.goal,
+            onboarded: s.onboarded,
+            daily_challenge_claimed: s.dailyChallengeClaimed,
+            daily_challenge_streak: s.dailyChallengeStreak,
+            daily_challenge_best: s.dailyChallengeBest,
             rev,
           });
           set({ syncStatus: "idle" });
@@ -960,6 +980,25 @@ export const useGameStore = create<GameState>()(
           lastActiveDay: local.lastActiveDay ?? remote.last_active_day,
           activeQuest: local.activeQuest ?? remote.active_quest,
           seasonStart: local.seasonStart ?? remote.season_start,
+          // ── new in 0007: goal / onboarding ──
+          // `onboarded` is a one-way flag: once true on either side, stay true.
+          onboarded: local.onboarded || (remote.onboarded ?? false),
+          // `goal` — newest writer wins; fall back to whichever side has a value.
+          goal: remoteNewer ? remote.goal ?? local.goal : local.goal ?? remote.goal,
+          // ── new in 0007: daily challenge ──
+          // All-time best is a high-water mark — always keep the max.
+          dailyChallengeBest: Math.max(
+            local.dailyChallengeBest,
+            remote.daily_challenge_best ?? 0,
+          ),
+          // Streak + claim token are time-sensitive (reset on a missed day), so
+          // the newest writer reflects ground truth.
+          dailyChallengeStreak: remoteNewer
+            ? remote.daily_challenge_streak ?? local.dailyChallengeStreak
+            : local.dailyChallengeStreak,
+          dailyChallengeClaimed: remoteNewer
+            ? remote.daily_challenge_claimed ?? local.dailyChallengeClaimed
+            : local.dailyChallengeClaimed,
           rev: Math.max(local.rev, remote.rev ?? 0),
         });
         get().syncToServer(); // push the merged result back (bumps rev again)

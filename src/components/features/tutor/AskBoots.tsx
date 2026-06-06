@@ -9,17 +9,22 @@ import type { LessonLanguage } from "@/lib/curriculum/types";
 import { useEntitlements } from "@/store/useEntitlements";
 import { useMounted } from "@/hooks/useMounted";
 import { MascotBoots } from "@/components/MascotBoots";
+import { track } from "@/lib/analytics/track";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
+type FailingTest = { name: string; error?: string };
+
 // The Socratic tutor panel. Gated behind Pro in the UI; the /api/tutor route
 // re-checks server-side. Streams hints token-by-token. `code` is the student's
-// live editor contents, passed through so Cantrip can reference their attempt.
+// live editor contents and `failingTests` is the list of currently-failing test
+// names/errors — both are forwarded so Cantrip can reference their attempt.
 export function AskBoots({
   module,
   lesson,
   language,
   code,
+  failingTests,
   // Bump this counter from a parent (e.g. an "Explain this to me" button) to
   // open the panel and scroll it into view. Optional + backward-compatible.
   openSignal,
@@ -28,6 +33,7 @@ export function AskBoots({
   lesson: Lesson;
   language: LessonLanguage;
   code: string;
+  failingTests?: FailingTest[];
   openSignal?: number;
 }) {
   const mounted = useMounted();
@@ -49,6 +55,15 @@ export function AskBoots({
   // Until hydrated, assume locked to avoid flashing the panel to free users.
   const locked = !mounted || !isPro;
 
+  // Fire paywall_viewed the first time a free user opens the tutor gate.
+  // `open && locked` transitions from false→true exactly once per session
+  // for users who aren't Pro, which is the signal we want to count.
+  useEffect(() => {
+    if (open && locked) {
+      track("paywall_viewed", { source: "tutor_pro_gate" });
+    }
+  }, [open, locked]);
+
   async function send() {
     const question = input.trim();
     if (!question || busy) return;
@@ -68,6 +83,7 @@ export function AskBoots({
           lessonContent: lesson.content,
           language,
           code,
+          failingTests: failingTests ?? [],
           messages: next,
         }),
       });

@@ -68,7 +68,7 @@ export type CourseProgress = {
 export type JournalSummary = {
   siteName: string;
   siteUrl: string;
-  /** Public Boots profile URL, or null if unknown. */
+  /** Public Cantrip profile URL, or null if unknown. */
   profileUrl: string | null;
   level: number;
   rank: string;

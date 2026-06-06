@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { Flame, Zap, Trophy, Target, RotateCcw, Briefcase, RefreshCw } from "lucide-react";
 import { useGameStore, streakRepairCost } from "@/store/useGameStore";
 import { levelFromXp } from "@/lib/levels";
@@ -19,6 +19,7 @@ import { StreakHeatmap } from "@/components/features/retention/StreakHeatmap";
 import { EnableNotifications } from "@/components/features/push/EnableNotifications";
 import { RecommendedNextCard } from "@/components/features/onboarding/RecommendedNextCard";
 import { ReferralCard } from "@/components/features/referral/ReferralCard";
+import { PurchaseTracker } from "@/components/features/billing/PurchaseTracker";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -92,6 +93,10 @@ export default function Dashboard() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
+      {/* Fires the `purchase` analytics event when Stripe redirects back here. */}
+      <Suspense fallback={null}>
+        <PurchaseTracker />
+      </Suspense>
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-white">Your dashboard</h1>
         <Link href={continueHref} className="btn-primary">

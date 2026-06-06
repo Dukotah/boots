@@ -389,6 +389,11 @@ export function LessonView({
           lesson={lesson}
           language={language}
           code={code}
+          failingTests={
+            outcome?.results
+              .filter((r) => !r.pass)
+              .map((r) => ({ name: r.name, error: r.error })) ?? []
+          }
           openSignal={explainSignal}
         />
 

@@ -1,14 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Trophy, Flame, Zap, Users, Crown, Globe, UserCheck } from "lucide-react";
+import { Trophy, Flame, Zap, Users, Crown, Globe, UserCheck, UsersRound } from "lucide-react";
 import { useGameStore } from "@/store/useGameStore";
 import { useMounted } from "@/hooks/useMounted";
 import { levelFromXp } from "@/lib/levels";
 import { GUILDS, seededWeeklyXp, seededMemberCount } from "@/lib/guilds";
 import { getSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
+import { LeaderboardFilters } from "@/components/features/leaderboard/LeaderboardFilters";
+import { matchesLanguageFilter, type ScopeFilter, type LanguageFilter } from "@/lib/leaderboard";
 
 type LeaderboardPlayer = {
   id: string;
@@ -17,6 +19,10 @@ type LeaderboardPlayer = {
   weekly_xp: number;
   streak: number;
   league_tier: number;
+  /** Module slugs the player has completed at least one lesson in. */
+  completed: string[];
+  /** Guild the player belongs to (for guild-scope filter). */
+  guildId: string | null;
 };
 
 type Tab = "global" | "weekly" | "guilds";
@@ -32,6 +38,40 @@ function seededPlayers(): LeaderboardPlayer[] {
     "AIAurelien", "MLMaria", "APIAdrian", "CacheCarlos",
     "ShardShana",
   ];
+
+  // Seeded language buckets so the language filter has something to do without
+  // a live database. Each fake player is slotted into one primary language.
+  const langBuckets: string[][] = [
+    ["javascript/variables", "javascript/functions", "closures/intro"],
+    ["javascript/basics", "async/promises", "javascript-next/esm"],
+    ["algorithms/big-o", "data-structures/arrays", "algorithms/sorting"],
+    ["sql/select", "sql/where", "sql-joins/inner"],
+    ["python/basics", "python/functions", "python-data/pandas"],
+    ["python/oop", "python-algorithms/sorting", "python/decorators"],
+    ["algorithms/graphs", "graphs-js/bfs", "data-structures/trees"],
+    ["sql/aggregations", "sql-aggregations/groupby", "sql-window-functions/rank"],
+    ["typescript/basics", "ts-generics-advanced/intro", "typescript/utility-types"],
+    ["typescript/narrowing", "typescript/generics", "react/hooks"],
+    ["python/strings", "python-strings/methods", "python-comprehensions/list"],
+    ["react/state", "react/effects", "react/context"],
+    ["algorithms/dynamic-programming", "dynamic-programming/knapsack", "algorithms/dp"],
+    ["javascript/closures", "closures/scope", "javascript/events"],
+    ["algorithms/data-structures", "data-structures/hash-maps", "big-o-complexity/intro"],
+    ["algorithms/sorting", "greedy-algorithms/intro", "algorithms/greedy"],
+    ["python/generators", "python-generators/intro", "python/itertools"],
+    ["javascript/async", "async/fetch", "web-apis/fetch"],
+    ["sql/subqueries", "sql-subqueries/correlated", "sql/advanced"],
+    ["data-structures/stacks", "data-structures/queues", "algorithms/searching"],
+    ["ai-llms/basics", "ai-agents/intro", "prompt-engineering/basics"],
+    ["ai-llms/transformers", "ml-model-evaluation/metrics", "decision-trees/intro"],
+    ["javascript/apis", "web-apis/dom", "async/ajax"],
+    ["algorithms/cache", "data-structures/graphs", "algorithms/bfs"],
+    ["sql/joins", "sql-joins/outer", "db-normalization/1nf"],
+  ];
+
+  // Seeded guild membership: spread players across guilds.
+  const guildIds = GUILDS.map((g) => g.id);
+
   return names.map((username, i) => {
     let hash = 0;
     for (const c of username) hash = (hash * 31 + c.charCodeAt(0)) | 0;
@@ -43,6 +83,8 @@ function seededPlayers(): LeaderboardPlayer[] {
       weekly_xp: Math.abs((hash * 7) % 1200),
       streak: Math.abs((hash * 13) % 45),
       league_tier: Math.min(4, Math.floor(xp / 2000)),
+      completed: langBuckets[i % langBuckets.length],
+      guildId: guildIds[Math.abs(hash) % guildIds.length],
     };
   });
 }
@@ -58,14 +100,35 @@ export default function LeaderboardPage() {
   const myStreak = useGameStore((s) => s.streak);
   const myWeeklyXp = useGameStore((s) => s.weeklyXp);
   const myLeagueTier = useGameStore((s) => s.leagueTier);
+  const myCompleted = useGameStore((s) => s.completed);
   const user = useGameStore((s) => s.user);
   const guildId = useGameStore((s) => s.guildId);
+  const guildName = useGameStore((s) => s.guildName);
 
   const [tab, setTab] = useState<Tab>("global");
+  const [scope, setScope] = useState<ScopeFilter>("global");
+  const [language, setLanguage] = useState<LanguageFilter>("all");
   const [players, setPlayers] = useState<LeaderboardPlayer[]>([]);
+  const [friendIds, setFriendIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
 
   const myHandle = user?.email?.split("@")[0] ?? "you";
+
+  // Fetch followed-user ids once (no polling — Supabase only).
+  const loadFriends = useCallback(async () => {
+    const sb = getSupabaseBrowserClient();
+    if (!sb || !user) return;
+    const { data } = await sb
+      .from("follows")
+      .select("following_id")
+      .eq("follower_id", user.id);
+    const ids = (data ?? []).map((r) => (r as { following_id: string }).following_id);
+    setFriendIds(new Set(ids));
+  }, [user]);
+
+  useEffect(() => {
+    if (mounted && user && isSupabaseConfigured) loadFriends();
+  }, [mounted, user, loadFriends]);
 
   useEffect(() => {
     if (!mounted) return;
@@ -80,10 +143,28 @@ export default function LeaderboardPage() {
           const col = tab === "weekly" ? "weekly_xp" : "xp";
           const { data } = await sb
             .from("profiles")
-            .select("id, username, xp, weekly_xp, streak, league_tier")
+            .select("id, username, xp, weekly_xp, streak, league_tier, completed, guild_id")
             .order(col, { ascending: false })
             .limit(50);
-          fetched = (data ?? []) as LeaderboardPlayer[];
+          fetched = ((data ?? []) as Array<{
+            id: string;
+            username: string;
+            xp: number;
+            weekly_xp: number;
+            streak: number;
+            league_tier: number;
+            completed: string[] | null;
+            guild_id: string | null;
+          }>).map((row) => ({
+            id: row.id,
+            username: row.username,
+            xp: row.xp,
+            weekly_xp: row.weekly_xp,
+            streak: row.streak,
+            league_tier: row.league_tier,
+            completed: row.completed ?? [],
+            guildId: row.guild_id,
+          }));
         }
       }
 
@@ -91,8 +172,7 @@ export default function LeaderboardPage() {
         fetched = seededPlayers();
       }
 
-      // Always ensure the local player appears (on both the seeded and the
-      // Supabase-backed path) so the rank callout + highlight never vanish.
+      // Always ensure the local player appears so the rank callout never vanishes.
       if (!fetched.some((p) => p.id === "me" || p.username === myHandle)) {
         fetched = [
           ...fetched,
@@ -103,6 +183,8 @@ export default function LeaderboardPage() {
             weekly_xp: myWeeklyXp,
             streak: myStreak,
             league_tier: myLeagueTier,
+            completed: myCompleted,
+            guildId: guildId,
           },
         ];
       }
@@ -114,9 +196,27 @@ export default function LeaderboardPage() {
     }
 
     load();
-  }, [mounted, tab, myXp, myWeeklyXp, myStreak, myLeagueTier, myHandle]);
+  }, [mounted, tab, myXp, myWeeklyXp, myStreak, myLeagueTier, myHandle, myCompleted, guildId]);
 
-  const myRank = players.findIndex((p) => p.id === "me" || p.username === myHandle) + 1;
+  // Apply scope + language filters client-side on the already-fetched rows.
+  const visiblePlayers = players.filter((p) => {
+    // Language filter
+    if (!matchesLanguageFilter(p.completed, language)) return false;
+    // Scope filter (only on player tabs, not guilds tab)
+    if (tab === "guilds") return true;
+    if (scope === "friends") {
+      // The local player's own row is always visible so the rank callout works.
+      const isMe = p.id === "me" || p.username === myHandle;
+      return isMe || friendIds.has(p.id);
+    }
+    if (scope === "guild") {
+      return p.guildId === guildId;
+    }
+    return true; // global
+  });
+
+  const myRank =
+    players.findIndex((p) => p.id === "me" || p.username === myHandle) + 1;
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
@@ -156,8 +256,8 @@ export default function LeaderboardPage() {
         </motion.div>
       )}
 
-      {/* Tabs */}
-      <div className="mb-6 flex gap-2">
+      {/* Primary tabs */}
+      <div className="mb-4 flex gap-2">
         {([
           { id: "global" as Tab, label: "All-Time XP", icon: <Globe size={14} /> },
           { id: "weekly" as Tab, label: "This Week", icon: <Zap size={14} /> },
@@ -178,14 +278,30 @@ export default function LeaderboardPage() {
         ))}
       </div>
 
+      {/* Secondary filters (scope + language) — hidden on the Guilds tab */}
+      {tab !== "guilds" && (
+        <LeaderboardFilters
+          scope={scope}
+          onScopeChange={setScope}
+          language={language}
+          onLanguageChange={setLanguage}
+          hasGuild={!!guildId}
+        />
+      )}
+
       {tab === "guilds" ? (
         <GuildLeaderboard myGuildId={guildId} myWeeklyXp={myWeeklyXp} />
       ) : (
         <PlayerLeaderboard
-          players={players}
+          players={visiblePlayers}
+          allPlayers={players}
           loading={loading || !mounted}
           myHandle={myHandle}
           sortKey={tab === "weekly" ? "weekly_xp" : "xp"}
+          scope={scope}
+          hasGuild={!!guildId}
+          guildName={guildName}
+          language={language}
         />
       )}
     </div>
@@ -194,14 +310,24 @@ export default function LeaderboardPage() {
 
 function PlayerLeaderboard({
   players,
+  allPlayers,
   loading,
   myHandle,
   sortKey,
+  scope,
+  hasGuild,
+  guildName,
+  language,
 }: {
   players: LeaderboardPlayer[];
+  allPlayers: LeaderboardPlayer[];
   loading: boolean;
   myHandle: string;
   sortKey: "xp" | "weekly_xp";
+  scope: ScopeFilter;
+  hasGuild: boolean;
+  guildName: string | null;
+  language: LanguageFilter;
 }) {
   if (loading) {
     return (
@@ -210,6 +336,47 @@ function PlayerLeaderboard({
           <div key={i} className="h-14 rounded-xl bg-surface animate-pulse" />
         ))}
       </div>
+    );
+  }
+
+  // Empty state: no results after filtering.
+  if (players.length === 0 || (players.length === 1 && (players[0].id === "me" || players[0].username === myHandle))) {
+    // Only the local player (or nothing) — show a contextual nudge.
+    if (scope === "friends") {
+      return (
+        <EmptyState
+          icon={<UsersRound size={32} className="text-gray-600" />}
+          title="No friends yet"
+          body={
+            isSupabaseConfigured
+              ? "Follow other learners on the Friends page to see them here."
+              : "Friends require an account backend (Supabase) to be configured."
+          }
+          link={isSupabaseConfigured ? { href: "/friends", label: "Go to Friends" } : undefined}
+        />
+      );
+    }
+    if (scope === "guild") {
+      return (
+        <EmptyState
+          icon={<Trophy size={32} className="text-gray-600" />}
+          title={hasGuild ? `No ${guildName ?? "guild"} members yet` : "You're not in a guild"}
+          body={
+            hasGuild
+              ? "You're the only member of your guild on the board right now."
+              : "Join a guild to see your guild-mates here."
+          }
+          link={!hasGuild ? { href: "/guilds", label: "Browse Guilds" } : undefined}
+        />
+      );
+    }
+    // Language filter emptied the board.
+    return (
+      <EmptyState
+        icon={<Globe size={32} className="text-gray-600" />}
+        title="No players match this filter"
+        body={`Nobody on the board has completed a ${language} lesson yet. Be the first!`}
+      />
     );
   }
 
@@ -229,6 +396,10 @@ function PlayerLeaderboard({
                 : "text-gray-500";
         const rankIcon = rankNum === 1 ? "🥇" : rankNum === 2 ? "🥈" : rankNum === 3 ? "🥉" : null;
 
+        // Global rank position within the FULL unfiltered list.
+        const globalRank = allPlayers.findIndex((p) => p.id === player.id) + 1;
+        const showGlobalRank = scope !== "global" && globalRank > 0;
+
         return (
           <motion.div
             key={player.id}
@@ -240,7 +411,7 @@ function PlayerLeaderboard({
               isMe ? "bg-accent/10" : "hover:bg-surface-2",
             ].join(" ")}
           >
-            {/* Rank */}
+            {/* Rank within filtered view */}
             <div className={`w-8 text-center shrink-0 ${rankStyle}`}>
               {rankIcon ?? rankNum}
             </div>
@@ -272,6 +443,9 @@ function PlayerLeaderboard({
                     <Flame size={10} className="inline" /> {player.streak}
                   </span>
                 )}
+                {showGlobalRank && (
+                  <span className="ml-2 text-gray-600">#{globalRank} global</span>
+                )}
               </p>
             </div>
 
@@ -292,6 +466,36 @@ function PlayerLeaderboard({
           </motion.div>
         );
       })}
+    </div>
+  );
+}
+
+function EmptyState({
+  icon,
+  title,
+  body,
+  link,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  body: string;
+  link?: { href: string; label: string };
+}) {
+  return (
+    <div className="rounded-2xl border border-line bg-surface px-6 py-12 text-center">
+      <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-surface-2">
+        {icon}
+      </div>
+      <p className="text-base font-semibold text-white">{title}</p>
+      <p className="mt-1 text-sm text-gray-400">{body}</p>
+      {link && (
+        <Link
+          href={link.href}
+          className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-4 py-2 text-sm font-medium text-accent-soft transition hover:bg-accent/20"
+        >
+          {link.label}
+        </Link>
+      )}
     </div>
   );
 }

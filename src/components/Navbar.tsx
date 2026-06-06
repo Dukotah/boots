@@ -28,6 +28,8 @@ const NAV_LINKS: { href: string; label: string; desktop?: boolean }[] = [
   { href: "/tools", label: "Tools" },
   { href: "/blog", label: "Blog" },
   { href: "/refer", label: "Refer" },
+  { href: "/teams", label: "Teams" },
+  { href: "/account", label: "Account" },
   { href: "/pricing", label: "Pricing", desktop: true },
 ];
 

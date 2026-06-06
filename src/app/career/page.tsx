@@ -1,5 +1,6 @@
 "use client";
 
+import "./career-print.css";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
@@ -90,7 +91,7 @@ export default function CareerPage() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10">
+    <div className="career-print-root mx-auto max-w-4xl px-4 py-10">
       {/* Header */}
       <div className="flex items-center gap-3 print:hidden">
         <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent/15 text-accent-soft">
@@ -348,7 +349,7 @@ export default function CareerPage() {
         </div>
 
         {/* The résumé sheet (the one thing meant to print) */}
-        <article className="rounded-2xl border border-line bg-white p-8 text-gray-900 shadow-glow print:border-0 print:shadow-none sm:p-10">
+        <article className="resume-sheet rounded-2xl border border-line bg-white p-8 text-gray-900 shadow-glow print:border-0 print:shadow-none sm:p-10">
           <header className="border-b border-gray-200 pb-4">
             <h2 className="text-3xl font-extrabold tracking-tight">
               {resume.name}

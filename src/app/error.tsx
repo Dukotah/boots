@@ -1,8 +1,26 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
+import { captureError } from "@/lib/observability";
 
-export default function Error({ reset }: { error: Error; reset: () => void }) {
+export default function Error({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
+  useEffect(() => {
+    // Report to Sentry (when configured) and always surface to console.
+    captureError(error, {
+      source: "route-error-boundary",
+      digest: error.digest,
+    }).catch(() => {
+      console.error("[route-error]", error);
+    });
+  }, [error]);
+
   return (
     <div className="mx-auto flex max-w-lg flex-col items-center px-4 py-24 text-center">
       <p className="text-6xl">🧪</p>

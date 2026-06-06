@@ -89,7 +89,7 @@ export function QuizView({
 
       {gated ? (
         <div className="mt-6">
-          <ProGate />
+          <ProGate source="pro_gate_quiz" />
         </div>
       ) : (
         <div className="mt-6 space-y-5">

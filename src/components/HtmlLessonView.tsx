@@ -249,7 +249,7 @@ export function HtmlLessonView({
         )}
 
         {gated ? (
-          <ProGate />
+          <ProGate source="pro_gate_html_lesson" />
         ) : (
           <div className="card min-h-[140px] p-0">
             <TestResults

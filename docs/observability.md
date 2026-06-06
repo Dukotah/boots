@@ -27,11 +27,19 @@ The build stays green, the app keeps running, and every error surface still gets
 
 ## Fully enabling Sentry
 
+`sentry.client.config.ts` and `sentry.server.config.ts` are **already committed**
+to the repo. Both guard themselves with a `try/catch` around a dynamic import, so
+they are fully build-safe even when `@sentry/nextjs` is absent. Activation is a
+two-step process:
+
 ### 1. Install the package
 
 ```bash
 npm install @sentry/nextjs
 ```
+
+> `package.json` is managed separately — do not run this from the agent task;
+> the integrator must apply it manually.
 
 ### 2. Set the DSN env vars
 
@@ -42,49 +50,21 @@ SENTRY_DSN=https://<key>@o<org>.ingest.sentry.io/<project>
 NEXT_PUBLIC_SENTRY_DSN=https://<key>@o<org>.ingest.sentry.io/<project>
 ```
 
-`NEXT_PUBLIC_SENTRY_DSN` is the browser-visible copy. Both point to the **same** DSN — the prefix difference is just Next.js env-var scoping.
+`NEXT_PUBLIC_SENTRY_DSN` is the browser-visible copy (Next.js env-var scoping).
+Both values are **the same DSN string**.
 
-### 3. Create the Sentry config files
+Once these two steps are complete, Sentry is live:
 
-Do **not** commit these until `@sentry/nextjs` is in `package.json` — they import the package at module level and will break the build otherwise.
+- `src/app/global-error.tsx` calls `captureError` on every root-layout crash.
+- `src/app/error.tsx` calls `captureError` on every route-level crash.
+- API routes wrapped with `withErrorCapture` report uncaught throws automatically.
+- `sentry.client.config.ts` initialises the browser SDK (Session Replay included).
+- `sentry.server.config.ts` initialises the Node.js SDK.
 
-**`sentry.client.config.ts`** (browser):
-```ts
-import * as Sentry from "@sentry/nextjs";
+### Optional: wire the Next.js instrumentation hook
 
-Sentry.init({
-  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-  // Adjust sample rates to control volume/cost.
-  tracesSampleRate: 0.2,
-  replaysSessionSampleRate: 0.05,
-  replaysOnErrorSampleRate: 1.0,
-  integrations: [Sentry.replayIntegration()],
-});
-```
-
-**`sentry.server.config.ts`** (Node.js runtime):
-```ts
-import * as Sentry from "@sentry/nextjs";
-
-Sentry.init({
-  dsn: process.env.SENTRY_DSN,
-  tracesSampleRate: 0.2,
-});
-```
-
-**`sentry.edge.config.ts`** (Edge runtime / middleware):
-```ts
-import * as Sentry from "@sentry/nextjs";
-
-Sentry.init({
-  dsn: process.env.SENTRY_DSN,
-  tracesSampleRate: 0.2,
-});
-```
-
-### 4. Wire the Next.js instrumentation hook
-
-Create `instrumentation.ts` in the project root:
+For server-side SDK initialisation at startup (rather than at first error), create
+`instrumentation.ts` in the project root:
 
 ```ts
 export async function register() {
@@ -97,7 +77,7 @@ export async function register() {
 }
 ```
 
-And add to `next.config.js` (or `.mjs`):
+And wrap `next.config.js` (or `.mjs`) with `withSentryConfig`:
 
 ```js
 const { withSentryConfig } = require("@sentry/nextjs");
@@ -109,13 +89,11 @@ module.exports = withSentryConfig(nextConfig, {
 });
 ```
 
-Alternatively, run the official wizard instead of steps 3-4:
+Alternatively, run the official wizard which handles steps 3-4 automatically:
 
 ```bash
 npx @sentry/wizard@latest -i nextjs
 ```
-
-The wizard will create `sentry.*.config.ts` and patch `next.config.*` for you.
 
 ---
 

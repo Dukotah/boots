@@ -6,6 +6,7 @@
 // replaces the root layout when it fires.
 
 import { useEffect } from "react";
+import { captureError } from "@/lib/observability";
 
 export default function GlobalError({
   error,
@@ -15,8 +16,14 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Surface to the browser console (and any error monitor that wraps it).
-    console.error("[global-error]", error);
+    // Report to Sentry (when configured) and always surface to console.
+    captureError(error, {
+      source: "global-error-boundary",
+      digest: error.digest,
+    }).catch(() => {
+      // captureError should never throw, but guard here so the UI never breaks.
+      console.error("[global-error]", error);
+    });
   }, [error]);
 
   return (

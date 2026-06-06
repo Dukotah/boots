@@ -39,12 +39,15 @@ You are encouraging, concise, and never condescending. A great hint leaves the s
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
+type FailingTest = { name: string; error?: string };
+
 type TutorRequest = {
   moduleTitle?: string;
   lessonTitle?: string;
   lessonContent?: string;
   language?: string;
   code?: string;
+  failingTests?: FailingTest[];
   messages?: ChatMessage[];
 };
 
@@ -138,13 +141,29 @@ export async function POST(req: Request) {
     body.lessonContent ?? "(not provided)",
   ].join("\n");
 
-  // Inject the student's current code into the latest user turn (volatile).
+  // Build a volatile prefix for the latest user turn. Code + failing tests both
+  // live here (not in the cached lesson context) so typing/re-running tests never
+  // invalidates the shared cache entry.
+  const failingLines =
+    body.failingTests && body.failingTests.length > 0
+      ? body.failingTests
+          .map((t) => `  FAIL ${t.name}${t.error ? `: ${t.error}` : ""}`)
+          .join("\n")
+      : null;
+
   const messages: Anthropic.MessageParam[] = history.map((m, i) => {
-    if (i === history.length - 1 && body.code?.trim()) {
-      return {
-        role: m.role,
-        content: `Here is my current code:\n\n\`\`\`${body.language ?? ""}\n${body.code}\n\`\`\`\n\n${m.content}`,
-      };
+    if (i === history.length - 1) {
+      const parts: string[] = [];
+      if (body.code?.trim()) {
+        parts.push(
+          `Here is my current code:\n\n\`\`\`${body.language ?? ""}\n${body.code}\n\`\`\``,
+        );
+      }
+      if (failingLines) {
+        parts.push(`Failing tests:\n${failingLines}`);
+      }
+      parts.push(m.content);
+      return { role: m.role, content: parts.join("\n\n") };
     }
     return { role: m.role, content: m.content };
   });
