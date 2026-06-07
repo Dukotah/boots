@@ -102,6 +102,26 @@ import { webcryptoApi } from "./webcrypto-api";
 import { hashingAndIntegrity } from "./hashing-and-integrity";
 import { mlModelEvaluation } from "./ml-model-evaluation";
 import { numberTheory } from "./number-theory";
+import { aiDataAnalysis } from "./ai-data-analysis";
+import { aiForDevelopers } from "./ai-for-developers";
+import { aiForJobSearch } from "./ai-for-job-search";
+import { aiForMarketing } from "./ai-for-marketing";
+import { aiForStudents } from "./ai-for-students";
+import { aiForTeachers } from "./ai-for-teachers";
+import { aiForWriters } from "./ai-for-writers";
+import { aiLocalModels } from "./ai-local-models";
+import { aiProductivity } from "./ai-productivity";
+import { aiPromptPatterns } from "./ai-prompt-patterns";
+import { aiResearchAssistant } from "./ai-research-assistant";
+import { aiSafetyAndSecurity } from "./ai-safety-and-security";
+import { aiSpreadsheets } from "./ai-spreadsheets";
+import { aiStayingCurrent } from "./ai-staying-current";
+import { behavioralInterviews } from "./behavioral-interviews";
+import { devPortfolio } from "./dev-portfolio";
+import { freelanceDeveloper } from "./freelance-developer";
+import { markdownMastery } from "./markdown-mastery";
+import { terminalBasics } from "./terminal-basics";
+import { webAccessibility } from "./web-accessibility";
 
 // The whole curriculum. Add a module here and it shows up everywhere.
 // Order defines the Campaign Map progression (sequential unlock) — a difficulty ramp.
@@ -226,6 +246,27 @@ export const MODULES: Module[] = [
   hashingAndIntegrity,
   mlModelEvaluation,
   numberTheory,
+  // New batch (2026-06-07)
+  aiDataAnalysis,
+  aiForDevelopers,
+  aiForJobSearch,
+  aiForMarketing,
+  aiForStudents,
+  aiForTeachers,
+  aiForWriters,
+  aiLocalModels,
+  aiProductivity,
+  aiPromptPatterns,
+  aiResearchAssistant,
+  aiSafetyAndSecurity,
+  aiSpreadsheets,
+  aiStayingCurrent,
+  behavioralInterviews,
+  devPortfolio,
+  freelanceDeveloper,
+  markdownMastery,
+  terminalBasics,
+  webAccessibility,
 ];
 
 export function getModule(slug: string): Module | undefined {

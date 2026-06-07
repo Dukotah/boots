@@ -107,6 +107,26 @@ import { hashingAndIntegrity } from "../src/lib/curriculum/hashing-and-integrity
 import { mlModelEvaluation } from "../src/lib/curriculum/ml-model-evaluation.ts";
 import { decisionTrees } from "../src/lib/curriculum/decision-trees.ts";
 import { numberTheory } from "../src/lib/curriculum/number-theory.ts";
+import { aiDataAnalysis } from "../src/lib/curriculum/ai-data-analysis.ts";
+import { aiForDevelopers } from "../src/lib/curriculum/ai-for-developers.ts";
+import { aiForJobSearch } from "../src/lib/curriculum/ai-for-job-search.ts";
+import { aiForMarketing } from "../src/lib/curriculum/ai-for-marketing.ts";
+import { aiForStudents } from "../src/lib/curriculum/ai-for-students.ts";
+import { aiForTeachers } from "../src/lib/curriculum/ai-for-teachers.ts";
+import { aiForWriters } from "../src/lib/curriculum/ai-for-writers.ts";
+import { aiLocalModels } from "../src/lib/curriculum/ai-local-models.ts";
+import { aiProductivity } from "../src/lib/curriculum/ai-productivity.ts";
+import { aiPromptPatterns } from "../src/lib/curriculum/ai-prompt-patterns.ts";
+import { aiResearchAssistant } from "../src/lib/curriculum/ai-research-assistant.ts";
+import { aiSafetyAndSecurity } from "../src/lib/curriculum/ai-safety-and-security.ts";
+import { aiSpreadsheets } from "../src/lib/curriculum/ai-spreadsheets.ts";
+import { aiStayingCurrent } from "../src/lib/curriculum/ai-staying-current.ts";
+import { behavioralInterviews } from "../src/lib/curriculum/behavioral-interviews.ts";
+import { devPortfolio } from "../src/lib/curriculum/dev-portfolio.ts";
+import { freelanceDeveloper } from "../src/lib/curriculum/freelance-developer.ts";
+import { markdownMastery } from "../src/lib/curriculum/markdown-mastery.ts";
+import { terminalBasics } from "../src/lib/curriculum/terminal-basics.ts";
+import { webAccessibility } from "../src/lib/curriculum/web-accessibility.ts";
 
 // ---------------------------------------------------------------------------
 // KNOWN_PRESOLVED — lessons whose starterCode intentionally passes all tests.
@@ -223,6 +243,27 @@ const MODULES: Module[] = [
   mlModelEvaluation,
   decisionTrees,
   numberTheory,
+  // New batch (2026-06-07)
+  aiDataAnalysis,
+  aiForDevelopers,
+  aiForJobSearch,
+  aiForMarketing,
+  aiForStudents,
+  aiForTeachers,
+  aiForWriters,
+  aiLocalModels,
+  aiProductivity,
+  aiPromptPatterns,
+  aiResearchAssistant,
+  aiSafetyAndSecurity,
+  aiSpreadsheets,
+  aiStayingCurrent,
+  behavioralInterviews,
+  devPortfolio,
+  freelanceDeveloper,
+  markdownMastery,
+  terminalBasics,
+  webAccessibility,
 ];
 
 function stringify(v: unknown): string {

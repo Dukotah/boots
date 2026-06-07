@@ -19,6 +19,14 @@ import bestFreeWaysToLearnToCode2026Post from "./posts/best-free-ways-to-learn-t
 import codecademyAlternativesPost from "./posts/codecademy-alternatives";
 import freecodecampAlternativesPost from "./posts/freecodecamp-alternatives";
 import howToLearnToUseAi2026Post from "./posts/how-to-learn-to-use-ai-2026";
+import chatgptVsClaudeVsGeminiPost from "./posts/chatgpt-vs-claude-vs-gemini";
+import howToLearnPython2026Post from "./posts/how-to-learn-python-2026";
+import bestAiToolsForStudents2026Post from "./posts/best-ai-tools-for-students-2026";
+import howToBuildADeveloperPortfolioPost from "./posts/how-to-build-a-developer-portfolio";
+import practicalPromptEngineeringGuidePost from "./posts/practical-prompt-engineering-guide";
+import canYouLearnToCodeForFreePost from "./posts/can-you-learn-to-code-for-free";
+import isLearningToCodeWorthIt2026Post from "./posts/is-learning-to-code-worth-it-2026";
+import howSmallBusinessesUseAiPost from "./posts/how-small-businesses-use-ai";
 
 export type BlogPost = {
   slug: string;
@@ -864,6 +872,14 @@ The barrier to learning to code was never money — it's consistency and focus. 
   codecademyAlternativesPost,
   freecodecampAlternativesPost,
   howToLearnToUseAi2026Post,
+  chatgptVsClaudeVsGeminiPost,
+  howToLearnPython2026Post,
+  bestAiToolsForStudents2026Post,
+  howToBuildADeveloperPortfolioPost,
+  practicalPromptEngineeringGuidePost,
+  canYouLearnToCodeForFreePost,
+  isLearningToCodeWorthIt2026Post,
+  howSmallBusinessesUseAiPost,
 ];
 
 /** Look up a single post by its slug. Returns undefined if not found. */
