@@ -1,10 +1,13 @@
 "use client";
 
 import { useEffect } from "react";
-import { Swords, Users, User, Coins, Zap, Gift } from "lucide-react";
+import Link from "next/link";
+import { Swords, Users, User, Coins, Zap, Gift, Timer, ChevronRight } from "lucide-react";
 import { useGameStore } from "@/store/useGameStore";
 import { useMounted } from "@/hooks/useMounted";
 import { PageSkeleton } from "@/components/PageSkeleton";
+// Lightweight static defs only (no curriculum content) — safe in this client bundle.
+import { TRACK_BOSS_DEFS } from "@/lib/curriculum/track-boss-defs";
 
 /** Map tier label → accent colour class for the reveal badge. */
 const TIER_COLORS: Record<string, string> = {
@@ -21,6 +24,7 @@ export default function BossPage() {
   const season = useGameStore((s) => s.season);
   const claimBoss = useGameStore((s) => s.claimBoss);
   const lastBossRoll = useGameStore((s) => s.lastBossRoll);
+  const claimedTrackBosses = useGameStore((s) => s.claimedTrackBosses);
 
   useEffect(() => {
     checkSeason();
@@ -152,6 +156,63 @@ export default function BossPage() {
           )}
         </div>
       </div>
+
+      {/* ── Track Bosses: per-track skills capstones (solo, on-demand) ── */}
+      {TRACK_BOSS_DEFS.length > 0 && (
+        <section className="mt-12">
+          <div className="flex items-center gap-3">
+            <Swords className="text-rose-400" size={20} />
+            <h2 className="text-2xl font-bold text-white">Track Bosses</h2>
+          </div>
+          <p className="mt-1 text-sm text-gray-400">
+            A timed gauntlet for each track — beat 3–5 of its toughest challenges
+            back-to-back to prove you&apos;ve mastered it. Fight any time, as
+            often as you like.
+          </p>
+
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            {TRACK_BOSS_DEFS.map((b) => {
+              const cleared = claimedTrackBosses.includes(b.id);
+              return (
+                <Link
+                  key={b.id}
+                  href={`/boss/track/${b.id}`}
+                  className="group card flex items-center gap-4 transition-colors hover:border-rose-500/50"
+                >
+                  <span className="grid h-14 w-14 shrink-0 place-items-center rounded-xl bg-rose-500/10 text-3xl">
+                    {b.emoji}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="truncate font-bold text-white">{b.name}</h3>
+                      {cleared && (
+                        <span className="shrink-0 rounded-full bg-success/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-success">
+                          Cleared
+                        </span>
+                      )}
+                    </div>
+                    <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-400">
+                      <span className="flex items-center gap-1">
+                        <Swords size={12} /> {b.tasks.length} trials
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Timer size={12} /> {Math.round(b.timeLimitSec / 60)} min
+                      </span>
+                      <span className="flex items-center gap-1 text-gold">
+                        <Coins size={12} /> {b.rewardGold}
+                      </span>
+                    </div>
+                  </div>
+                  <ChevronRight
+                    size={18}
+                    className="shrink-0 text-gray-600 transition-transform group-hover:translate-x-0.5 group-hover:text-rose-300"
+                  />
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      )}
     </div>
   );
 }
