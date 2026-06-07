@@ -196,6 +196,8 @@ export type GameState = {
   claimedChainSteps: string[]; // "chainId/stepId" steps already claimed
   // ── boss battles ──
   claimedBosses: string[]; // boss ids whose defeat reward was claimed
+  // Track-boss (per-track skills capstone) ids whose clear reward was claimed.
+  claimedTrackBosses: string[];
   // ── spaced repetition ──
   reviews: Record<string, ReviewRecord>; // lessonId → Leitner review record
   // ── cosmetics (decorative; never power) ──
@@ -272,6 +274,12 @@ export type GameState = {
   claimChainStep: (chainId: string, stepId: string) => boolean;
   /** Claim the reward for defeating this week's boss. Returns true if claimed. */
   claimBoss: (bossId: string) => boolean;
+  /**
+   * Claim the gold reward for clearing a per-track boss gauntlet (once ever).
+   * The underlying lessons award their own XP via completeLesson during the
+   * fight, so this only grants the modest gold bounty. Returns true if claimed.
+   */
+  claimTrackBoss: (trackBossId: string, rewardGold: number) => boolean;
   /** Pay gold to restore a streak broken by a missed day. Returns true if repaired. */
   repairStreak: () => boolean;
   /** Buy a shop item. Returns a result describing the outcome (e.g. chest payout). */
@@ -332,6 +340,7 @@ const INITIAL = {
   claimedWeeklyQuests: [] as string[],
   claimedChainSteps: [] as string[],
   claimedBosses: [] as string[],
+  claimedTrackBosses: [] as string[],
   reviews: {} as Record<string, ReviewRecord>,
   cosmetics: [] as string[],
   equipped: { flair: null as string | null, title: null as string | null, banner: null as string | null, border: null as string | null },
@@ -816,6 +825,23 @@ export const useGameStore = create<GameState>()(
         return true;
       },
 
+      claimTrackBoss: (trackBossId, rewardGold) => {
+        const s = get();
+        if (s.claimedTrackBosses.includes(trackBossId)) return false;
+        // Each task in the gauntlet is a real lesson graded + completed via
+        // completeLesson during the fight, so XP is already accounted for. This
+        // only grants the flat gold bounty, recorded once per boss. Clamp the
+        // reward defensively so a caller can't grant arbitrary gold.
+        const gold = Math.max(0, Math.min(500, Math.round(rewardGold) || 0));
+        set((x) => ({
+          gold: x.gold + gold,
+          claimedTrackBosses: [...x.claimedTrackBosses, trackBossId],
+        }));
+        grantAchievements(get, set);
+        get().syncToServer();
+        return true;
+      },
+
       repairStreak: () => {
         const s = get();
         const lost = s.lostStreak;
@@ -1096,6 +1122,7 @@ export const useGameStore = create<GameState>()(
         claimedWeeklyQuests: s.claimedWeeklyQuests,
         claimedChainSteps: s.claimedChainSteps,
         claimedBosses: s.claimedBosses,
+        claimedTrackBosses: s.claimedTrackBosses,
         reviews: s.reviews,
         cosmetics: s.cosmetics,
         equipped: s.equipped,
