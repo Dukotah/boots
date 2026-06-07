@@ -42,7 +42,11 @@ export default function ModulePage({
   if (!module) notFound();
 
   const lang = langMeta(module.language ?? "js");
-  const quizOnly = module.lessons.every((l) => l.kind === "quiz");
+  // No-code modules (only quiz and/or project lessons) shouldn't show a
+  // programming-language badge — they don't teach a language.
+  const noCode = module.lessons.every(
+    (l) => l.kind === "quiz" || l.kind === "project",
+  );
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
@@ -66,7 +70,7 @@ export default function ModulePage({
               <span className="rounded-full bg-success/20 px-2 py-0.5 text-xs font-medium text-success">
                 Free
               </span>
-            ) : !quizOnly ? (
+            ) : !noCode ? (
               <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs font-medium text-gray-300">
                 {lang.label}
               </span>
