@@ -136,7 +136,7 @@ export function computeReadiness(stats: PlayerStats): Readiness {
   const courses: ReadinessFactor = {
     key: "courses",
     label: "Courses completed",
-    detail: `${stats.completedModules.length} courses finished end-to-end`,
+    detail: `${stats.completedModules.length} ${stats.completedModules.length === 1 ? "course" : "courses"} finished end-to-end`,
     points: Math.min(20, Math.round(stats.completedModules.length * MODULE_PTS)),
     max: 20,
     tip: "Finish every lesson in a course you've started to fully complete it.",
@@ -146,7 +146,7 @@ export function computeReadiness(stats: PlayerStats): Readiness {
   const depth: ReadinessFactor = {
     key: "practice",
     label: "Lessons practiced",
-    detail: `${stats.completedCount} lessons completed`,
+    detail: `${stats.completedCount} ${stats.completedCount === 1 ? "lesson" : "lessons"} completed`,
     points: Math.min(15, Math.round(stats.completedCount / 4)),
     max: 15,
     tip: "Keep completing lessons — every one adds practice an interviewer can see.",

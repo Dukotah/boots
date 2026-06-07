@@ -177,7 +177,7 @@ export default function CareerPage() {
                 <div className="flex items-baseline justify-between text-sm">
                   <span className="font-medium text-gray-200">{f.label}</span>
                   <span className="text-gray-500">
-                    {f.points}/{f.max}
+                    {f.points}/{f.max} pts
                   </span>
                 </div>
                 <div className="mt-1.5 flex items-center gap-3">

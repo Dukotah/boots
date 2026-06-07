@@ -36,6 +36,9 @@ export function HtmlLessonView({
   const [code, setCode] = useState(starterCode);
   const [outcome, setOutcome] = useState<RunOutcome | null>(null);
   const [running, setRunning] = useState(false);
+  // XP actually granted by the last passing run (0 when re-completing). Captured
+  // because `alreadyDone` flips true the instant we record the completion.
+  const [lastGainedXp, setLastGainedXp] = useState<number | null>(null);
   const [showSolution, setShowSolution] = useState(false);
   const [hintsShown, setHintsShown] = useState(0);
   const hints = lesson.hints ?? [];
@@ -63,7 +66,8 @@ export function HtmlLessonView({
     setRunning(false);
 
     if (result.results.length > 0 && result.results.every((r) => r.pass)) {
-      completeLesson(id, lesson.xp);
+      const reward = completeLesson(id, lesson.xp);
+      setLastGainedXp(reward.gainedXp);
       celebrate();
       // Record server-side for canonical, forge-proof XP (best-effort;
       // no-ops when signed out / no backend).
@@ -215,7 +219,7 @@ export function HtmlLessonView({
             <CheckCircle2 className="text-success" />
             <div>
               <p className="text-sm font-semibold text-success">
-                All tests passed! +{alreadyDone ? 0 : lesson.xp} XP
+                All tests passed! +{lastGainedXp ?? lesson.xp} XP
               </p>
               {nextHref ? (
                 <Link href={nextHref} className="text-xs text-success/80 hover:underline">

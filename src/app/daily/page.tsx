@@ -83,7 +83,7 @@ export default function DailyChallengePage() {
           <Flame className="text-danger" />
           <div>
             <p className="text-2xl font-bold text-white">{streak}</p>
-            <p className="text-xs text-gray-400">Day streak</p>
+            <p className="text-xs text-gray-400">Challenge streak</p>
           </div>
         </div>
         <div className="card flex items-center gap-3">

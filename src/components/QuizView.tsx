@@ -45,6 +45,8 @@ export function QuizView({
     () => questions.map(() => null),
   );
   const [awarded, setAwarded] = useState(false);
+  // XP actually granted (0 when re-completing an already-finished quiz).
+  const [lastGainedXp, setLastGainedXp] = useState<number | null>(null);
 
   const allCorrect = useMemo(
     () => questions.length > 0 && picks.every((p, i) => p === questions[i].answer),
@@ -61,7 +63,7 @@ export function QuizView({
       // Award XP the moment the final correct answer lands.
       if (!awarded && next.every((p, i) => p === questions[i].answer)) {
         setAwarded(true);
-        completeLesson(id, lesson.xp);
+        setLastGainedXp(completeLesson(id, lesson.xp).gainedXp);
         celebrate();
         // Record server-side for canonical, forge-proof XP (best-effort;
         // no-ops when signed out / no backend). The server re-checks the
@@ -159,7 +161,7 @@ export function QuizView({
               <CheckCircle2 className="text-success" />
               <div>
                 <p className="text-sm font-semibold text-success">
-                  Lesson complete! +{alreadyDone && !awarded ? 0 : lesson.xp} XP
+                  Lesson complete! +{lastGainedXp ?? (alreadyDone ? 0 : lesson.xp)} XP
                 </p>
                 {nextHref ? (
                   <Link href={nextHref} className="text-xs text-success/80 hover:underline">

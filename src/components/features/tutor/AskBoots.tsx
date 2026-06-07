@@ -44,12 +44,18 @@ export function AskBoots({
   const [busy, setBusy] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
+  // Brief highlight ring so the "Explain this to me" click has unmistakable
+  // feedback even when the panel is already on-screen (esp. the Pro paywall).
+  const [pulse, setPulse] = useState(false);
 
-  // React to the parent's open signal: reveal the panel and scroll to it.
+  // React to the parent's open signal: reveal the panel, scroll to it, pulse.
   useEffect(() => {
     if (openSignal === undefined || openSignal === 0) return;
     setOpen(true);
     rootRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    setPulse(true);
+    const t = setTimeout(() => setPulse(false), 1400);
+    return () => clearTimeout(t);
   }, [openSignal]);
 
   // Until hydrated, assume locked to avoid flashing the panel to free users.
@@ -115,7 +121,12 @@ export function AskBoots({
   }
 
   return (
-    <div ref={rootRef} className="card p-0">
+    <div
+      ref={rootRef}
+      className={`card p-0 transition-shadow duration-300 ${
+        pulse ? "ring-2 ring-accent shadow-glow" : ""
+      }`}
+    >
       <button
         onClick={() => setOpen((o) => !o)}
         className="flex w-full items-center gap-2 px-4 py-3 text-left"

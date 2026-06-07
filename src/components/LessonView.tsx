@@ -59,6 +59,10 @@ export function LessonView({
   const [code, setCode] = useState(starterCode);
   const [outcome, setOutcome] = useState<RunOutcome | null>(null);
   const [running, setRunning] = useState(false);
+  // XP actually granted by the last passing run (0 when re-completing). Captured
+  // because `alreadyDone` flips true the instant we record the completion, so the
+  // banner can't infer the award from it.
+  const [lastGainedXp, setLastGainedXp] = useState<number | null>(null);
   const [hintsShown, setHintsShown] = useState(0);
   const [activeHint, setActiveHint] = useState<string | null>(null);
   const [activeHintStep, setActiveHintStep] = useState(0);
@@ -162,6 +166,7 @@ export function LessonView({
     if (result.results.every((r) => r.pass)) {
       const wasDone = alreadyDone;
       const reward = completeLesson(id, lesson.xp);
+      setLastGainedXp(reward.gainedXp);
       // Confetti only on the *first* clear — re-running a finished quest awards
       // no XP, so don't re-fire the celebration.
       if (reward.gainedXp > 0) celebrate();
@@ -347,7 +352,7 @@ export function LessonView({
             <CheckCircle2 className="text-success" />
             <div>
               <p className="text-sm font-semibold text-success">
-                All tests passed! +{alreadyDone ? 0 : lesson.xp} XP
+                All tests passed! +{lastGainedXp ?? lesson.xp} XP
               </p>
               {nextHref ? (
                 <Link href={nextHref} className="text-xs text-success/80 hover:underline">
