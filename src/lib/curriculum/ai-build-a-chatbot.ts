@@ -61,8 +61,8 @@ behavior, because they appear first and set the frame.
 ## The context window
 
 Everything — system prompt + history + new message — must fit inside the model's
-**context window** (measured in tokens, roughly ¾ of a word each). Claude 3.x and
-GPT-4o class models support 100k–200k tokens in 2026, which is roughly 75k–150k
+**context window** (measured in tokens, roughly ¾ of a word each). Claude and
+GPT-4o class models support 128k–200k tokens in 2026, which is roughly 96k–150k
 words. Long product documentation or transcripts can still hit the ceiling, so
 knowing this exists matters.
 

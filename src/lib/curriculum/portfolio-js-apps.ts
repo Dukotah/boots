@@ -699,7 +699,7 @@ You can enforce business constraints (unique voters, valid options), produce agg
     this.question = question;
     this.options = options;       // original order preserved
     this.votes = {};              // option → count
-    this.voters = new Set();     // voterId → option voted for
+    this.voters = new Set();     // set of voterIds who have voted
     for (const opt of options) this.votes[opt] = 0;
   }
 

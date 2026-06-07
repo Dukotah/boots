@@ -24,7 +24,7 @@ export const portfolioFinance: Module = {
     {
       slug: "compound-interest",
       title: "Compound Interest Calculator",
-      blurb: "See why Einstein called compound interest the eighth wonder of the world.",
+      blurb: "See why compound interest is called the eighth wonder of the world.",
       xp: 40,
       language: "js",
       content: `## What you're building

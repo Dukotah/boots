@@ -44,7 +44,7 @@ You will implement:
 ## Requirements
 
 - \`checkWinner\` must detect all 8 winning lines (3 rows, 3 cols, 2 diagonals).
-- \`minimax\` must return \`+10\` for an X win, \`-10\` for an O win, \`0\` for a draw (or ongoing with no moves).
+- \`minimax\` must return \`+10\` for an X win, \`-10\` for an O win, \`0\` for a draw.
 - \`bestMove\` returns the index that maximises the minimax score for X.
 - All functions are pure — no side-effects, no mutation of the input board.
 

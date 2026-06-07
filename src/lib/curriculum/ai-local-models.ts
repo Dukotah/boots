@@ -90,7 +90,7 @@ for frontier capability, local for privacy-sensitive or high-volume tasks.`,
         {
           prompt: "A realistic trade-off of local AI compared to cloud AI is:",
           options: [
-            "Local AI is always slower and less capable than the largest cloud frontier models",
+            "Local AI is generally slower and less capable than the largest cloud frontier models",
             "Local AI requires no maintenance or updates",
             "Local AI gives you free unlimited access to GPT-4-class models",
           ],
@@ -236,7 +236,7 @@ GPU with 12+ GB VRAM makes it fast.**`,
           prompt:
             "You have a Windows laptop with 16 GB RAM and no dedicated GPU. Which local setup is most realistic?",
           options: [
-            "Running a quantized 7B model on the CPU at 5–15 tokens per second",
+            "Running a quantized 7B model on the CPU at 5–20 tokens per second",
             "Running a 70B model at full precision with fast inference",
             "You cannot run any AI model locally without an NVIDIA GPU",
           ],

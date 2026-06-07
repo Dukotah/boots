@@ -130,6 +130,8 @@ export const TRACKS: Track[] = [
       "portfolio-validation",
       "portfolio-finance",
       "portfolio-typescript",
+      "portfolio-python",
+      "portfolio-sql",
     ],
   },
   {

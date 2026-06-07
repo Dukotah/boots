@@ -80,6 +80,8 @@ import { portfolioText } from "../src/lib/curriculum/portfolio-text.ts";
 import { portfolioValidation } from "../src/lib/curriculum/portfolio-validation.ts";
 import { portfolioFinance } from "../src/lib/curriculum/portfolio-finance.ts";
 import { portfolioTypescript } from "../src/lib/curriculum/portfolio-typescript.ts";
+import { portfolioPython } from "../src/lib/curriculum/portfolio-python.ts";
+import { portfolioSql } from "../src/lib/curriculum/portfolio-sql.ts";
 import { pythonDecorators } from "../src/lib/curriculum/python-decorators.ts";
 import { pythonGenerators } from "../src/lib/curriculum/python-generators.ts";
 import { sqlWindowFunctions } from "../src/lib/curriculum/sql-window-functions.ts";
@@ -249,6 +251,8 @@ export const MODULES: Module[] = [
   portfolioValidation,
   portfolioFinance,
   portfolioTypescript,
+  portfolioPython,
+  portfolioSql,
   pythonDecorators,
   pythonGenerators,
   sqlWindowFunctions,

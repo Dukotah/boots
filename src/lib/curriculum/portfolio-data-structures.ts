@@ -382,7 +382,8 @@ You understand array-backed trees, index arithmetic, and the invariant maintenan
     this.data[0] = this.data.pop();
     let i = 0;
     const n = this.data.length;
-    while (true) {
+    // Loop is bounded by tree height — at most n steps
+    for (let step = 0; step < n; step++) {
       const l = this._left(i);
       const r = this._right(i);
       let smallest = i;

@@ -102,7 +102,7 @@ Medical imaging is the most mature domain for clinical AI. Here's why it works w
 
 **Real-world deployments:**
 
-- **Diabetic retinopathy screening** — AI reads retinal photos and flags patients needing urgent referral. The FDA cleared IDx-DR (now Idx) in 2018; it's used in primary care offices that lack an on-site ophthalmologist.
+- **Diabetic retinopathy screening** — AI reads retinal photos and flags patients needing urgent referral. The FDA cleared IDx-DR (now Digital Diagnostics) in 2018; it's used in primary care offices that lack an on-site ophthalmologist.
 - **Chest X-ray triage** — AI flags pneumothorax, consolidation, and other findings so radiologists prioritize the most urgent reads.
 - **Mammography CAD** — computer-aided detection assists radiologists spotting breast lesions, though evidence on reducing missed cancers while controlling false positives remains mixed.
 - **Pathology slide analysis** — AI identifies cancerous cells in digitized tissue slides, assisting pathologists at scale.
@@ -128,7 +128,7 @@ Medical imaging is the most mature domain for clinical AI. Here's why it works w
         },
         {
           prompt:
-            "IDx-DR (now Idx), cleared by the FDA in 2018, is an example of AI used to screen for which condition?",
+            "IDx-DR (now Digital Diagnostics), cleared by the FDA in 2018, is an example of AI used to screen for which condition?",
           options: [
             "Lung cancer on CT scans",
             "Diabetic retinopathy from retinal photos",
@@ -136,7 +136,7 @@ Medical imaging is the most mature domain for clinical AI. Here's why it works w
           ],
           answer: 1,
           explanation:
-            "IDx-DR was the first FDA-authorized AI diagnostic to provide a screening decision without a clinician reviewing the image first. It screens for diabetic retinopathy and can be deployed in primary care settings without an ophthalmologist present.",
+            "IDx-DR (now Digital Diagnostics) was the first FDA-authorized AI diagnostic to provide a screening decision without a clinician reviewing the image first. It screens for diabetic retinopathy and can be deployed in primary care settings without an ophthalmologist present.",
         },
         {
           prompt:

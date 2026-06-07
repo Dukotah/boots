@@ -231,8 +231,9 @@ Use exactly those keys and that default temperature.`,
       content: `# Temperature & Sampling
 
 **Temperature** controls randomness: \`0\` is focused and deterministic (great for
-extraction), higher values are more creative. APIs accept roughly \`0\`–\`2\`, so a
-safe wrapper clamps user input into that range.
+extraction), higher values are more creative. Different providers use different
+ranges — Anthropic caps at \`1\`, OpenAI allows up to \`2\` — so a safe wrapper
+clamps user input into a sensible range.
 
 ## Your task
 Write \`clampTemperature(t)\` that limits \`t\` to the range \`[0, 2]\`.`,
@@ -324,8 +325,9 @@ vectors pointing the same way, measured by **cosine similarity**:
 cosine(a, b) = dot(a, b) / (|a| × |b|)
 \`\`\`
 
-Result ranges from \`1\` (identical direction) to \`0\` (unrelated). This is the
-math behind semantic search and RAG.
+Result ranges from \`1\` (identical direction) to \`-1\` (opposite direction), with
+\`0\` meaning unrelated. In practice, text embedding vectors are non-negative, so
+similarity scores land in \`[0, 1]\`. This is the math behind semantic search and RAG.
 
 ## Your task
 Write \`cosine(a, b)\` for two equal-length vectors, rounded to 2 decimals.`,

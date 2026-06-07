@@ -37,6 +37,11 @@ import howToLearnJavascript2026 from "./posts/how-to-learn-javascript-2026";
 import cantripVsBootdev from "./posts/cantrip-vs-bootdev";
 import aiSideHustles2026 from "./posts/ai-side-hustles-2026";
 import howToStayRelevantAiEra from "./posts/how-to-stay-relevant-ai-era";
+import howToUseAiAtWork from "./posts/how-to-use-ai-at-work";
+import aiSkillsEmployersWant2026 from "./posts/ai-skills-employers-want-2026";
+import learnToCodeVsVibeCoding from "./posts/learn-to-code-vs-vibe-coding";
+import bestWayToLearnAiForNonTechies from "./posts/best-way-to-learn-ai-for-non-techies";
+import gamifiedLearningWhyItWorks from "./posts/gamified-learning-why-it-works";
 
 export type BlogPost = {
   slug: string;
@@ -900,6 +905,11 @@ The barrier to learning to code was never money — it's consistency and focus. 
   cantripVsBootdev,
   aiSideHustles2026,
   howToStayRelevantAiEra,
+  howToUseAiAtWork,
+  aiSkillsEmployersWant2026,
+  learnToCodeVsVibeCoding,
+  bestWayToLearnAiForNonTechies,
+  gamifiedLearningWhyItWorks,
 ];
 
 /** Look up a single post by its slug. Returns undefined if not found. */

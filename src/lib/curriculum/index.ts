@@ -76,6 +76,8 @@ import { portfolioText } from "./portfolio-text";
 import { portfolioValidation } from "./portfolio-validation";
 import { portfolioFinance } from "./portfolio-finance";
 import { portfolioTypescript } from "./portfolio-typescript";
+import { portfolioPython } from "./portfolio-python";
+import { portfolioSql } from "./portfolio-sql";
 import { pythonDecorators } from "./python-decorators";
 import { pythonGenerators } from "./python-generators";
 import { pythonStatistics } from "./python-statistics";
@@ -205,6 +207,8 @@ export const MODULES: Module[] = [
   portfolioValidation,
   portfolioFinance,
   portfolioTypescript,
+  portfolioPython,
+  portfolioSql,
   // Python track
   python,
   pythonData,

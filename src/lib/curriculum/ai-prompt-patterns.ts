@@ -7,7 +7,7 @@ export const aiPromptPatterns: Module = {
   slug: "ai-prompt-patterns",
   title: "Advanced Prompt Patterns",
   description:
-    "Move from ad-hoc prompting to deliberate craft. Learn the patterns that separate power users from everyone else: role framing, chain-of-thought, few-shot examples, structured output, self-critique loops, decomposition, and meta-prompting. Each pattern is explained, illustrated, and pressure-tested with real scenarios.",
+    "Move from ad-hoc prompting to deliberate craft. Learn the patterns that separate power users from everyone else: role framing, chain-of-thought, few-shot examples, structured output, self-critique loops, and decomposition. Each pattern is explained, illustrated, and pressure-tested with real scenarios — then the capstone teaches you how to diagnose which pattern a situation calls for.",
   emoji: "🧠",
   gradient: "from-fuchsia-500/20 to-violet-500/10",
   tagline:
