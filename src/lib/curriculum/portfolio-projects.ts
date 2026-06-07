@@ -268,7 +268,7 @@ assertEquals(c.getDisplay(), "42");`,
       slug: "word-frequency",
       title: "Word Frequency Counter",
       blurb: "Text analysis — a staple data engineering interview question.",
-      xp: 35,
+      xp: 50,
       content: `# Word Frequency Counter
 
 Text analysis shows up everywhere: search engines, recommendation systems, spam filters.

@@ -161,7 +161,7 @@ export function HtmlLessonView({
               </button>
             </div>
           </div>
-          <div className="h-[300px]">
+          <div className="h-[220px]">
             <CodeEditor value={code} onChange={setCode} language="html" />
           </div>
           <div className="flex items-center gap-3 border-t border-line p-3">

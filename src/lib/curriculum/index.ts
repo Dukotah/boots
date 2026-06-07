@@ -42,8 +42,10 @@ import { aiForEveryone } from "./ai-for-everyone";
 import { aiLlms } from "./ai-llms";
 import { promptEngineering } from "./prompt-engineering";
 import { aiPowerUser } from "./ai-power-user";
+import { aiImageGeneration } from "./ai-image-generation";
 import { aiApps } from "./ai-apps";
 import { vibeCoding } from "./vibe-coding";
+import { aiIntegrations } from "./ai-integrations";
 import { aiAgents } from "./ai-agents";
 import { aiEmbeddings } from "./ai-embeddings";
 import { aiEthics } from "./ai-ethics";
@@ -170,8 +172,10 @@ export const MODULES: Module[] = [
   aiLlms,
   promptEngineering,
   aiPowerUser,
+  aiImageGeneration,
   aiApps,
   vibeCoding,
+  aiIntegrations,
   aiAgents,
   aiEmbeddings,
   aiEthics,

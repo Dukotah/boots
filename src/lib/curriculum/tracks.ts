@@ -153,7 +153,9 @@ export const TRACKS: Track[] = [
     modules: [
       "ai-for-everyone",
       "ai-power-user",
+      "ai-image-generation",
       "vibe-coding",
+      "ai-integrations",
       "ai-llms",
       "prompt-engineering",
       "ai-apps",

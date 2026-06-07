@@ -297,7 +297,7 @@ export function LessonView({
               </button>
             </motion.div>
           )}
-          <div className="h-[340px]">
+          <div className="h-[220px]">
             <CodeEditor
               value={code}
               onChange={setCode}

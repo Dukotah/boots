@@ -53,8 +53,10 @@ export const PATHS: Path[] = [
     moduleSlugs: [
       "ai-for-everyone",
       "ai-power-user",
+      "ai-image-generation",
       "prompt-engineering",
       "vibe-coding",
+      "ai-integrations",
       "ai-llms",
       "ai-apps",
       "ai-agents",
