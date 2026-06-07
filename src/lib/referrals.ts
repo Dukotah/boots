@@ -1,6 +1,16 @@
 "use client";
 
-// Referral programme helpers — "give a month, get a month".
+// Referral programme helpers — two-sided rewards.
+//
+// Reward definitions (single source of truth):
+//   REFERRER_REWARD  — what the inviting user earns per completed referral.
+//   REFERRED_REWARD  — what the new user gets when they redeem a code.
+//
+// Stripe fulfilment is intentionally deferred: set STRIPE_REFERRAL_COUPON_ID
+// (for referrer) and STRIPE_REFERRED_COUPON_ID (for the new user) in your
+// environment and wire them into the webhook that marks status="completed" /
+// reward_granted=true. The reward constants below drive all UI copy so the
+// moment is always consistent.
 //
 // Every function gracefully degrades: if Supabase isn't configured or the user
 // is not signed in, we return a safe no-op value rather than throwing, so the
@@ -13,6 +23,27 @@
 
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/client";
+
+// ── Reward definitions ────────────────────────────────────────────────────────
+
+/** What the referrer earns per friend who subscribes. */
+export const REFERRER_REWARD = "1 free month of Pro" as const;
+
+/** What the new user receives when they redeem a referral code. */
+export const REFERRED_REWARD = "1 free month of Pro" as const;
+
+/**
+ * Human-readable short descriptions used across UI copy.
+ * Change these two strings and every card/page updates automatically.
+ */
+export const REWARD_COPY = {
+  /** The pitch line shown to referrers. */
+  referrerShort: `You get ${REFERRER_REWARD}`,
+  /** The pitch line shown to the person receiving the invite. */
+  referredShort: `They get ${REFERRED_REWARD} too`,
+  /** Combined one-liner for cards. */
+  combined: `You both get ${REFERRER_REWARD} — no caps on invites`,
+} as const;
 
 // ── Local type for the referrals table rows ───────────────────────────────────
 
@@ -77,7 +108,14 @@ export type ReferralStats = {
 };
 
 export type RedeemResult =
-  | { ok: true }
+  | {
+      ok: true;
+      /**
+       * Human-readable description of the perk the new user will receive.
+       * Always present on success so the UI can confirm both-sided rewards.
+       */
+      referredReward: string;
+    }
   | { ok: false; reason: string };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -256,7 +294,9 @@ export async function redeemCode(code: string): Promise<RedeemResult> {
       return { ok: false, reason: "Something went wrong. Please try again." };
     }
 
-    return { ok: true };
+    // Both sides earn a reward. Stripe fulfilment is triggered by the
+    // "subscription.created" webhook (see STRIPE_REFERRED_COUPON_ID note above).
+    return { ok: true, referredReward: REFERRED_REWARD };
   } catch (err) {
     console.warn("[referrals] redeemCode threw:", err);
     return { ok: false, reason: "Something went wrong. Please try again." };

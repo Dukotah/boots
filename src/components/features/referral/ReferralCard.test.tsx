@@ -120,7 +120,7 @@ describe("ReferralCard — visible when code is present", () => {
     mockFetch(GOOD_DATA);
     render(<ReferralCard />);
     await waitFor(() => {
-      expect(screen.getByText(/give a month, get a month/i)).toBeInTheDocument();
+      expect(screen.getByText(/you both earn free pro/i)).toBeInTheDocument();
     });
   });
 

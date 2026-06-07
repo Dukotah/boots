@@ -1,10 +1,18 @@
 "use client";
 
 import { useEffect } from "react";
-import { Swords, Users, User, Coins, Zap } from "lucide-react";
+import { Swords, Users, User, Coins, Zap, Gift } from "lucide-react";
 import { useGameStore } from "@/store/useGameStore";
 import { useMounted } from "@/hooks/useMounted";
 import { PageSkeleton } from "@/components/PageSkeleton";
+
+/** Map tier label → accent colour class for the reveal badge. */
+const TIER_COLORS: Record<string, string> = {
+  Common:   "text-gray-300",
+  Uncommon: "text-emerald-400",
+  Rare:     "text-sky-400",
+  Jackpot:  "text-amber-400",
+};
 
 export default function BossPage() {
   const mounted = useMounted();
@@ -12,6 +20,7 @@ export default function BossPage() {
   const bossSel = useGameStore((s) => s.boss);
   const season = useGameStore((s) => s.season);
   const claimBoss = useGameStore((s) => s.claimBoss);
+  const lastBossRoll = useGameStore((s) => s.lastBossRoll);
 
   useEffect(() => {
     checkSeason();
@@ -88,25 +97,57 @@ export default function BossPage() {
 
         {/* Reward / claim */}
         <div className="mt-5">
-          <div className="mb-3 flex items-center justify-center gap-3 text-sm">
-            <span className="flex items-center gap-1 font-semibold text-gold">
-              <Coins size={15} /> {boss.rewardGold}
-            </span>
-            <span className="flex items-center gap-1 font-semibold text-accent-soft">
-              <Zap size={15} /> {boss.rewardXp} XP
-            </span>
-          </div>
+          {/* Potential reward preview (shown before claim) */}
+          {!claimed && (
+            <div className="mb-3 flex items-center justify-center gap-3 text-sm">
+              <span className="flex items-center gap-1 font-semibold text-gold">
+                <Coins size={15} />
+                {/* Show the range rather than a misleading fixed number */}
+                {Math.round(boss.rewardGold * 0.60)}–{Math.round(boss.rewardGold * 2.20)} gold
+              </span>
+              <span className="text-gray-500">·</span>
+              <span className="flex items-center gap-1 font-semibold text-accent-soft">
+                <Zap size={15} /> {boss.rewardXp} XP
+              </span>
+            </div>
+          )}
+
           {claimed ? (
-            <span className="text-sm font-medium text-success">
-              ✓ Reward claimed — see you next week!
-            </span>
+            lastBossRoll ? (
+              /* Fresh claim this session — reveal the roll result */
+              <div className="rounded-xl border border-line bg-canvas/40 px-4 py-3 text-center">
+                <div className="flex items-center justify-center gap-2 text-xs text-gray-400 mb-1">
+                  <Gift size={13} /> Loot chest opened
+                </div>
+                <p className={[
+                  "text-2xl font-bold",
+                  TIER_COLORS[lastBossRoll.tier] ?? "text-gold",
+                ].join(" ")}>
+                  +{lastBossRoll.gold} gold
+                </p>
+                <p className={[
+                  "mt-0.5 text-xs font-semibold uppercase tracking-wider",
+                  TIER_COLORS[lastBossRoll.tier] ?? "text-gold",
+                ].join(" ")}>
+                  {lastBossRoll.tier} drop
+                </p>
+                <p className="mt-2 text-xs text-gray-500">
+                  +{boss.rewardXp} XP · See you next week!
+                </p>
+              </div>
+            ) : (
+              /* Returning visit after already claimed — no roll in memory */
+              <span className="text-sm font-medium text-success">
+                ✓ Reward claimed — see you next week!
+              </span>
+            )
           ) : (
             <button
               onClick={() => claimBoss(boss.id)}
               disabled={!state.defeated}
               className="btn-primary mx-auto disabled:cursor-not-allowed disabled:opacity-40"
             >
-              {state.defeated ? "Claim bounty" : "Deal more damage to win"}
+              {state.defeated ? "Open loot chest" : "Deal more damage to win"}
             </button>
           )}
         </div>

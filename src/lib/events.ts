@@ -175,6 +175,28 @@ export const SEASONAL_EVENTS: SeasonalEvent[] = [
   },
 ];
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Double-XP Weekend — Duolingo-style recurring boost (Sat + Sun, every week).
+// This is intentionally separate from the seasonal-event system: seasonal events
+// are hand-curated, date-specific campaigns. Double-XP Weekend is a permanent,
+// deterministic, calendar-driven feature. No state is stored — the function is
+// pure and safe to call in any context (store, tests, SSR, etc.).
+//
+// Why weekends only? Weekend lesson completion historically spikes on Saturday
+// mornings; showing a 2x banner on Friday evening primes learners to return
+// Saturday. (Duolingo reported ~50 % DAU lift on double-XP days.)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Returns true when `date` falls on a Saturday (6) or Sunday (0) in the
+ * user's LOCAL time zone — the same zone used by the rest of the store.
+ * Deterministic and test-injectable via the optional `date` parameter.
+ */
+export function isDoubleXpActive(date = new Date()): boolean {
+  const day = date.getDay(); // 0 = Sunday, 6 = Saturday
+  return day === 0 || day === 6;
+}
+
 /** Returns the currently active event, if any, based on today's date. */
 export function getActiveEvent(now = new Date()): SeasonalEvent | null {
   const today = now.toISOString().split("T")[0];

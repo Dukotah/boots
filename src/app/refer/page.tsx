@@ -15,6 +15,9 @@ import {
   getMyReferralStats,
   redeemCode,
   buildReferralUrl,
+  REFERRER_REWARD,
+  REFERRED_REWARD,
+  REWARD_COPY,
   type ReferralStats,
 } from "@/lib/referrals";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -93,7 +96,11 @@ export default function ReferPage() {
     const result = await redeemCode(redeemInput.trim());
     setRedeeming(false);
     if (result.ok) {
-      setRedeemStatus({ ok: true, msg: "Code redeemed! Your free month will be applied once your subscription activates." });
+      const reward = result.referredReward ?? REFERRED_REWARD;
+      setRedeemStatus({
+        ok: true,
+        msg: `Code redeemed! You'll receive ${reward} when your Pro subscription activates. The person who invited you also earns ${REFERRER_REWARD} — thanks for joining through their link.`,
+      });
       setRedeemInput("");
     } else {
       setRedeemStatus({ ok: false, msg: result.reason });
@@ -116,11 +123,29 @@ export default function ReferPage() {
         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-accent/15 text-accent-soft">
           <Gift size={26} />
         </div>
-        <h1 className="text-2xl font-bold text-white">Give a month, get a month</h1>
+        <h1 className="text-2xl font-bold text-white">Invite friends, earn free Pro — both of you</h1>
         <p className="mt-3 text-sm text-gray-400">
-          Invite a friend to Cantrip. When they subscribe, you both get a free
-          month of Pro — no limits on how many friends you can invite.
+          Share your referral link. When a friend subscribes to Cantrip Pro,{" "}
+          <span className="text-white font-medium">you get {REFERRER_REWARD}</span>{" "}
+          and{" "}
+          <span className="text-white font-medium">they get {REFERRED_REWARD}</span>.
+          No limits on how many friends you invite.
         </p>
+
+        {/* Reward cards */}
+        <div className="mt-6 grid grid-cols-2 gap-3 text-left">
+          <div className="rounded-xl border border-line bg-surface/60 px-4 py-3">
+            <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">You earn</p>
+            <p className="text-sm font-bold text-white">{REFERRER_REWARD}</p>
+            <p className="mt-0.5 text-xs text-gray-400">per friend who subscribes</p>
+          </div>
+          <div className="rounded-xl border border-line bg-surface/60 px-4 py-3">
+            <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">They get</p>
+            <p className="text-sm font-bold text-white">{REFERRED_REWARD}</p>
+            <p className="mt-0.5 text-xs text-gray-400">credited when they subscribe</p>
+          </div>
+        </div>
+
         <a
           href="/login?next=/refer"
           className="btn-primary mt-6 inline-flex"
@@ -144,10 +169,24 @@ export default function ReferPage() {
           <Gift size={20} />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-white">Give a month, get a month</h1>
+          <h1 className="text-2xl font-bold text-white">Invite friends, earn free Pro — both of you</h1>
           <p className="text-sm text-gray-400">
-            Invite friends to Cantrip. You both earn a free Pro month when they subscribe.
+            {REWARD_COPY.combined}. Share your link below.
           </p>
+        </div>
+      </div>
+
+      {/* Two-sided reward summary */}
+      <div className="mt-5 grid grid-cols-2 gap-3">
+        <div className="rounded-xl border border-line bg-surface/60 px-4 py-3">
+          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">You earn</p>
+          <p className="text-sm font-bold text-white">{REFERRER_REWARD}</p>
+          <p className="mt-0.5 text-xs text-gray-400">per friend who subscribes</p>
+        </div>
+        <div className="rounded-xl border border-line bg-surface/60 px-4 py-3">
+          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Your friend gets</p>
+          <p className="text-sm font-bold text-white">{REFERRED_REWARD}</p>
+          <p className="mt-0.5 text-xs text-gray-400">credited when they subscribe</p>
         </div>
       </div>
 
@@ -209,27 +248,41 @@ export default function ReferPage() {
       {/* How it works */}
       <div className="card mt-4">
         <h2 className="mb-3 text-sm font-semibold text-white">How it works</h2>
-        <ol className="space-y-2 text-sm text-gray-400">
-          <li className="flex gap-2">
+        <ol className="space-y-3 text-sm text-gray-400">
+          <li className="flex gap-3">
             <span className="shrink-0 font-bold text-accent-soft">1.</span>
-            Share your link. Friends land on Cantrip with your code pre-filled.
+            <span>
+              Copy your link below and share it anywhere — social, Discord, a DM.
+              Your referral code is embedded in the URL automatically.
+            </span>
           </li>
-          <li className="flex gap-2">
+          <li className="flex gap-3">
             <span className="shrink-0 font-bold text-accent-soft">2.</span>
-            They sign up and start a Pro subscription.
+            <span>
+              Your friend signs up through the link and starts a Cantrip Pro subscription.
+              Their account is automatically linked to yours.
+            </span>
           </li>
-          <li className="flex gap-2">
+          <li className="flex gap-3">
             <span className="shrink-0 font-bold text-accent-soft">3.</span>
-            You both automatically receive one free month of Pro — no caps.
+            <span>
+              <span className="font-semibold text-white">You both win:</span>{" "}
+              you earn{" "}
+              <span className="text-white">{REFERRER_REWARD}</span> added to your
+              account, and your friend gets{" "}
+              <span className="text-white">{REFERRED_REWARD}</span> credited when
+              they subscribe. No cap — invite as many friends as you like.
+            </span>
           </li>
         </ol>
       </div>
 
       {/* Redeem a code you received */}
       <div className="card mt-4">
-        <h2 className="mb-1 text-sm font-semibold text-white">Redeem a referral code</h2>
+        <h2 className="mb-1 text-sm font-semibold text-white">Have a referral code?</h2>
         <p className="mb-3 text-xs text-gray-500">
-          Got a code from a friend? Enter it here to link your accounts.
+          Enter it here to claim your {REFERRED_REWARD} — and make sure your
+          friend gets credit too.
         </p>
         <form onSubmit={handleRedeem} className="flex items-center gap-2">
           <input

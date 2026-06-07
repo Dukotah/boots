@@ -21,6 +21,7 @@ import { RecommendedNextCard } from "@/components/features/onboarding/Recommende
 import { ReferralCard } from "@/components/features/referral/ReferralCard";
 import { PurchaseTracker } from "@/components/features/billing/PurchaseTracker";
 import { TrialBanner } from "@/components/features/billing/TrialBanner";
+import { DoubleXpBanner } from "@/components/features/retention/DoubleXpBanner";
 import { PageSkeleton } from "@/components/PageSkeleton";
 
 export default function Dashboard() {
@@ -100,6 +101,7 @@ export default function Dashboard() {
         <PurchaseTracker />
       </Suspense>
       <TrialBanner />
+      <DoubleXpBanner />
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-white">Your dashboard</h1>
         <Link href={continueHref} className="btn-primary">

@@ -397,3 +397,66 @@ export function rollChest(r: number, bonus = 0): number {
   // Floating-point fallthrough → top of the jackpot band.
   return CHEST_TIERS[CHEST_TIERS.length - 1].hi + bonus;
 }
+
+// ── Boss loot chest economics ────────────────────────────────────────────────
+// Defeating the weekly boss opens a loot chest whose payout is a variable roll
+// rather than the flat `rewardGold` value from lib/boss.ts. The flat value acts
+// as a BASE; this roll applies a multiplier tier so the reward feels like a
+// genuine prize event instead of a deterministic transaction.
+//
+// Tier table (multiplier ranges, probabilities, EV contribution):
+//   Common   50%  0.60–0.80 × base  avg 0.70 × base  contrib 35.0%
+//   Uncommon 30%  0.85–1.10 × base  avg 0.975× base  contrib 29.3%
+//   Rare     15%  1.20–1.60 × base  avg 1.40 × base  contrib 21.0%
+//   Jackpot   5%  1.80–2.20 × base  avg 2.00 × base  contrib 10.0%
+//   ─────────────────────────────────────────────────────────────────
+//   Base EV ≈ 0.953 × rewardGold            (≈ 95% of stated reward)
+//
+// The EV is intentionally BELOW the face value of rewardGold. This means:
+//   • The boss's rewardGold reads as the "standard" reward in the catalog.
+//   • Most players get a little less, occasionally much more — variance drives
+//     engagement without inflating the overall gold supply.
+//   • Even a jackpot (2× base) on the biggest boss (450 → 900) is a one-off
+//     weekly spike and stays well within the cosmetic-sink range, so it never
+//     trivialises the economy (a cosmetic costs 100–600).
+//
+// Do NOT raise the jackpot multiplier above 2.5× — beyond that a run of lucky
+// weeks could fund a player's entire cosmetic wishlist for free.
+
+type BossLootTier = { p: number; loMult: number; hiMult: number; label: string };
+
+export const BOSS_LOOT_TIERS: BossLootTier[] = [
+  { p: 0.50, loMult: 0.60, hiMult: 0.80, label: "Common"   },
+  { p: 0.30, loMult: 0.85, hiMult: 1.10, label: "Uncommon" },
+  { p: 0.15, loMult: 1.20, hiMult: 1.60, label: "Rare"     },
+  { p: 0.05, loMult: 1.80, hiMult: 2.20, label: "Jackpot"  },
+];
+
+export type BossLootResult = {
+  gold: number;
+  /** Human-readable tier name, e.g. "Jackpot". */
+  tier: string;
+};
+
+/**
+ * Roll the boss loot chest. Pure + deterministic given `r` and `baseGold`.
+ *
+ * @param r        - Uniform random in [0, 1) — caller supplies `Math.random()`.
+ * @param baseGold - The boss's `rewardGold` field (the catalog face value).
+ * @returns `{ gold, tier }` — the actual payout and the tier label for the UI.
+ */
+export function rollBossChest(r: number, baseGold: number): BossLootResult {
+  const x = Math.min(0.999999, Math.max(0, r));
+  let acc = 0;
+  for (const tier of BOSS_LOOT_TIERS) {
+    acc += tier.p;
+    if (x < acc) {
+      const span = (x - (acc - tier.p)) / tier.p; // 0..1 within the tier
+      const mult = tier.loMult + span * (tier.hiMult - tier.loMult);
+      return { gold: Math.round(baseGold * mult), tier: tier.label };
+    }
+  }
+  // Floating-point fallthrough → top of jackpot.
+  const top = BOSS_LOOT_TIERS[BOSS_LOOT_TIERS.length - 1];
+  return { gold: Math.round(baseGold * top.hiMult), tier: top.label };
+}

@@ -1,16 +1,26 @@
-// Referral programme API — "give a month, get a month".
+// Referral programme API — two-sided rewards.
 //
-// GET  /api/referrals   — returns the signed-in user's code + stats.
-// POST /api/referrals   — body { code: string } — redeem a code.
+// GET  /api/referrals   — returns the signed-in user's code + stats + reward copy.
+// POST /api/referrals   — body { code: string } — redeem a code; returns referredReward.
 //
 // Both endpoints return { skipped: true } when Supabase is not configured.
 // Auth is enforced: unauthenticated requests receive 401.
+//
+// Stripe fulfilment (deferred):
+//   • On POST success a Stripe coupon should be issued for the referred user.
+//     Set STRIPE_REFERRED_COUPON_ID and call stripe.subscriptions.update() or
+//     stripe.checkout.sessions.create({ discounts: [{ coupon: id }] }) from
+//     the subscription webhook that fires when the user's first payment succeeds.
+//   • On status → "completed" the referrer coupon fires via STRIPE_REFERRAL_COUPON_ID.
+//     Both env vars are optional; when absent the DB row is created as normal
+//     and reward fulfilment is handled manually / out-of-band.
 //
 // The `referrals` table is typed locally (same pattern as scoring.ts) until
 // the human applies the wiringSnippet for src/types/database.ts.
 
 import { NextResponse } from "next/server";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { REFERRER_REWARD, REFERRED_REWARD } from "@/lib/referrals";
 
 // ── Local minimal types for the referrals table ───────────────────────────────
 
@@ -137,6 +147,9 @@ export async function GET() {
       invited: referralRows.length,
       completed: referralRows.filter((r) => r.status === "completed").length,
       monthsEarned: referralRows.filter((r) => r.reward_granted).length,
+      // Reward copy — lets the client stay in sync without hard-coding strings.
+      referrerReward: REFERRER_REWARD,
+      referredReward: REFERRED_REWARD,
     });
   } catch (err) {
     console.error("[api/referrals] GET threw:", err);
@@ -212,7 +225,23 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Internal error." }, { status: 500 });
     }
 
-    return NextResponse.json({ ok: true });
+    // ── Stripe fulfilment (deferred) ──────────────────────────────────────────
+    // When STRIPE_REFERRED_COUPON_ID is set, apply it to the new user's next
+    // checkout session or active subscription here. Example:
+    //
+    //   const couponId = process.env.STRIPE_REFERRED_COUPON_ID;
+    //   if (couponId) {
+    //     await stripe.subscriptions.update(subscriptionId, {
+    //       discounts: [{ coupon: couponId }],
+    //     });
+    //   }
+    //
+    // The referrer's reward (STRIPE_REFERRAL_COUPON_ID) is applied by the
+    // webhook that sets status="completed" / reward_granted=true once the
+    // referred user's first payment succeeds.
+    // ─────────────────────────────────────────────────────────────────────────
+
+    return NextResponse.json({ ok: true, referredReward: REFERRED_REWARD });
   } catch (err) {
     console.error("[api/referrals] POST threw:", err);
     return NextResponse.json({ error: "Internal error." }, { status: 500 });

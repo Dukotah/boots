@@ -32,6 +32,12 @@ import { useGameStore, streakRepairCost } from "./useGameStore";
 import { xpForLevel, levelFromXp } from "@/lib/levels";
 import { DAILY_BONUS_GOLD, DAILY_BONUS_XP, pickDaily, dayKeyOf } from "@/lib/daily";
 import { DAILY_QUESTS } from "@/lib/quests";
+import { isDoubleXpActive } from "@/lib/events";
+
+// Lessons award 2x XP during double-XP weekends, so player/daily XP assertions
+// must account for the multiplier to stay deterministic any day of the week.
+// (League weeklyXp + gold intentionally use raw XP, so those tests are unaffected.)
+const XP_MULT = isDoubleXpActive() ? 2 : 1;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -79,8 +85,8 @@ describe("completeLesson — XP and gold", () => {
 
   it("awards the specified XP on first completion", () => {
     const result = gs().completeLesson(LESSON_ID, LESSON_XP);
-    expect(result.gainedXp).toBe(LESSON_XP);
-    expect(gs().xp).toBe(LESSON_XP);
+    expect(result.gainedXp).toBe(LESSON_XP * XP_MULT);
+    expect(gs().xp).toBe(LESSON_XP * XP_MULT);
   });
 
   it("awards gold alongside XP (GOLD_PER_XP ratio)", () => {
@@ -187,7 +193,7 @@ describe("completeLesson — streak", () => {
   it("daily XP counter accumulates", () => {
     gs().completeLesson(LESSON_ID, LESSON_XP);
     gs().completeLesson("beginner/booleans", 20);
-    expect(gs().dailyXp).toBe(LESSON_XP + 20);
+    expect(gs().dailyXp).toBe((LESSON_XP + 20) * XP_MULT);
   });
 
   it("weeklyXp accumulates across completions", () => {
@@ -470,7 +476,7 @@ describe("today() selector", () => {
     gs().completeLesson(LESSON_ID, LESSON_XP);
     const t = gs().today();
     expect(t.lessons).toBe(1);
-    expect(t.xp).toBe(LESSON_XP);
+    expect(t.xp).toBe(LESSON_XP * XP_MULT);
   });
 
   it("stale dailyDay returns zeros (not today's counters)", () => {

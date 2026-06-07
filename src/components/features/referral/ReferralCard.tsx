@@ -9,6 +9,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Gift, Copy, Check } from "lucide-react";
+import { REFERRER_REWARD, REFERRED_REWARD } from "@/lib/referrals";
 
 type ReferralData = {
   skipped?: boolean;
@@ -52,7 +53,7 @@ export function ReferralCard() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Gift size={16} className="text-gold" />
-          <h2 className="text-sm font-semibold text-white">Give a month, get a month</h2>
+          <h2 className="text-sm font-semibold text-white">Invite friends — you both earn free Pro</h2>
         </div>
         <Link
           href="/refer"
@@ -62,9 +63,15 @@ export function ReferralCard() {
         </Link>
       </div>
 
-      <p className="mt-1 text-xs text-gray-400">
-        Share your link. When a friend subscribes, you both get a free Pro month.
-      </p>
+      {/* Two-sided reward pitch */}
+      <div className="mt-2 flex gap-3 text-xs">
+        <span className="rounded-md bg-accent/10 px-2 py-1 text-accent-soft font-medium">
+          You: {REFERRER_REWARD}
+        </span>
+        <span className="rounded-md bg-gold/10 px-2 py-1 text-gold font-medium">
+          Friend: {REFERRED_REWARD}
+        </span>
+      </div>
 
       {/* Link row */}
       <div className="mt-3 flex items-center gap-2">

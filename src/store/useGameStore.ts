@@ -29,12 +29,18 @@ import {
   chainStepKey,
   type DailySnapshot,
 } from "@/lib/quests";
-import { getShopItem, rollChest } from "@/lib/shop";
+import { getShopItem, rollChest, rollBossChest, type BossLootResult } from "@/lib/shop";
 import { getSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { deriveBreadth } from "@/lib/progress";
 import { SEASON_DAYS, resolveSeason, type SeasonResult } from "@/lib/leagues";
 import { bossForSeason, bossState, type Boss, type BossState } from "@/lib/boss";
-import { nextBox, isReviewDue, type ReviewRecord } from "@/lib/mastery";
+import {
+  nextBox,
+  isReviewDue,
+  fsrsSchedule,
+  type ReviewRecord,
+  type Rating,
+} from "@/lib/mastery";
 import {
   earnedSkillPoints,
   talentEffects,
@@ -50,6 +56,7 @@ import {
   DAILY_BONUS_XP,
   type DailyPick,
 } from "@/lib/daily";
+import { isDoubleXpActive } from "@/lib/events";
 
 /** Build the full stats snapshot (core resources + derived breadth) from state. */
 function buildStats(s: {
@@ -209,6 +216,8 @@ export type GameState = {
   recentAchievement: string | null;
   // Skill points earned by the latest completion (for the toast); null = none.
   recentSkillPoints: number | null;
+  // The variable-roll result from the most-recently claimed boss chest; null = none.
+  lastBossRoll: BossLootResult | null;
   // ── auth / sync (not persisted) ──
   user: User | null;
   session: Session | null;
@@ -240,7 +249,16 @@ export type GameState = {
   skillPoints: () => { earned: number; spent: number; available: number };
 
   // ── game actions ──
-  completeLesson: (id: string, xp: number) => CompletionResult;
+  /**
+   * Record a lesson completion (first-time or re-review).
+   *
+   * @param id    - lessonId ("moduleSlug/lessonSlug")
+   * @param xp    - XP awarded on first completion (ignored on re-reviews)
+   * @param rating - FSRS review rating ("again" | "hard" | "good" | "easy").
+   *                 Defaults to "good" when omitted (compatible with all existing
+   *                 callers that don't pass a rating).
+   */
+  completeLesson: (id: string, xp: number, rating?: Rating) => CompletionResult;
   setActiveQuest: (id: string | null) => void;
   addGold: (amount: number) => void;
   spendGold: (amount: number) => boolean;
@@ -278,6 +296,7 @@ export type GameState = {
   clearRecentAchievement: () => void;
   clearRecentSkillPoints: () => void;
   clearSeasonResult: () => void;
+  clearBossRoll: () => void;
   reset: () => void;
 
   // ── auth actions (called from AuthProvider) ──
@@ -325,6 +344,7 @@ const INITIAL = {
   lastLevelUp: null as number | null,
   recentAchievement: null as string | null,
   recentSkillPoints: null as number | null,
+  lastBossRoll: null as BossLootResult | null,
 };
 
 // ── Supabase sync helpers — the live snapshot lives on the profiles row ──
@@ -478,7 +498,7 @@ export const useGameStore = create<GameState>()(
         return { earned, spent, available: Math.max(0, earned - spent) };
       },
 
-      completeLesson: (id, xp) => {
+      completeLesson: (id, xp, rating = "good") => {
         // Roll the weekly league season over first if it expired, so this
         // completion's XP lands in the correct (possibly new) season. A roll also
         // regenerates Sentinel streak freezes.
@@ -558,11 +578,16 @@ export const useGameStore = create<GameState>()(
             dailyXp: baseDailyXp,
             dailyLessons: baseDailyLessons,
             claimedQuests,
-            // Re-completing is a review → promote it to the next Leitner box.
+            // Re-completing is a review → apply FSRS scheduling.
+            // fsrsSchedule handles legacy {box,last} records gracefully.
             reviews: {
               ...state.reviews,
               [id]: {
-                box: nextBox(state.reviews[id]?.box ?? 0),
+                ...fsrsSchedule(
+                  state.reviews[id] ?? { box: 0, last: today },
+                  rating,
+                  today,
+                ),
                 last: today,
               },
             },
@@ -585,7 +610,17 @@ export const useGameStore = create<GameState>()(
         }
 
         const prevLevel = levelFromXp(state.xp).level;
-        const newXp = state.xp + xp;
+        // Double-XP Weekend: multiply the XP that feeds the player's level and
+        // daily counter ONLY. Gold and weeklyXp deliberately stay on the raw
+        // value so the league/gold economy invariants are never disturbed:
+        //   • weeklyXp drives league promotion — doubling it would be pay-to-win.
+        //   • gold is already constrained (the Leagues are explicitly pay-to-win-
+        //     free per the Prospector comment below); doubling it on weekends
+        //     would flood the gold economy without any corresponding cost.
+        // The multiplier is pure and deterministic (Saturday/Sunday local time).
+        const xpMultiplier = isDoubleXpActive() ? 2 : 1;
+        const gainedXp = xp * xpMultiplier;
+        const newXp = state.xp + gainedXp;
         const newLevel = levelFromXp(newXp).level;
         const leveledUp = newLevel > prevLevel;
         // Prospector talents boost gold: a percent multiplier on every lesson,
@@ -609,13 +644,17 @@ export const useGameStore = create<GameState>()(
             ? state.activeDays
             : [...state.activeDays, today],
           dailyDay: today,
-          dailyXp: baseDailyXp + xp,
+          dailyXp: baseDailyXp + gainedXp,
           dailyLessons: baseDailyLessons + 1,
           claimedQuests,
-          weeklyXp: state.weeklyXp + xp,
+          weeklyXp: state.weeklyXp + xp,  // raw xp — league standing unaffected
           weeklyLessons: state.weeklyLessons + 1,
-          // First completion seeds the spaced-repetition record at box 0.
-          reviews: { ...state.reviews, [id]: { box: 0, last: today } },
+          // First completion seeds the spaced-repetition record at box 0
+          // with FSRS defaults (stability=1 day, difficulty=5, reps=0).
+          reviews: {
+            ...state.reviews,
+            [id]: { box: 0, last: today, stability: 1, difficulty: 5, reps: 0 },
+          },
           lastLevelUp: leveledUp ? newLevel : state.lastLevelUp,
           activeQuest: state.activeQuest === id ? null : state.activeQuest,
         });
@@ -631,13 +670,13 @@ export const useGameStore = create<GameState>()(
         // Funnel analytics (cookieless Plausible; no-ops when unconfigured).
         // first_all_green is the activation "magic moment" — fire it only on the
         // learner's very first completed lesson, not every fresh completion.
-        track("lesson_completed", { lesson_id: id, xp });
+        track("lesson_completed", { lesson_id: id, xp: gainedXp });
         if (state.completed.length === 0) {
           track("first_all_green", { lesson_id: id });
         }
 
         return {
-          gainedXp: xp,
+          gainedXp,
           gainedGold,
           gainedSkillPoints,
           leveledUp,
@@ -761,10 +800,16 @@ export const useGameStore = create<GameState>()(
         if (s.claimedBosses.includes(bossId)) return false;
         const elapsed = s.seasonStart ? dayDiff(s.seasonStart, todayKey()) : 0;
         if (!bossState(boss, elapsed, s.weeklyXp).defeated) return false;
+        // Variable-reward roll: instead of the flat boss.rewardGold, open a loot
+        // chest whose payout is a weighted multiplier of the base reward. EV ≈ 95%
+        // of rewardGold — slightly below face value to stay economy-safe. XP stays
+        // fixed (it drives level + league XP which must be deterministic).
+        const roll = rollBossChest(Math.random(), boss.rewardGold);
         set((x) => ({
-          gold: x.gold + boss.rewardGold,
+          gold: x.gold + roll.gold,
           xp: x.xp + boss.rewardXp,
           claimedBosses: [...x.claimedBosses, bossId],
+          lastBossRoll: roll,
         }));
         grantAchievements(get, set);
         get().syncToServer();
@@ -903,6 +948,7 @@ export const useGameStore = create<GameState>()(
       clearRecentAchievement: () => set({ recentAchievement: null }),
       clearRecentSkillPoints: () => set({ recentSkillPoints: null }),
       clearSeasonResult: () => set({ lastSeasonResult: null }),
+      clearBossRoll: () => set({ lastBossRoll: null }),
 
       reset: () => {
         set({ ...INITIAL });
