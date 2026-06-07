@@ -319,6 +319,43 @@ export type AggregatedEffects = {
   cosmetics: string[];
 };
 
+/**
+ * Translate a talent's effect into a concrete, human-readable benefit line.
+ * Used by the Skill Tree UI so players see what they actually get, not
+ * internal enum names.
+ *
+ * Examples:
+ *   gold-mult  10  →  "+10% gold from every lesson"
+ *   review-gold 14 →  "+14 gold per due review"
+ *   chest-luck  40 →  "+40 gold luck on mystery chests"
+ *   freeze-regen 1 →  "+1 streak freeze each week"
+ *   cosmetic       →  "Unlocks Constellation flair" (etc.)
+ */
+export function effectLine(effect: TalentEffect): string {
+  switch (effect.kind) {
+    case "gold-mult":
+      return `+${effect.pct}% gold from every lesson`;
+    case "daily-gold":
+      return `+${effect.gold} bonus gold on your first lesson each day`;
+    case "chest-luck":
+      return `+${effect.gold} gold luck on mystery chests`;
+    case "freeze-regen":
+      return `+${effect.perWeek} streak freeze regenerated each week`;
+    case "review-gold":
+      return `+${effect.gold} gold per due review completed`;
+    case "cosmetic": {
+      // Map well-known cosmetic IDs to friendly names; fall back to the raw id.
+      const names: Record<string, string> = {
+        "flair-constellation": "Constellation name flair",
+        "title-ascendant": '"Ascendant" profile title',
+        "banner-prestige": "Prestige profile banner",
+        "title-polymath": '"Polymath" profile title',
+      };
+      return `Unlocks ${names[effect.cosmeticId] ?? effect.cosmeticId}`;
+    }
+  }
+}
+
 /** Sum every owned talent's effect into a single bonus snapshot. */
 export function talentEffects(owned: string[]): AggregatedEffects {
   const fx: AggregatedEffects = {
