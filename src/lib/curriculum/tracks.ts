@@ -25,7 +25,8 @@ export type TrackId =
   | "ai"
   | "cybersecurity"
   | "career"
-  | "kids";
+  | "kids"
+  | "projects";
 
 export type Track = {
   id: TrackId;
@@ -111,6 +112,25 @@ export const TRACKS: Track[] = [
     blurb: "System design, real projects, and everything that makes you hirable.",
     emoji: "💼",
     modules: ["system-design", "portfolio-projects", "git-github", "two-pointers", "bit-manipulation", "http-and-rest", "http-caching", "unit-testing-fundamentals", "tdd-practice", "solid-principles", "behavioral-patterns"],
+  },
+  {
+    id: "projects",
+    label: "Portfolio Projects",
+    blurb: "Guided capstone builds worth putting on your résumé.",
+    emoji: "🛠️",
+    modules: [
+      "portfolio-projects",
+      "portfolio-js-apps",
+      "portfolio-algorithms",
+      "portfolio-data-structures",
+      "portfolio-parsers",
+      "portfolio-games",
+      "portfolio-systems",
+      "portfolio-text",
+      "portfolio-validation",
+      "portfolio-finance",
+      "portfolio-typescript",
+    ],
   },
   {
     id: "python",

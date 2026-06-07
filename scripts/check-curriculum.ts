@@ -70,6 +70,16 @@ import { aiSafetyKids } from "../src/lib/curriculum/ai-safety-kids.ts";
 import { digitalCitizenship } from "../src/lib/curriculum/digital-citizenship.ts";
 import { systemDesign } from "../src/lib/curriculum/system-design.ts";
 import { portfolioProjects } from "../src/lib/curriculum/portfolio-projects.ts";
+import { portfolioJsApps } from "../src/lib/curriculum/portfolio-js-apps.ts";
+import { portfolioAlgorithms } from "../src/lib/curriculum/portfolio-algorithms.ts";
+import { portfolioDataStructures } from "../src/lib/curriculum/portfolio-data-structures.ts";
+import { portfolioParsers } from "../src/lib/curriculum/portfolio-parsers.ts";
+import { portfolioGames } from "../src/lib/curriculum/portfolio-games.ts";
+import { portfolioSystems } from "../src/lib/curriculum/portfolio-systems.ts";
+import { portfolioText } from "../src/lib/curriculum/portfolio-text.ts";
+import { portfolioValidation } from "../src/lib/curriculum/portfolio-validation.ts";
+import { portfolioFinance } from "../src/lib/curriculum/portfolio-finance.ts";
+import { portfolioTypescript } from "../src/lib/curriculum/portfolio-typescript.ts";
 import { pythonDecorators } from "../src/lib/curriculum/python-decorators.ts";
 import { pythonGenerators } from "../src/lib/curriculum/python-generators.ts";
 import { sqlWindowFunctions } from "../src/lib/curriculum/sql-window-functions.ts";
@@ -224,6 +234,17 @@ const MODULES: Module[] = [
   digitalCitizenship,
   systemDesign,
   portfolioProjects,
+  // Portfolio project modules (2026-06-07)
+  portfolioJsApps,
+  portfolioAlgorithms,
+  portfolioDataStructures,
+  portfolioParsers,
+  portfolioGames,
+  portfolioSystems,
+  portfolioText,
+  portfolioValidation,
+  portfolioFinance,
+  portfolioTypescript,
   pythonDecorators,
   pythonGenerators,
   sqlWindowFunctions,

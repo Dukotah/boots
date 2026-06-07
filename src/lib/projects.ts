@@ -1,12 +1,12 @@
 // Portfolio Projects — the "I built this" credential layer (COMPETITIVE-ROADMAP
-// bet #4). The guided, auto-graded capstone builds already live as lessons in the
-// `portfolio-projects` curriculum module; this module reframes them as portfolio
-// pieces and derives a learner's portfolio purely from `completed[]` — so it's
-// client-derived, syncs via the existing column, and needs no migration.
+// bet #4). Aggregates across ALL curriculum modules whose slug starts with
+// "portfolio", so every new portfolio-* module surfaces here automatically.
+// Completion still derives from the flat `completed[]` array — no migration.
 
-import { getModule, lessonId, type Lesson } from "@/lib/curriculum";
+import { MODULES, lessonId, type Lesson } from "@/lib/curriculum";
 import { languageName } from "@/lib/languages";
 
+// Kept for backward-compatibility (career.ts + tests reference it).
 export const PROJECTS_MODULE_SLUG = "portfolio-projects";
 
 export type Difficulty = "Beginner" | "Intermediate" | "Advanced";
@@ -19,10 +19,33 @@ export type ProjectShowcase = {
   difficulty: Difficulty;
 };
 
-// Per-project showcase framing, keyed by lesson slug. The lesson itself (title,
-// blurb, XP, tests, solution) stays the single source of truth in the curriculum
-// module — this only adds the portfolio metadata. Slugs absent here fall back to
-// sensible defaults, so newly authored project lessons surface automatically.
+// ── Domain map ────────────────────────────────────────────────────────────────
+// Maps module slug → human-readable domain label used for grouping in the hub.
+const MODULE_DOMAIN: Record<string, string> = {
+  "portfolio-projects":      "Foundations",
+  "portfolio-js-apps":       "App Logic",
+  "portfolio-text":          "Text & Strings",
+  "portfolio-parsers":       "Parsers",
+  "portfolio-systems":       "Systems",
+  "portfolio-data-structures": "Data Structures",
+  "portfolio-validation":    "Validation",
+  "portfolio-games":         "Games",
+  "portfolio-algorithms":    "Algorithms",
+  "portfolio-finance":       "Finance & Math",
+  "portfolio-typescript":    "TypeScript",
+};
+
+// ── Difficulty derivation ─────────────────────────────────────────────────────
+// XP bands: <=44 → Beginner, <=54 → Intermediate, >54 → Advanced.
+function difficultyFromXp(xp: number): Difficulty {
+  if (xp <= 44) return "Beginner";
+  if (xp <= 54) return "Intermediate";
+  return "Advanced";
+}
+
+// ── Per-project showcase overrides ───────────────────────────────────────────
+// Keyed by lesson slug. These 5 originals keep their curated framing exactly.
+// Every other lesson falls back to XP-derived difficulty + sensible defaults.
 const SHOWCASE: Record<string, ProjectShowcase> = {
   "todo-app": {
     tags: ["CRUD", "Arrays", "OOP"],
@@ -51,16 +74,13 @@ const SHOWCASE: Record<string, ProjectShowcase> = {
   },
 };
 
-const DEFAULT_SHOWCASE: ProjectShowcase = {
-  tags: [],
-  demonstrates: "A complete, tested mini-project worth showing.",
-  difficulty: "Intermediate",
-};
-
+// ── Project type ──────────────────────────────────────────────────────────────
 export type Project = {
-  /** Lesson slug within the projects module. */
+  /** Lesson slug within its module. */
   slug: string;
-  /** Canonical completion id, "portfolio-projects/<slug>". */
+  /** Module slug this project belongs to. */
+  moduleSlug: string;
+  /** Canonical completion id, "<moduleSlug>/<lessonSlug>". */
   id: string;
   /** Deep link to the build page. */
   href: string;
@@ -72,33 +92,55 @@ export type Project = {
   tags: string[];
   demonstrates: string;
   difficulty: Difficulty;
+  /** Human-readable domain for grouping (e.g. "Systems", "Games"). */
+  domain: string;
 };
 
-function toProject(lesson: Lesson, moduleLang: string): Project {
-  const showcase = SHOWCASE[lesson.slug] ?? DEFAULT_SHOWCASE;
+function toProject(
+  lesson: Lesson,
+  moduleLang: string,
+  moduleSlug: string,
+  domain: string,
+): Project {
+  const override = SHOWCASE[lesson.slug];
+  const difficulty = override?.difficulty ?? difficultyFromXp(lesson.xp);
+  const demonstrates =
+    override?.demonstrates ?? "A complete, tested mini-project worth showing.";
+  const tags = override?.tags ?? [];
+
   return {
     slug: lesson.slug,
-    id: lessonId(PROJECTS_MODULE_SLUG, lesson.slug),
-    href: `/learn/${PROJECTS_MODULE_SLUG}/${lesson.slug}`,
+    moduleSlug,
+    id: lessonId(moduleSlug, lesson.slug),
+    href: `/learn/${moduleSlug}/${lesson.slug}`,
     title: lesson.title,
     blurb: lesson.blurb,
     xp: lesson.xp,
     language: languageName(lesson.language ?? moduleLang),
-    ...showcase,
+    tags,
+    demonstrates,
+    difficulty,
+    domain,
   };
 }
 
-/** Every portfolio project, derived from the curriculum module (stable order). */
+/** Every portfolio project across all portfolio-* modules, in catalog order. */
 export function allProjects(): Project[] {
-  const module = getModule(PROJECTS_MODULE_SLUG);
-  if (!module) return [];
-  const moduleLang = module.language ?? "js";
-  return module.lessons.map((l) => toProject(l, moduleLang));
+  const results: Project[] = [];
+  for (const mod of MODULES) {
+    if (!mod.slug.startsWith("portfolio")) continue;
+    const moduleLang = mod.language ?? "js";
+    const domain = MODULE_DOMAIN[mod.slug] ?? mod.title;
+    for (const lesson of mod.lessons) {
+      results.push(toProject(lesson, moduleLang, mod.slug, domain));
+    }
+  }
+  return results;
 }
 
-/** Is this completion id a portfolio project? */
+/** Is this completion id a portfolio project? True for any portfolio-* module. */
 export function isProject(id: string): boolean {
-  return id.startsWith(`${PROJECTS_MODULE_SLUG}/`);
+  return /^portfolio[^/]*\//.test(id);
 }
 
 /** The learner's shipped projects (completed), in catalog order. */

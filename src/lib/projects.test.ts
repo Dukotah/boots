@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import {
-  PROJECTS_MODULE_SLUG,
   allProjects,
   isProject,
   completedProjects,
@@ -27,15 +26,17 @@ describe("allProjects", () => {
     }
   });
 
-  it("every project id starts with the module slug prefix", () => {
+  it("every project id starts with a portfolio module prefix", () => {
+    // Projects now aggregate across all portfolio-* modules, not just the
+    // original portfolio-projects one.
     for (const p of allProjects()) {
-      expect(p.id.startsWith(`${PROJECTS_MODULE_SLUG}/`)).toBe(true);
+      expect(p.id).toMatch(/^portfolio[^/]*\//);
     }
   });
 
-  it("every project href follows /learn/<module>/<lesson>", () => {
+  it("every project href follows /learn/<portfolio-module>/<lesson>", () => {
     for (const p of allProjects()) {
-      expect(p.href).toMatch(/^\/learn\/portfolio-projects\//);
+      expect(p.href).toMatch(/^\/learn\/portfolio[^/]*\//);
     }
   });
 

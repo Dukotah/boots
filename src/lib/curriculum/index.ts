@@ -66,6 +66,16 @@ import { aiSafetyKids } from "./ai-safety-kids";
 import { digitalCitizenship } from "./digital-citizenship";
 import { systemDesign } from "./system-design";
 import { portfolioProjects } from "./portfolio-projects";
+import { portfolioJsApps } from "./portfolio-js-apps";
+import { portfolioAlgorithms } from "./portfolio-algorithms";
+import { portfolioDataStructures } from "./portfolio-data-structures";
+import { portfolioParsers } from "./portfolio-parsers";
+import { portfolioGames } from "./portfolio-games";
+import { portfolioSystems } from "./portfolio-systems";
+import { portfolioText } from "./portfolio-text";
+import { portfolioValidation } from "./portfolio-validation";
+import { portfolioFinance } from "./portfolio-finance";
+import { portfolioTypescript } from "./portfolio-typescript";
 import { pythonDecorators } from "./python-decorators";
 import { pythonGenerators } from "./python-generators";
 import { pythonStatistics } from "./python-statistics";
@@ -184,6 +194,17 @@ export const MODULES: Module[] = [
   interview,
   systemDesign,
   portfolioProjects,
+  // Portfolio project modules (2026-06-07)
+  portfolioJsApps,
+  portfolioAlgorithms,
+  portfolioDataStructures,
+  portfolioParsers,
+  portfolioGames,
+  portfolioSystems,
+  portfolioText,
+  portfolioValidation,
+  portfolioFinance,
+  portfolioTypescript,
   // Python track
   python,
   pythonData,
