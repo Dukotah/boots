@@ -20,6 +20,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: absoluteUrl("/playground"), changeFrequency: "monthly", priority: 0.8 },
     { url: absoluteUrl("/visualize"), changeFrequency: "monthly", priority: 0.7 },
     { url: absoluteUrl("/blog"), changeFrequency: "weekly", priority: 0.8 },
+    { url: absoluteUrl("/about"), changeFrequency: "monthly", priority: 0.5 },
     { url: absoluteUrl("/how-to"), changeFrequency: "weekly", priority: 0.7 },
     { url: absoluteUrl("/tools"), changeFrequency: "monthly", priority: 0.7 },
     { url: absoluteUrl("/cheatsheet"), changeFrequency: "monthly", priority: 0.7 },
@@ -37,12 +38,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     url: absoluteUrl(`/cheatsheet/${c.slug}`),
     changeFrequency: "monthly",
     priority: 0.7,
-  }));
-
-  const certificatePages: MetadataRoute.Sitemap = MODULES.map((m) => ({
-    url: absoluteUrl(`/certificate/${m.slug}`),
-    changeFrequency: "monthly",
-    priority: 0.4,
   }));
 
   const toolPages: MetadataRoute.Sitemap = TOOLS.map((t) => ({
@@ -91,7 +86,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...toolPages,
     ...blogPages,
     ...howtoPages,
-    ...certificatePages,
     ...modulePages,
     ...lessonPages,
     ...roomPages,

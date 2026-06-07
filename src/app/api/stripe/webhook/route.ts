@@ -12,6 +12,10 @@ export const runtime = "nodejs";
 
 const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
 
+// Reject signatures whose timestamp is too old/new, so a captured-but-valid
+// webhook can't be replayed later (Stripe's recommended tolerance is 5 minutes).
+const SIGNATURE_TOLERANCE_SEC = 300;
+
 /** Constant-time check of Stripe's `stripe-signature` header against the body. */
 function verify(rawBody: string, header: string | null, secret: string): boolean {
   if (!header) return false;
@@ -21,6 +25,11 @@ function verify(rawBody: string, header: string | null, secret: string): boolean
   const timestamp = parts["t"];
   const signature = parts["v1"];
   if (!timestamp || !signature) return false;
+
+  // Replay window: the signed timestamp must be within tolerance of now.
+  const ts = Number(timestamp);
+  if (!Number.isFinite(ts)) return false;
+  if (Math.abs(Date.now() / 1000 - ts) > SIGNATURE_TOLERANCE_SEC) return false;
 
   const expected = crypto
     .createHmac("sha256", secret)

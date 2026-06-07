@@ -48,6 +48,15 @@ function execToString(db: SqlDb, query: string): string {
   return JSON.stringify(db.exec(query));
 }
 
+// A query that yields no result set, or only empty result sets, is "degenerate"
+// — e.g. an empty submission, a non-SELECT, or a SELECT matching nothing. We
+// never count that as a pass, otherwise a no-op would match any lesson whose
+// reference query also (accidentally) returns nothing.
+function isDegenerate(results: SqlTable[]): boolean {
+  if (results.length === 0) return true;
+  return results.every((r) => !r.values || r.values.length === 0);
+}
+
 export async function runSql(code: string, lesson: Lesson): Promise<RunOutcome> {
   const testName = lesson.tests?.[0]?.name ?? "Query returns the correct rows";
   let SQL: SqlJs;
@@ -96,18 +105,19 @@ export async function runSql(code: string, lesson: Lesson): Promise<RunOutcome> 
   const db = new SQL.Database();
   try {
     db.run(setup);
-    const actual = execToString(db, code);
-    const pass = actual === expected;
+    const actualResults = db.exec(code);
+    const actual = JSON.stringify(actualResults);
+    // A degenerate (empty) student result never passes, even if the reference
+    // also returned nothing — that would let a no-op query "match".
+    const pass = !isDegenerate(actualResults) && actual === expected;
+    const error = pass
+      ? undefined
+      : isDegenerate(actualResults)
+        ? "Your query didn't return any rows."
+        : "Your query's result doesn't match the expected rows.";
     return {
       timedOut: false,
-      results: [
-        {
-          name: testName,
-          pass,
-          error: pass ? undefined : "Your query's result doesn't match the expected rows.",
-          logs: [],
-        },
-      ],
+      results: [{ name: testName, pass, error, logs: [] }],
     };
   } catch (err) {
     return {

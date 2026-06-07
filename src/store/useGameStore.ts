@@ -158,6 +158,10 @@ export type GameState = {
   // ── core resources ──
   xp: number;
   gold: number;
+  // Server-authoritative all-time XP (sum of XP the server awarded for completed
+  // lessons). Read-only on the client — locked server-side (migration 0007) and
+  // used to rank the all-time leaderboard. `xp` above stays the cosmetic total.
+  verifiedXp: number;
   // ── progress ──
   completed: string[]; // "moduleSlug/lessonSlug"
   achievements: string[]; // unlocked achievement ids
@@ -172,6 +176,9 @@ export type GameState = {
   // recoverable via repairStreak() (null = nothing to repair). Set the moment a
   // gap-reset happens on the next completion; cleared on repair or a clean day.
   lostStreak: number | null;
+  // The local day the break was detected. Repair is only offered for a day or
+  // two after the break, so a stale lostStreak can't be cashed in weeks later.
+  lostStreakDay: string | null;
   // ── daily activity (resets each local day) — powers Daily Quests ──
   dailyDay: string | null;
   dailyXp: number;
@@ -309,6 +316,7 @@ export type GameState = {
 const INITIAL = {
   xp: 0,
   gold: 0,
+  verifiedXp: 0,
   completed: [] as string[],
   achievements: [] as string[],
   streak: 0,
@@ -316,6 +324,7 @@ const INITIAL = {
   activeDays: [] as string[],
   streakFreezes: 0,
   lostStreak: null as number | null,
+  lostStreakDay: null as string | null,
   dailyDay: null as string | null,
   dailyXp: 0,
   dailyLessons: 0,
@@ -359,6 +368,7 @@ type EquippedLoadout = {
 type ProfileSnapshot = {
   xp: number;
   gold: number;
+  verified_xp: number;
   streak: number;
   last_active_day: string | null;
   completed: string[];
@@ -384,13 +394,16 @@ type ProfileSnapshot = {
 };
 
 const PROFILE_COLUMNS =
-  "xp, gold, streak, last_active_day, completed, achievements, active_quest, " +
+  "xp, gold, verified_xp, streak, last_active_day, completed, achievements, active_quest, " +
   "weekly_xp, league_tier, season_start, cosmetics, talents, equipped, " +
   "streak_freezes, guild_id, guild_name, " +
   "goal, onboarded, daily_challenge_claimed, daily_challenge_streak, " +
   "daily_challenge_best, rev";
 
-async function upsertProfile(userId: string, snap: ProfileSnapshot): Promise<void> {
+async function upsertProfile(
+  userId: string,
+  snap: Partial<ProfileSnapshot>,
+): Promise<void> {
   const sb = getSupabaseBrowserClient();
   if (!sb) return;
   await sb.from("profiles").upsert({ id: userId, ...snap }, { onConflict: "id" });
@@ -526,19 +539,29 @@ export const useGameStore = create<GameState>()(
         // Carry any still-pending repair forward by default; clear it whenever the
         // day resolves cleanly (continued, frozen, or first-ever).
         let lostStreak = state.lostStreak;
+        let lostStreakDay = state.lostStreakDay;
+        // Expire a pending repair that's more than a day old (the break window has
+        // passed) so it can't be cashed in long after the fact.
+        if (lostStreak !== null && lostStreakDay !== null && dayDiff(lostStreakDay, today) > 1) {
+          lostStreak = null;
+          lostStreakDay = null;
+        }
         if (state.lastActiveDay === null) {
           streak = 1;
           lostStreak = null;
+          lostStreakDay = null;
         } else {
           const diff = dayDiff(state.lastActiveDay, today);
           if (diff === 0) streak = state.streak || 1; // same day → keep pending repair
           else if (diff === 1) {
             streak = state.streak + 1;
             lostStreak = null;
+            lostStreakDay = null;
           } else if (streakFreezes > 0) {
             streak = state.streak + 1; // freeze saves the streak
             streakFreezes -= 1;
             lostStreak = null;
+            lostStreakDay = null;
           } else {
             // Gap with no freeze → soft-decay instead of hard reset. Subtract
             // STREAK_DECAY_DAYS, flooring at 1 so there is always something left.
@@ -551,6 +574,8 @@ export const useGameStore = create<GameState>()(
             // repairStreak() adds this delta back on top of the current streak.
             // Only set if there's a meaningful amount to recover (≥2 days lost).
             lostStreak = prevStreak >= 2 ? prevStreak - decayed : null;
+            // Stamp the day so a stale repair can't be cashed in weeks later.
+            lostStreakDay = lostStreak !== null ? today : null;
           }
         }
 
@@ -570,6 +595,7 @@ export const useGameStore = create<GameState>()(
             streak,
             streakFreezes,
             lostStreak,
+            lostStreakDay,
             lastActiveDay: today,
             activeDays: state.activeDays.includes(today)
               ? state.activeDays
@@ -639,6 +665,7 @@ export const useGameStore = create<GameState>()(
           streak,
           streakFreezes,
           lostStreak,
+          lostStreakDay,
           lastActiveDay: today,
           activeDays: state.activeDays.includes(today)
             ? state.activeDays
@@ -648,6 +675,9 @@ export const useGameStore = create<GameState>()(
           dailyLessons: baseDailyLessons + 1,
           claimedQuests,
           weeklyXp: state.weeklyXp + xp,  // raw xp — league standing unaffected
+          // verifiedXp (all-time leaderboard) is server-authoritative — awarded
+          // only for server-verified JS/TS completions and reconciled on pull,
+          // never bumped optimistically here.
           weeklyLessons: state.weeklyLessons + 1,
           // First completion seeds the spaced-repetition record at box 0
           // with FSRS defaults (stability=1 day, difficulty=5, reps=0).
@@ -713,7 +743,8 @@ export const useGameStore = create<GameState>()(
         set((s) => ({
           gold: s.gold + quest.rewardGold,
           xp: s.xp + (quest.rewardXp ?? 0),
-          weeklyXp: s.weeklyXp + (quest.rewardXp ?? 0),
+          // Quest XP intentionally does NOT feed weekly_xp — the league ladder
+          // reflects lesson effort only (and weekly_xp is server-authoritative).
           claimedQuests: [...claimed, questId],
         }));
         grantAchievements(get, set);
@@ -755,7 +786,7 @@ export const useGameStore = create<GameState>()(
         set((s) => ({
           gold: s.gold + quest.rewardGold,
           xp: s.xp + (quest.rewardXp ?? 0),
-          weeklyXp: s.weeklyXp + (quest.rewardXp ?? 0),
+          // Weekly-quest XP does NOT feed weekly_xp (league = lesson effort only).
           claimedWeeklyQuests: [...s.claimedWeeklyQuests, questId],
         }));
         grantAchievements(get, set);
@@ -785,7 +816,7 @@ export const useGameStore = create<GameState>()(
         set((s) => ({
           gold: s.gold + step.rewardGold,
           xp: s.xp + (step.rewardXp ?? 0),
-          weeklyXp: s.weeklyXp + (step.rewardXp ?? 0),
+          // Chain-step XP does NOT feed weekly_xp (league = lesson effort only).
           claimedChainSteps: [...s.claimedChainSteps, key],
         }));
         grantAchievements(get, set);
@@ -820,12 +851,15 @@ export const useGameStore = create<GameState>()(
         const s = get();
         const lost = s.lostStreak;
         if (!lost || lost < 2) return false; // nothing recoverable
+        // The repair offer expires a day or two after the break — you can't pay to
+        // restore a streak you abandoned weeks ago.
+        if (s.lostStreakDay && dayDiff(s.lostStreakDay, todayKey()) > 1) return false;
         const cost = streakRepairCost(lost);
         if (s.gold < cost) return false;
-        // lostStreak is now the DELTA (days removed by decay), so add it back on
-        // top of whatever the current decayed streak is. This is additive, not
-        // absolute, so it works correctly regardless of what the streak is now.
-        set({ gold: s.gold - cost, streak: s.streak + lost, lostStreak: null });
+        // lostStreak is the DELTA (days removed by decay), so add it back on top
+        // of whatever the current decayed streak is — additive, not absolute, so
+        // it works regardless of the current streak. Clear the pending repair.
+        set({ gold: s.gold - cost, streak: s.streak + lost, lostStreak: null, lostStreakDay: null });
         get().syncToServer();
         return true;
       },
@@ -969,16 +1003,19 @@ export const useGameStore = create<GameState>()(
         const rev = s.rev + 1;
         set({ syncStatus: "syncing", rev });
         try {
+          // NOTE: weekly_xp, completed and league_tier are server-authoritative
+          // (migration 0006 reverts client writes to them) — the complete_lesson
+          // RPC and the close-season cron own those. We deliberately don't send
+          // them here so the optimistic mirror doesn't fight the trigger. xp/gold
+          // remain client-mirrored for now (achievement/quest rewards are still
+          // client-side); the server total is reconciled via the RPC.
           await upsertProfile(s.user.id, {
             xp: s.xp,
             gold: s.gold,
             streak: s.streak,
             last_active_day: s.lastActiveDay,
-            completed: s.completed,
             achievements: s.achievements,
             active_quest: s.activeQuest,
-            weekly_xp: s.weeklyXp,
-            league_tier: s.leagueTier,
             season_start: s.seasonStart,
             cosmetics: s.cosmetics,
             talents: s.talents,
@@ -1019,6 +1056,8 @@ export const useGameStore = create<GameState>()(
         set({
           // Monotonic progress — keep the best of either side, always.
           xp: Math.max(local.xp, remote.xp ?? 0),
+          // Server-authoritative — the DB total wins (locked column, can't be forged).
+          verifiedXp: Math.max(local.verifiedXp, remote.verified_xp ?? 0),
           streak: Math.max(local.streak, remote.streak ?? 0),
           weeklyXp: Math.max(local.weeklyXp, remote.weekly_xp ?? 0),
           leagueTier: Math.max(local.leagueTier, remote.league_tier ?? 0),
@@ -1073,6 +1112,7 @@ export const useGameStore = create<GameState>()(
       partialize: (s) => ({
         xp: s.xp,
         gold: s.gold,
+        verifiedXp: s.verifiedXp,
         completed: s.completed,
         achievements: s.achievements,
         streak: s.streak,
@@ -1080,6 +1120,7 @@ export const useGameStore = create<GameState>()(
         activeDays: s.activeDays,
         streakFreezes: s.streakFreezes,
         lostStreak: s.lostStreak,
+        lostStreakDay: s.lostStreakDay,
         dailyDay: s.dailyDay,
         dailyXp: s.dailyXp,
         dailyLessons: s.dailyLessons,

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { CheckCircle2, Lock, HelpCircle } from "lucide-react";
+import { CheckCircle2, Lock, HelpCircle, Wand2 } from "lucide-react";
 import type { Module } from "@/lib/curriculum/types";
 import { lessonId } from "@/lib/curriculum";
 import { useGameStore } from "@/store/useGameStore";
@@ -45,6 +45,11 @@ export function LessonList({ module }: { module: Module }) {
                   {lesson.kind === "quiz" && (
                     <span className="flex shrink-0 items-center gap-1 rounded-full bg-accent/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-accent-soft">
                       <HelpCircle size={11} /> Quiz
+                    </span>
+                  )}
+                  {lesson.kind === "project" && (
+                    <span className="flex shrink-0 items-center gap-1 rounded-full bg-accent/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-accent-soft">
+                      <Wand2 size={11} /> Project
                     </span>
                   )}
                 </p>

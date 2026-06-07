@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "Campaign Map — Your Quest Line",
   description:
     "Your interactive skill tree. Clear each node to unlock the next, earn XP and gold, and climb the ranks from Intern to Archmage.",
+  alternates: { canonical: "/map" },
 };
 
 export default function MapPage() {
