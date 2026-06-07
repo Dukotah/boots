@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { OnboardingFlow } from "@/components/features/onboarding/OnboardingFlow";
 
 export const metadata: Metadata = {
-  title: "Get Started — Find Your Coding Path",
+  title: "Get Started — Your First Win in 60 Seconds",
   description:
-    "Tell us your goal and we'll sequence the right courses and start you on your first lesson in under a minute.",
+    "Pick your coding goal and we'll build your personal path. Most learners are writing real code in under a minute.",
   alternates: { canonical: "/onboarding" },
 };
 

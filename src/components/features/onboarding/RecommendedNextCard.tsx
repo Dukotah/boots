@@ -23,23 +23,23 @@ export function RecommendedNextCard() {
   const goalDef = getGoal(goal);
   const path = goalPath(goal);
 
-  // No goal chosen yet → invite them to onboarding.
+  // No goal chosen yet → invite them to onboarding with a sharp value prop.
   if (!goalDef || !path) {
     return (
       <Link
         href="/onboarding"
-        className="card group flex items-center justify-between gap-4 transition-transform hover:-translate-y-0.5 hover:border-accent/60"
+        className="card group flex items-center justify-between gap-4 transition-transform hover:-translate-y-0.5 hover:border-accent/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
       >
         <div className="flex items-center gap-3">
-          <Compass size={22} className="text-accent-soft" />
+          <Compass size={22} className="text-accent-soft" aria-hidden />
           <div>
-            <p className="font-semibold text-white">Find your path</p>
+            <p className="font-semibold text-white">Pick a goal — start coding in 60 sec</p>
             <p className="text-sm text-gray-400">
-              Tell us your goal and we&apos;ll sequence your courses.
+              Tell us what you want to build and we&apos;ll sequence every lesson for you.
             </p>
           </div>
         </div>
-        <ArrowRight size={18} className="text-gray-500 group-hover:text-white" />
+        <ArrowRight size={18} className="text-gray-500 group-hover:text-white" aria-hidden />
       </Link>
     );
   }

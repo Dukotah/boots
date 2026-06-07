@@ -120,6 +120,14 @@ function dayDiff(a: string, b: string): number {
 const GOLD_PER_XP = 0.5;
 
 /**
+ * Days subtracted from the streak on a missed day (no freeze in inventory).
+ * Soft-decay instead of a hard reset: a long streak survives a lapse at some
+ * cost, which dramatically reduces sunk-cost abandonment churn. A short streak
+ * (< STREAK_DECAY_DAYS) floors at 1 so the player always has something to keep.
+ */
+const STREAK_DECAY_DAYS = 10;
+
+/**
  * Gold cost to repair a broken streak of `lost` days: 25 gold per lost day,
  * capped at 500 so a long streak never becomes unaffordable. The cap makes
  * repair a meaningful-but-attainable gold sink rather than a hard paywall.
@@ -512,10 +520,17 @@ export const useGameStore = create<GameState>()(
             streakFreezes -= 1;
             lostStreak = null;
           } else {
-            // Gap with no freeze → the streak breaks. Remember it (if it was worth
-            // keeping) so the learner can pay to repair it.
-            lostStreak = state.streak >= 2 ? state.streak : null;
-            streak = 1;
+            // Gap with no freeze → soft-decay instead of hard reset. Subtract
+            // STREAK_DECAY_DAYS, flooring at 1 so there is always something left.
+            // This prevents sunk-cost abandonment: a 120-day streak survives a
+            // lapse at the cost of 10 days rather than being wiped entirely.
+            const prevStreak = state.streak;
+            const decayed = Math.max(1, prevStreak - STREAK_DECAY_DAYS);
+            streak = decayed;
+            // Store the AMOUNT lost (the delta), not the old absolute value.
+            // repairStreak() adds this delta back on top of the current streak.
+            // Only set if there's a meaningful amount to recover (≥2 days lost).
+            lostStreak = prevStreak >= 2 ? prevStreak - decayed : null;
           }
         }
 
@@ -762,9 +777,10 @@ export const useGameStore = create<GameState>()(
         if (!lost || lost < 2) return false; // nothing recoverable
         const cost = streakRepairCost(lost);
         if (s.gold < cost) return false;
-        // Restore the broken streak and credit today on top (mirrors how a freeze
-        // would have carried it through the missed day), then clear the pending repair.
-        set({ gold: s.gold - cost, streak: lost + 1, lostStreak: null });
+        // lostStreak is now the DELTA (days removed by decay), so add it back on
+        // top of whatever the current decayed streak is. This is additive, not
+        // absolute, so it works correctly regardless of what the streak is now.
+        set({ gold: s.gold - cost, streak: s.streak + lost, lostStreak: null });
         get().syncToServer();
         return true;
       },

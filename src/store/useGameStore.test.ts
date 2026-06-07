@@ -196,18 +196,17 @@ describe("completeLesson — streak", () => {
     expect(gs().weeklyXp).toBe(LESSON_XP + 20);
   });
 
-  it("lostStreak is set when a streak is broken with no freeze", () => {
-    // Simulate a streak that is already established in a "past" day.
-    // We forcibly set state to simulate a gap.
+  it("short streak (≤ decay) decays to 1 and lostStreak is the delta lost", () => {
+    // A streak of 5 with STREAK_DECAY_DAYS=10: decayed = max(1, 5-10) = 1.
+    // lostStreak = 5 - 1 = 4 (the amount lost, not the old absolute streak).
     useGameStore.setState({
       streak: 5,
       streakFreezes: 0,
       lastActiveDay: "2020-0-1", // far in the past → gap
     });
     gs().completeLesson("beginner/first-function", 10);
-    // The old streak (5) should be remembered as lostStreak.
-    expect(gs().lostStreak).toBe(5);
     expect(gs().streak).toBe(1);
+    expect(gs().lostStreak).toBe(4); // delta: 5 - 1 = 4
   });
 
   it("a streak freeze prevents a gap from breaking the streak", () => {
@@ -220,6 +219,35 @@ describe("completeLesson — streak", () => {
     expect(gs().streak).toBe(6); // freeze consumed
     expect(gs().streakFreezes).toBe(0);
     expect(gs().lostStreak).toBeNull();
+  });
+
+  it("long streak (> decay) decays by STREAK_DECAY_DAYS and lostStreak is 10", () => {
+    // A streak of 120 with STREAK_DECAY_DAYS=10: decayed = max(1, 120-10) = 110.
+    // lostStreak = 120 - 110 = 10 (the delta).
+    useGameStore.setState({
+      streak: 120,
+      streakFreezes: 0,
+      lastActiveDay: "2020-0-1", // far in the past → gap
+    });
+    gs().completeLesson("beginner/variables", 10);
+    expect(gs().streak).toBe(110);
+    expect(gs().lostStreak).toBe(10);
+  });
+
+  it("repairStreak restores the decayed amount on top of current streak", () => {
+    // Set up: streak of 120 decayed to 110, lostStreak = 10.
+    // After repair with enough gold: streak = 110 + 10 = 120, lostStreak = null.
+    useGameStore.setState({
+      streak: 110,
+      lostStreak: 10,
+      gold: 1000, // enough to cover streakRepairCost(10) = 250
+      streakFreezes: 0,
+    });
+    const repaired = gs().repairStreak();
+    expect(repaired).toBe(true);
+    expect(gs().streak).toBe(120); // 110 + 10
+    expect(gs().lostStreak).toBeNull();
+    expect(gs().gold).toBe(1000 - 250); // streakRepairCost(10) = 10 * 25 = 250
   });
 });
 
