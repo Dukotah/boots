@@ -23,6 +23,14 @@ import { useEntitlements } from "@/store/useEntitlements";
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const setSession = useGameStore((s) => s.setSession);
   const setPro = useEntitlements((s) => s.setPro);
+  const startTrial = useEntitlements((s) => s.startTrial);
+
+  // Kick off the reverse trial on first load (idempotent — only sets the clock
+  // once, and never for someone who's already paid). Runs regardless of whether
+  // Supabase is configured, so local/demo users get the Pro taste too.
+  useEffect(() => {
+    startTrial();
+  }, [startTrial]);
 
   // Capture a ?ref=CODE on first load and stash it for the post-sign-in redeem.
   // sessionStorage (not localStorage) is deliberate — it expires with the tab so

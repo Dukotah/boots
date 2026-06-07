@@ -20,6 +20,7 @@ import { EnableNotifications } from "@/components/features/push/EnableNotificati
 import { RecommendedNextCard } from "@/components/features/onboarding/RecommendedNextCard";
 import { ReferralCard } from "@/components/features/referral/ReferralCard";
 import { PurchaseTracker } from "@/components/features/billing/PurchaseTracker";
+import { TrialBanner } from "@/components/features/billing/TrialBanner";
 import { PageSkeleton } from "@/components/PageSkeleton";
 
 export default function Dashboard() {
@@ -98,6 +99,7 @@ export default function Dashboard() {
       <Suspense fallback={null}>
         <PurchaseTracker />
       </Suspense>
+      <TrialBanner />
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-white">Your dashboard</h1>
         <Link href={continueHref} className="btn-primary">

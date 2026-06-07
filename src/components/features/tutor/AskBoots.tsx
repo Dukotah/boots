@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Send, Lock, Loader2 } from "lucide-react";
 import type { Lesson, Module } from "@/lib/curriculum/types";
 import type { LessonLanguage } from "@/lib/curriculum/types";
-import { useEntitlements } from "@/store/useEntitlements";
+import { useProAccess } from "@/store/useEntitlements";
 import { useMounted } from "@/hooks/useMounted";
 import { MascotBoots } from "@/components/MascotBoots";
 import { track } from "@/lib/analytics/track";
@@ -37,7 +37,7 @@ export function AskBoots({
   openSignal?: number;
 }) {
   const mounted = useMounted();
-  const isPro = useEntitlements((s) => s.isPro);
+  const isPro = useProAccess();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");

@@ -6,7 +6,11 @@ import { Check } from "lucide-react";
 import { motion } from "framer-motion";
 import { PLANS, type PlanId } from "@/lib/billing/plans";
 import { UpgradeButton } from "./UpgradeButton";
-import { useEntitlements } from "@/store/useEntitlements";
+import {
+  useEntitlements,
+  useTrialStatus,
+  TRIAL_DAYS,
+} from "@/store/useEntitlements";
 import { useMounted } from "@/hooks/useMounted";
 import { track } from "@/lib/analytics/track";
 import { useExperiment } from "@/hooks/useExperiment";
@@ -29,6 +33,8 @@ export function PricingPlans() {
 
   return (
     <div className="mt-10">
+      <TrialNotice />
+
       {/* billing cycle toggle */}
       <div className="mx-auto flex w-fit items-center gap-1 rounded-full border border-line bg-surface p-1">
         {(["monthly", "annual"] as PlanId[]).map((id) => (
@@ -99,6 +105,9 @@ export function PricingPlans() {
           />
           <div className="mt-6">
             <UpgradeButton plan={cycle}>Go Pro</UpgradeButton>
+            <p className="mt-3 text-center text-xs text-gray-500">
+              30-day money-back guarantee · cancel anytime
+            </p>
           </div>
         </Tier>
 
@@ -170,6 +179,30 @@ function Features({ items }: { items: string[] }) {
       ))}
     </ul>
   );
+}
+
+/** Ties the pricing page to the reverse trial: reassures during, converts after. */
+function TrialNotice() {
+  const mounted = useMounted();
+  const { paid, active, expired, daysLeft } = useTrialStatus();
+  if (!mounted || paid) return null;
+
+  if (active) {
+    return (
+      <p className="mx-auto mb-6 w-fit rounded-full border border-accent/30 bg-accent/5 px-4 py-1.5 text-center text-sm text-gray-200">
+        ✨ You&apos;re on a {TRIAL_DAYS}-day Pro trial — {daysLeft} day
+        {daysLeft === 1 ? "" : "s"} left. Lock in a plan to keep full access.
+      </p>
+    );
+  }
+  if (expired) {
+    return (
+      <p className="mx-auto mb-6 w-fit rounded-full border border-gold/40 bg-gold/5 px-4 py-1.5 text-center text-sm text-gray-200">
+        👑 Your Pro trial has ended — pick a plan to pick up right where you left off.
+      </p>
+    );
+  }
+  return null;
 }
 
 /** Dev-only helper to flip Pro on/off without Stripe, for testing the paywall. */

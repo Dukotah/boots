@@ -4,7 +4,7 @@
 // (useEntitlements) + streak (useGameStore) so components ask one question:
 // "can I interact with this lesson, and if not, why?"
 
-import { useEntitlements } from "@/store/useEntitlements";
+import { useProAccess } from "@/store/useEntitlements";
 import { useGameStore } from "@/store/useGameStore";
 import { canInteract, isFreePreview, freeLessonLimit } from "@/lib/access";
 
@@ -19,7 +19,7 @@ export type Access = {
 };
 
 export function useAccess(lessonIndex: number, free = false): Access {
-  const isPro = useEntitlements((s) => s.isPro);
+  const isPro = useProAccess();
   const streak = useGameStore((s) => s.streak);
   return {
     isPro,

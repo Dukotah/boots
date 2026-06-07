@@ -29,6 +29,13 @@ export function XPBar({ info }: { info: LevelInfo }) {
           transition={{ type: "spring", stiffness: 120, damping: 18 }}
         />
       </div>
+      {/* Goal-gradient nudge: effort spikes near a visible goal, so call out the
+          final stretch to the next level. */}
+      {info.progress >= 0.85 && info.progress < 1 && (
+        <p className="mt-1 text-right text-xs font-medium text-accent-soft">
+          🔥 {info.xpForLevel - info.xpIntoLevel} XP to level up!
+        </p>
+      )}
     </div>
   );
 }

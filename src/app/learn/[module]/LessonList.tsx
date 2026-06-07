@@ -6,7 +6,7 @@ import { CheckCircle2, Lock, HelpCircle } from "lucide-react";
 import type { Module } from "@/lib/curriculum/types";
 import { lessonId } from "@/lib/curriculum";
 import { useGameStore } from "@/store/useGameStore";
-import { useEntitlements } from "@/store/useEntitlements";
+import { useProAccess } from "@/store/useEntitlements";
 import { freeLessonLimit } from "@/lib/access";
 
 export function LessonList({ module }: { module: Module }) {
@@ -14,7 +14,7 @@ export function LessonList({ module }: { module: Module }) {
   useEffect(() => setMounted(true), []);
   const completed = useGameStore((s) => s.completed);
   const streak = useGameStore((s) => s.streak);
-  const isPro = useEntitlements((s) => s.isPro);
+  const isPro = useProAccess();
 
   // How far the free window reaches for this learner right now (grows with streak).
   const freeLimit = freeLessonLimit(streak);
