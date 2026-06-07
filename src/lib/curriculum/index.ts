@@ -38,9 +38,12 @@ import { sqlJoins } from "./sql-joins";
 import { sqlAggregations } from "./sql-aggregations";
 import { sqlSubqueries } from "./sql-subqueries";
 import { gitGithub } from "./git-github";
+import { aiForEveryone } from "./ai-for-everyone";
 import { aiLlms } from "./ai-llms";
 import { promptEngineering } from "./prompt-engineering";
+import { aiPowerUser } from "./ai-power-user";
 import { aiApps } from "./ai-apps";
+import { vibeCoding } from "./vibe-coding";
 import { aiAgents } from "./ai-agents";
 import { aiEmbeddings } from "./ai-embeddings";
 import { aiEthics } from "./ai-ethics";
@@ -163,9 +166,12 @@ export const MODULES: Module[] = [
   // JavaScript array methods
   jsArrayMethods,
   // AI track
+  aiForEveryone,
   aiLlms,
   promptEngineering,
+  aiPowerUser,
   aiApps,
+  vibeCoding,
   aiAgents,
   aiEmbeddings,
   aiEthics,

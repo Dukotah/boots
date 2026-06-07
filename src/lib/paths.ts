@@ -26,6 +26,43 @@ export type Path = {
 
 export const PATHS: Path[] = [
   {
+    slug: "work-with-ai",
+    title: "Work with AI",
+    role: "Confident AI User & Builder",
+    tagline: "From 'what even is AI?' to building and shipping with it.",
+    description:
+      "The complete journey for the AI era — no experience needed. Start by confidently using tools like Claude, Gemini, and ChatGPT in everyday life, grow into a true power user, then learn to build and ship real software by directing AI (vibe coding). Ends with the builder's toolkit: how LLMs work, AI apps, agents, retrieval, and using it all responsibly.",
+    emoji: "✨",
+    gradient: "from-sky-500/20 to-violet-500/10",
+    difficulty: "Beginner",
+    outcomes: [
+      "Use Claude, Gemini, and ChatGPT confidently and safely",
+      "Get genuinely useful answers and spot when AI is wrong",
+      "Run practical AI workflows for work, research, and learning",
+      "Build and ship real software by directing AI (vibe coding)",
+      "Understand the builder's stack: prompts, apps, agents, and ethics",
+    ],
+    keywords: [
+      "learn to use AI",
+      "how to use ChatGPT and Claude",
+      "AI for beginners",
+      "vibe coding",
+      "build apps with AI",
+      "AI course for non-technical people",
+    ],
+    moduleSlugs: [
+      "ai-for-everyone",
+      "ai-power-user",
+      "prompt-engineering",
+      "vibe-coding",
+      "ai-llms",
+      "ai-apps",
+      "ai-agents",
+      "ai-embeddings",
+      "ai-ethics",
+    ],
+  },
+  {
     slug: "frontend",
     title: "Frontend Developer",
     role: "Front-End Developer",

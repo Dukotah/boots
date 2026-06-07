@@ -147,10 +147,13 @@ export const TRACKS: Track[] = [
   },
   {
     id: "ai",
-    label: "AI & Prompt Engineering",
-    blurb: "Understand and build with large language models — prompts, apps, agents, and ethics.",
+    label: "AI: Use It & Build With It",
+    blurb: "From your first chatbot conversation to building and shipping software with AI — for total beginners through builders.",
     emoji: "🤖",
     modules: [
+      "ai-for-everyone",
+      "ai-power-user",
+      "vibe-coding",
       "ai-llms",
       "prompt-engineering",
       "ai-apps",

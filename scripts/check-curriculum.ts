@@ -29,6 +29,9 @@ import { pythonData } from "../src/lib/curriculum/python-data.ts";
 import { sql } from "../src/lib/curriculum/sql.ts";
 import { sqlJoins } from "../src/lib/curriculum/sql-joins.ts";
 import { aiLlms } from "../src/lib/curriculum/ai-llms.ts";
+import { aiForEveryone } from "../src/lib/curriculum/ai-for-everyone.ts";
+import { aiPowerUser } from "../src/lib/curriculum/ai-power-user.ts";
+import { vibeCoding } from "../src/lib/curriculum/vibe-coding.ts";
 import { closures } from "../src/lib/curriculum/closures.ts";
 import { dataFormats } from "../src/lib/curriculum/data-formats.ts";
 import { collections } from "../src/lib/curriculum/collections.ts";
@@ -151,9 +154,12 @@ const MODULES: Module[] = [
   sqlAggregations,
   sqlSubqueries,
   gitGithub,
+  aiForEveryone,
   aiLlms,
   promptEngineering,
+  aiPowerUser,
   aiApps,
+  vibeCoding,
   aiAgents,
   aiEmbeddings,
   aiEthics,
