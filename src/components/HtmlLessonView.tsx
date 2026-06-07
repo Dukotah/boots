@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -20,6 +20,7 @@ import { TestResults } from "./TestResults";
 import { LevelUpToast } from "./LevelUpToast";
 import { SkillPointToast } from "./SkillPointToast";
 import { ProGate } from "./features/billing/ProGate";
+import { track } from "@/lib/analytics/track";
 
 export function HtmlLessonView({
   module,
@@ -31,6 +32,11 @@ export function HtmlLessonView({
   nextHref: string | null;
 }) {
   const id = lessonId(module.slug, lesson.slug);
+
+  useEffect(() => {
+    track("lesson_started", { lesson_id: id });
+  }, [id]);
+
   const starterCode = lesson.starterCode ?? "";
   const solution = lesson.solution ?? "";
   const [code, setCode] = useState(starterCode);

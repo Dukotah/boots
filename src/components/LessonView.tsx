@@ -42,6 +42,7 @@ import { LessonNav } from "./LessonNav";
 import { summarizeLesson } from "@/lib/tutor/prompt";
 import { deriveHintLadder, isSolutionStep } from "@/lib/hints";
 import type { TutorContext } from "@/lib/tutor/types";
+import { track } from "@/lib/analytics/track";
 
 export function LessonView({
   module,
@@ -53,6 +54,11 @@ export function LessonView({
   nextHref: string | null;
 }) {
   const id = lessonId(module.slug, lesson.slug);
+
+  useEffect(() => {
+    track("lesson_started", { lesson_id: id });
+  }, [id]);
+
   const language = lessonLanguage(lesson, module);
   const lang = langMeta(language);
   const starterCode = lesson.starterCode ?? "";

@@ -599,6 +599,13 @@ export const useGameStore = create<GameState>()(
           );
           if (gainedSkillPoints > 0) set({ recentSkillPoints: gainedSkillPoints });
           get().syncToServer();
+          // Streak milestone crossing — fires on reviews too (a review on day 7
+          // that pushes the streak from 6→7 is a genuine habit achievement).
+          for (const m of [7, 30, 100] as const) {
+            if (state.streak < m && streak >= m) {
+              track("streak_milestone", { streak: m });
+            }
+          }
           return {
             gainedXp: 0,
             gainedGold: reviewGold,
@@ -673,6 +680,11 @@ export const useGameStore = create<GameState>()(
         track("lesson_completed", { lesson_id: id, xp: gainedXp });
         if (state.completed.length === 0) {
           track("first_all_green", { lesson_id: id });
+        }
+        for (const m of [7, 30, 100] as const) {
+          if (state.streak < m && streak >= m) {
+            track("streak_milestone", { streak: m });
+          }
         }
 
         return {

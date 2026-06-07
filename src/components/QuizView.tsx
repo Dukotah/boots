@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -16,6 +16,7 @@ import { useMounted } from "@/hooks/useMounted";
 import { LevelUpToast } from "./LevelUpToast";
 import { SkillPointToast } from "./SkillPointToast";
 import { ProGate } from "./features/billing/ProGate";
+import { track } from "@/lib/analytics/track";
 
 // Renders a quiz/scenario lesson: reading content + multiple-choice questions
 // ("spot the scam" etc.). Completing all questions correctly awards XP — reusing
@@ -30,6 +31,11 @@ export function QuizView({
   nextHref: string | null;
 }) {
   const id = lessonId(module.slug, lesson.slug);
+
+  useEffect(() => {
+    track("lesson_started", { lesson_id: id });
+  }, [id]);
+
   const questions = lesson.questions ?? [];
 
   const completeLesson = useGameStore((s) => s.completeLesson);
