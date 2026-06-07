@@ -127,6 +127,24 @@ import { freelanceDeveloper } from "../src/lib/curriculum/freelance-developer.ts
 import { markdownMastery } from "../src/lib/curriculum/markdown-mastery.ts";
 import { terminalBasics } from "../src/lib/curriculum/terminal-basics.ts";
 import { webAccessibility } from "../src/lib/curriculum/web-accessibility.ts";
+import { aiBuildAChatbot } from "../src/lib/curriculum/ai-build-a-chatbot.ts";
+import { aiEmailInbox } from "../src/lib/curriculum/ai-email-inbox.ts";
+import { aiForHealthcare } from "../src/lib/curriculum/ai-for-healthcare.ts";
+import { aiForLegal } from "../src/lib/curriculum/ai-for-legal.ts";
+import { aiForNonprofits } from "../src/lib/curriculum/ai-for-nonprofits.ts";
+import { aiForParents } from "../src/lib/curriculum/ai-for-parents.ts";
+import { aiForRealEstate } from "../src/lib/curriculum/ai-for-real-estate.ts";
+import { aiForSeniors } from "../src/lib/curriculum/ai-for-seniors.ts";
+import { aiKnowledgeManagement } from "../src/lib/curriculum/ai-knowledge-management.ts";
+import { aiMeetingNotes } from "../src/lib/curriculum/ai-meeting-notes.ts";
+import { dataVisualization } from "../src/lib/curriculum/data-visualization.ts";
+import { noCodeTools } from "../src/lib/curriculum/no-code-tools.ts";
+import { networkingPersonalBrand } from "../src/lib/curriculum/networking-personal-brand.ts";
+import { publicSpeakingTech } from "../src/lib/curriculum/public-speaking-tech.ts";
+import { remoteWorkSkills } from "../src/lib/curriculum/remote-work-skills.ts";
+import { salaryNegotiation } from "../src/lib/curriculum/salary-negotiation.ts";
+import { spreadsheetsMastery } from "../src/lib/curriculum/spreadsheets-mastery.ts";
+import { timeManagementDevs } from "../src/lib/curriculum/time-management-devs.ts";
 
 // ---------------------------------------------------------------------------
 // KNOWN_PRESOLVED — lessons whose starterCode intentionally passes all tests.
@@ -264,6 +282,25 @@ const MODULES: Module[] = [
   markdownMastery,
   terminalBasics,
   webAccessibility,
+  // New batch (2026-06-07 wave 2)
+  aiBuildAChatbot,
+  aiEmailInbox,
+  aiForHealthcare,
+  aiForLegal,
+  aiForNonprofits,
+  aiForParents,
+  aiForRealEstate,
+  aiForSeniors,
+  aiKnowledgeManagement,
+  aiMeetingNotes,
+  dataVisualization,
+  noCodeTools,
+  networkingPersonalBrand,
+  publicSpeakingTech,
+  remoteWorkSkills,
+  salaryNegotiation,
+  spreadsheetsMastery,
+  timeManagementDevs,
 ];
 
 function stringify(v: unknown): string {

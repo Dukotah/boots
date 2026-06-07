@@ -27,6 +27,16 @@ import practicalPromptEngineeringGuidePost from "./posts/practical-prompt-engine
 import canYouLearnToCodeForFreePost from "./posts/can-you-learn-to-code-for-free";
 import isLearningToCodeWorthIt2026Post from "./posts/is-learning-to-code-worth-it-2026";
 import howSmallBusinessesUseAiPost from "./posts/how-small-businesses-use-ai";
+import howToUseClaude from "./posts/how-to-use-claude";
+import aiForBeginnersCompleteGuide from "./posts/ai-for-beginners-complete-guide";
+import howToUseGemini from "./posts/how-to-use-gemini";
+import bestProgrammingLanguages2026 from "./posts/best-programming-languages-2026";
+import aiJobsAndSkills2026 from "./posts/ai-jobs-and-skills-2026";
+import howToLearnSql2026 from "./posts/how-to-learn-sql-2026";
+import howToLearnJavascript2026 from "./posts/how-to-learn-javascript-2026";
+import cantripVsBootdev from "./posts/cantrip-vs-bootdev";
+import aiSideHustles2026 from "./posts/ai-side-hustles-2026";
+import howToStayRelevantAiEra from "./posts/how-to-stay-relevant-ai-era";
 
 export type BlogPost = {
   slug: string;
@@ -880,6 +890,16 @@ The barrier to learning to code was never money — it's consistency and focus. 
   canYouLearnToCodeForFreePost,
   isLearningToCodeWorthIt2026Post,
   howSmallBusinessesUseAiPost,
+  howToUseClaude,
+  aiForBeginnersCompleteGuide,
+  howToUseGemini,
+  bestProgrammingLanguages2026,
+  aiJobsAndSkills2026,
+  howToLearnSql2026,
+  howToLearnJavascript2026,
+  cantripVsBootdev,
+  aiSideHustles2026,
+  howToStayRelevantAiEra,
 ];
 
 /** Look up a single post by its slug. Returns undefined if not found. */

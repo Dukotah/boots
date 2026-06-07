@@ -122,6 +122,24 @@ import { freelanceDeveloper } from "./freelance-developer";
 import { markdownMastery } from "./markdown-mastery";
 import { terminalBasics } from "./terminal-basics";
 import { webAccessibility } from "./web-accessibility";
+import { aiBuildAChatbot } from "./ai-build-a-chatbot";
+import { aiEmailInbox } from "./ai-email-inbox";
+import { aiForHealthcare } from "./ai-for-healthcare";
+import { aiForLegal } from "./ai-for-legal";
+import { aiForNonprofits } from "./ai-for-nonprofits";
+import { aiForParents } from "./ai-for-parents";
+import { aiForRealEstate } from "./ai-for-real-estate";
+import { aiForSeniors } from "./ai-for-seniors";
+import { aiKnowledgeManagement } from "./ai-knowledge-management";
+import { aiMeetingNotes } from "./ai-meeting-notes";
+import { dataVisualization } from "./data-visualization";
+import { noCodeTools } from "./no-code-tools";
+import { networkingPersonalBrand } from "./networking-personal-brand";
+import { publicSpeakingTech } from "./public-speaking-tech";
+import { remoteWorkSkills } from "./remote-work-skills";
+import { salaryNegotiation } from "./salary-negotiation";
+import { spreadsheetsMastery } from "./spreadsheets-mastery";
+import { timeManagementDevs } from "./time-management-devs";
 
 // The whole curriculum. Add a module here and it shows up everywhere.
 // Order defines the Campaign Map progression (sequential unlock) — a difficulty ramp.
@@ -267,6 +285,25 @@ export const MODULES: Module[] = [
   markdownMastery,
   terminalBasics,
   webAccessibility,
+  // New batch (2026-06-07 wave 2)
+  aiBuildAChatbot,
+  aiEmailInbox,
+  aiForHealthcare,
+  aiForLegal,
+  aiForNonprofits,
+  aiForParents,
+  aiForRealEstate,
+  aiForSeniors,
+  aiKnowledgeManagement,
+  aiMeetingNotes,
+  dataVisualization,
+  noCodeTools,
+  networkingPersonalBrand,
+  publicSpeakingTech,
+  remoteWorkSkills,
+  salaryNegotiation,
+  spreadsheetsMastery,
+  timeManagementDevs,
 ];
 
 export function getModule(slug: string): Module | undefined {
