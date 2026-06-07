@@ -44,6 +44,13 @@ import { pythonAlgorithms } from "../src/lib/curriculum/python-algorithms.ts";
 import { sqlAggregations } from "../src/lib/curriculum/sql-aggregations.ts";
 import { sqlSubqueries } from "../src/lib/curriculum/sql-subqueries.ts";
 import { gitGithub } from "../src/lib/curriculum/git-github.ts";
+import { aiFoundations } from "../src/lib/curriculum/ai-foundations.ts";
+import { aiConversations } from "../src/lib/curriculum/ai-conversations.ts";
+import { aiEverydayLife } from "../src/lib/curriculum/ai-everyday-life.ts";
+import { aiMakeThings } from "../src/lib/curriculum/ai-make-things.ts";
+import { aiAtWork } from "../src/lib/curriculum/ai-at-work.ts";
+import { aiPowerUser } from "../src/lib/curriculum/ai-power-user.ts";
+import { aiResponsible } from "../src/lib/curriculum/ai-responsible.ts";
 import { promptEngineering } from "../src/lib/curriculum/prompt-engineering.ts";
 import { aiApps } from "../src/lib/curriculum/ai-apps.ts";
 import { aiAgents } from "../src/lib/curriculum/ai-agents.ts";
@@ -109,6 +116,13 @@ const MODULES: Module[] = [
   sqlAggregations,
   sqlSubqueries,
   gitGithub,
+  aiFoundations,
+  aiConversations,
+  aiEverydayLife,
+  aiMakeThings,
+  aiAtWork,
+  aiPowerUser,
+  aiResponsible,
   aiLlms,
   promptEngineering,
   aiApps,
@@ -197,6 +211,41 @@ async function checkLesson(mod: Module, lesson: Lesson, seen: Set<string>) {
       if (typeof q.answer !== "number" || q.answer < 0 || q.answer >= (q.options?.length ?? 0))
         errors.push(`${where}: question ${i + 1} has an out-of-range answer index`);
     });
+    return;
+  }
+
+  // ── project lessons: validate steps + optional rubric, then stop (no code) ──
+  if (lesson.kind === "project") {
+    const steps = lesson.steps ?? [];
+    if (steps.length === 0)
+      errors.push(`${where}: project lesson needs at least one step`);
+    steps.forEach((s, i) => {
+      if (!s.instruction || !s.instruction.trim())
+        errors.push(`${where}: step ${i + 1} has no instruction`);
+    });
+    if (lesson.checkpoint) {
+      const rubric = lesson.checkpoint.rubric ?? [];
+      if (!lesson.checkpoint.prompt || !lesson.checkpoint.prompt.trim())
+        errors.push(`${where}: checkpoint has no prompt`);
+      if (rubric.length === 0)
+        errors.push(`${where}: checkpoint needs at least one rubric check`);
+      const valid = ["minWords", "minLength", "includes", "includesAny", "regex"];
+      rubric.forEach((c, i) => {
+        if (!c.label || !c.label.trim())
+          errors.push(`${where}: rubric check ${i + 1} has no label`);
+        if (!valid.includes(c.test))
+          errors.push(`${where}: rubric check ${i + 1} has invalid test "${c.test}"`);
+        if (c.value === undefined || String(c.value).trim() === "")
+          errors.push(`${where}: rubric check ${i + 1} has no value`);
+        if (c.test === "regex") {
+          try {
+            new RegExp(c.value);
+          } catch {
+            errors.push(`${where}: rubric check ${i + 1} has an invalid regex "${c.value}"`);
+          }
+        }
+      });
+    }
     return;
   }
 

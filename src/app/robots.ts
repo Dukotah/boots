@@ -8,7 +8,29 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/dashboard", "/api/"],
+      // Private / signed-in app surfaces render as empty client shells to a
+      // crawler — keep them out of the index so they don't dilute crawl budget
+      // or surface thin pages. (Public profiles at /u/* stay crawlable: they're
+      // meant to be shared and carry their own OG card.)
+      disallow: [
+        "/api/",
+        "/dashboard",
+        "/profile",
+        "/login",
+        "/shop",
+        "/quests",
+        "/leaderboard",
+        "/friends",
+        "/guilds",
+        "/leagues",
+        "/events",
+        "/boss",
+        "/career",
+        "/review",
+        "/skill-tree",
+        "/achievements",
+        "/offline",
+      ],
     },
     sitemap: absoluteUrl("/sitemap.xml"),
   };

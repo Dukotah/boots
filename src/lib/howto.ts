@@ -138,7 +138,7 @@ export function getHowtos(): Howto[] {
   for (const module of MODULES) {
     for (const lesson of module.lessons) {
       // Only code lessons with a reference solution become how-to pages.
-      if (lesson.kind === "quiz") continue;
+      if (lesson.kind === "quiz" || lesson.kind === "project") continue;
       if (!lesson.solution) continue;
 
       const lang = lessonLanguage(lesson, module);

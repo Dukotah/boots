@@ -41,6 +41,13 @@ import { sqlJoins } from "./sql-joins";
 import { sqlAggregations } from "./sql-aggregations";
 import { sqlSubqueries } from "./sql-subqueries";
 import { gitGithub } from "./git-github";
+import { aiFoundations } from "./ai-foundations";
+import { aiConversations } from "./ai-conversations";
+import { aiEverydayLife } from "./ai-everyday-life";
+import { aiMakeThings } from "./ai-make-things";
+import { aiAtWork } from "./ai-at-work";
+import { aiPowerUser } from "./ai-power-user";
+import { aiResponsible } from "./ai-responsible";
 import { aiLlms } from "./ai-llms";
 import { promptEngineering } from "./prompt-engineering";
 import { aiApps } from "./ai-apps";
@@ -123,7 +130,16 @@ export const MODULES: Module[] = [
   sqlSubqueries,
   // Tooling
   gitGithub,
-  // AI track
+  // AI for Everyone track (no-code: "use AI in your life & make things").
+  // Sits above the developer-facing AI track in the campaign order.
+  aiFoundations,
+  aiConversations,
+  aiEverydayLife,
+  aiMakeThings,
+  aiAtWork,
+  aiPowerUser,
+  aiResponsible,
+  // AI track (developer-facing: build with LLMs)
   aiLlms,
   promptEngineering,
   aiApps,

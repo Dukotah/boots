@@ -51,13 +51,15 @@ type TutorRequest = {
 /** Verify the caller may use the tutor (Pro-gated) and return their id for
  *  rate-limit keying. */
 async function authorize(): Promise<{ allowed: boolean; userId: string | null }> {
-  // Local dev with no backend: allow so the feature is testable. There is no real
-  // Pro tier until Stripe + the profiles entitlement land, at which point this
-  // path simply isn't hit in production.
-  if (!isSupabaseConfigured) return { allowed: true, userId: null };
+  // Without a backend we can't verify Pro. In dev that's fine (allow, so the
+  // feature is testable), but in production we must FAIL CLOSED — otherwise a
+  // misconfigured deploy would hand free, anonymous access to the paid AI tutor
+  // and burn the Anthropic key on IP-keyed limits only.
+  const devOpen = process.env.NODE_ENV !== "production";
+  if (!isSupabaseConfigured) return { allowed: devOpen, userId: null };
 
   const sb = getSupabaseServerClient();
-  if (!sb) return { allowed: true, userId: null };
+  if (!sb) return { allowed: devOpen, userId: null };
 
   const {
     data: { user },

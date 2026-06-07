@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -10,6 +10,7 @@ import {
   PanelLeftOpen,
   ListChecks,
   HelpCircle,
+  Wand2,
   X,
 } from "lucide-react";
 import type { Module } from "@/lib/curriculum/types";
@@ -36,6 +37,53 @@ export function LessonSidebar({
   // Collapsed by default on mobile; the desktop column starts open.
   const [openDesktop, setOpenDesktop] = useState(true);
   const [openMobile, setOpenMobile] = useState(false);
+  const drawerRef = useRef<HTMLDivElement>(null);
+  const openButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Mobile drawer is a modal: lock background scroll, trap focus, close on
+  // Escape, and restore focus to the toggle when it closes (a11y — ROADMAP 3.5).
+  useEffect(() => {
+    if (!openMobile) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const focusables = () =>
+      drawerRef.current
+        ? Array.from(
+            drawerRef.current.querySelectorAll<HTMLElement>(
+              'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+            ),
+          )
+        : [];
+
+    focusables()[0]?.focus();
+
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setOpenMobile(false);
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const items = focusables();
+      if (items.length === 0) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = prevOverflow;
+      openButtonRef.current?.focus();
+    };
+  }, [openMobile]);
 
   const doneCount = module.lessons.filter((l) =>
     mounted ? completed.includes(lessonId(module.slug, l.slug)) : false,
@@ -77,6 +125,11 @@ export function LessonSidebar({
               {l.kind === "quiz" && (
                 <span className="ml-1.5 inline-flex items-center gap-0.5 rounded-full bg-accent/15 px-1.5 py-0.5 align-middle text-[9px] font-semibold uppercase tracking-wide text-accent-soft">
                   <HelpCircle size={9} /> Quiz
+                </span>
+              )}
+              {l.kind === "project" && (
+                <span className="ml-1.5 inline-flex items-center gap-0.5 rounded-full bg-accent/15 px-1.5 py-0.5 align-middle text-[9px] font-semibold uppercase tracking-wide text-accent-soft">
+                  <Wand2 size={9} /> Project
                 </span>
               )}
             </span>
@@ -147,9 +200,12 @@ export function LessonSidebar({
 
       {/* ── Mobile: floating toggle + off-canvas drawer ── */}
       <button
+        ref={openButtonRef}
         onClick={() => setOpenMobile(true)}
         className="btn-ghost fixed bottom-4 left-4 z-30 px-3 py-2 text-xs shadow-glow lg:hidden"
         aria-label="Open course map"
+        aria-haspopup="dialog"
+        aria-expanded={openMobile}
       >
         <ListChecks size={15} />
         <span suppressHydrationWarning>
@@ -168,6 +224,10 @@ export function LessonSidebar({
               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             />
             <motion.div
+              ref={drawerRef}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Course map"
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}

@@ -1,20 +1,22 @@
-import confetti from "canvas-confetti";
-
 // The "juice" on a win — a confetti burst + a short, pleasant chime. Pure
 // client-side; safe to call from event handlers. Respects reduced-motion for the
-// confetti (sound still plays since it's brief and non-motion).
+// confetti (sound still plays since it's brief and non-motion). The confetti
+// library is loaded on demand (it only ever fires on a first clear), so it
+// stays out of the lesson's initial bundle.
 export function celebrate(): void {
   if (typeof window === "undefined") return;
 
   const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
   if (!reduced) {
-    const colors = ["#a78bfa", "#8b5cf6", "#fde68a", "#34d399"];
-    confetti({ particleCount: 80, spread: 70, startVelocity: 38, origin: { y: 0.7 }, colors });
-    // a second, delayed pop for a fuller feel
-    window.setTimeout(
-      () => confetti({ particleCount: 40, spread: 100, startVelocity: 28, origin: { y: 0.6 }, colors }),
-      140,
-    );
+    void import("canvas-confetti").then(({ default: confetti }) => {
+      const colors = ["#a78bfa", "#8b5cf6", "#fde68a", "#34d399"];
+      confetti({ particleCount: 80, spread: 70, startVelocity: 38, origin: { y: 0.7 }, colors });
+      // a second, delayed pop for a fuller feel
+      window.setTimeout(
+        () => confetti({ particleCount: 40, spread: 100, startVelocity: 28, origin: { y: 0.6 }, colors }),
+        140,
+      );
+    });
   }
   playDing();
 }

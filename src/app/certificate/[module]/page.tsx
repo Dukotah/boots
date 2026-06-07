@@ -19,6 +19,10 @@ export function generateMetadata({
   return {
     title,
     description: `Earn your ${module.title} certificate on Cantrip by completing all ${module.lessons.length} interactive lessons.`,
+    // The body is a client-gated "earn your certificate" shell that's near-identical
+    // across modules — thin/duplicate content. Keep it shareable (OG card intact)
+    // but out of the index so it doesn't dilute crawl budget.
+    robots: { index: false, follow: true },
     alternates: { canonical: `/certificate/${module.slug}` },
     openGraph: {
       type: "website",

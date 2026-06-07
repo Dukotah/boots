@@ -3,9 +3,34 @@ import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { AuthProvider } from "@/components/AuthProvider";
+import { MotionProvider } from "@/components/MotionProvider";
 import { PwaRegister } from "@/components/PwaRegister";
 import { Analytics } from "@/components/Analytics";
-import { SITE } from "@/lib/site";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { SITE, absoluteUrl } from "@/lib/site";
+
+// Sitewide brand entity — gives search engines a stable Organization + WebSite to
+// attribute the domain to (logo, name, social handle). Per-page structured data
+// (Course, LearningResource, HowTo…) layers on top of this.
+const ORG_ID = `${SITE.url}#organization`;
+const ORGANIZATION_JSONLD = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "@id": ORG_ID,
+  name: SITE.name,
+  url: SITE.url,
+  logo: absoluteUrl("/icon.svg"),
+  description: SITE.description,
+  sameAs: [`https://twitter.com/${SITE.twitter.replace(/^@/, "")}`],
+};
+const WEBSITE_JSONLD = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "@id": `${SITE.url}#website`,
+  name: SITE.name,
+  url: SITE.url,
+  publisher: { "@id": ORG_ID },
+};
 
 // Default social-share card (branded). Per-page metadata overrides this.
 const DEFAULT_OG = `/api/og?title=${encodeURIComponent(SITE.name)}&subtitle=${encodeURIComponent(SITE.tagline)}`;
@@ -66,12 +91,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen">
+        <JsonLd data={ORGANIZATION_JSONLD} />
+        <JsonLd data={WEBSITE_JSONLD} />
         <Analytics />
         <AuthProvider>
-          <PwaRegister />
-          <Navbar />
-          <main className="min-h-[60vh]">{children}</main>
-          <Footer />
+          <MotionProvider>
+            <PwaRegister />
+            <Navbar />
+            <main className="min-h-[60vh]">{children}</main>
+            <Footer />
+          </MotionProvider>
         </AuthProvider>
       </body>
     </html>

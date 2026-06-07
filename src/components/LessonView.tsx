@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -9,14 +10,27 @@ import { Play, RotateCcw, Lightbulb, ArrowRight, CheckCircle2, Loader2, Lock, Sp
 import type { Lesson, Module } from "@/lib/curriculum/types";
 import { lessonId } from "@/lib/curriculum";
 import { lessonLanguage, langMeta } from "@/lib/curriculum/lang";
-import { runLesson, type RunOutcome } from "@/lib/runner";
+import { runLesson, warmJsRuntime, type RunOutcome } from "@/lib/runner";
 import { celebrate } from "@/lib/celebrate";
 import { verifyCompletion } from "@/lib/scoring";
 import { commitLessonToJournal } from "@/lib/github/journalClient";
 import { useGameStore } from "@/store/useGameStore";
 import { useAccess } from "@/hooks/useAccess";
 import { useMounted } from "@/hooks/useMounted";
-import { CodeEditor } from "./CodeEditor";
+
+// Monaco is the heaviest dependency on the page — load it only on the client and
+// only when the lesson actually renders, keeping it out of the route's initial JS.
+const CodeEditor = dynamic(
+  () => import("./CodeEditor").then((m) => m.CodeEditor),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-full items-center justify-center bg-[#1e1e1e] text-xs text-gray-500">
+        Loading editor…
+      </div>
+    ),
+  },
+);
 import { BlockTray } from "./BlockTray";
 import { TestResults } from "./TestResults";
 import { LevelUpToast } from "./LevelUpToast";
@@ -131,6 +145,14 @@ export function LessonView({
   useEffect(() => {
     if (allPass) setActiveHint(null);
   }, [allPass]);
+
+  // Warm the JS worker shortly after mount so the first Run doesn't pay the ~1s
+  // worker-compile cost (JS/TS lessons execute through it).
+  useEffect(() => {
+    if (language !== "js" && language !== "ts") return;
+    const t = window.setTimeout(() => warmJsRuntime(), 200);
+    return () => window.clearTimeout(t);
+  }, [language]);
 
   async function handleRun() {
     if (gated) return; // paywalled — run is disabled

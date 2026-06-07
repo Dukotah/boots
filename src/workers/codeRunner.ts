@@ -7,7 +7,9 @@
 // (Judge0/WASM) later.
 
 type TestCase = { name: string; code: string };
-type IncomingMessage = { code: string; tests: TestCase[] };
+// `id` correlates each request with its reply so a single long-lived worker can
+// be reused across runs (the runner warms one on idle instead of spawning per run).
+type IncomingMessage = { id: number; code: string; tests: TestCase[] };
 
 export type TestResult = {
   name: string;
@@ -66,8 +68,8 @@ function stringify(value: unknown): string {
 }
 
 self.onmessage = async (e: MessageEvent<IncomingMessage>) => {
-  const { code, tests } = e.data;
+  const { id, code, tests } = e.data;
   const results: TestResult[] = [];
   for (const t of tests) results.push(await runOne(code, t));
-  (self as unknown as Worker).postMessage({ results });
+  (self as unknown as Worker).postMessage({ id, results });
 };

@@ -25,10 +25,14 @@ export async function GET(req: Request) {
   const admin = getSupabaseAdminClient()!;
   const today = new Date().toISOString().slice(0, 10);
 
+  // Process players who either earned XP this season (possible promotion) OR sit
+  // above the floor tier (possible relegation if idle). This now includes idle
+  // high-tier players, who previously squatted their tier forever. A tier-0
+  // player with 0 XP is already at the floor, so we skip them to save writes.
   const { data } = await admin
     .from("profiles")
     .select("id, weekly_xp, league_tier")
-    .gt("weekly_xp", 0);
+    .or("weekly_xp.gt.0,league_tier.gt.0");
 
   let updated = 0;
   for (const p of (data ?? []) as {

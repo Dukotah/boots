@@ -1,4 +1,3 @@
-import { transform } from "sucrase";
 import type { Lesson, TestCase, LessonLanguage } from "./curriculum/types";
 import type { TestResult } from "@/workers/codeRunner";
 
@@ -22,24 +21,28 @@ export function runLesson(
   if (language === "py") return runPython(code, tests);
   if (language === "sql") return runSql(code, lesson);
   if (language === "ts") {
-    // Strip the types to JS with sucrase, then run through the same Worker as JS.
-    // A type/syntax error surfaces as a failing run rather than a crash.
-    let js: string;
-    try {
-      js = transform(code, { transforms: ["typescript"] }).code;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      return Promise.resolve({
-        timedOut: false,
-        results: tests.map((t) => ({
-          name: t.name,
-          pass: false,
-          error: `TypeScript error: ${message}`,
-          logs: [],
-        })),
-      });
-    }
-    return runJs(js, tests);
+    // Strip the types to JS with sucrase (lazy-loaded — only TS lessons pull it
+    // into the bundle), then run through the same Worker as JS. A type/syntax
+    // error surfaces as a failing run rather than a crash.
+    return (async () => {
+      let js: string;
+      try {
+        const { transform } = await import("sucrase");
+        js = transform(code, { transforms: ["typescript"] }).code;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        return {
+          timedOut: false,
+          results: tests.map((t) => ({
+            name: t.name,
+            pass: false,
+            error: `TypeScript error: ${message}`,
+            logs: [],
+          })),
+        };
+      }
+      return runJs(js, tests);
+    })();
   }
   return runJs(code, tests);
 }
@@ -105,14 +108,92 @@ async function scratchSql(code: string): Promise<ScratchResult> {
 }
 
 // ── JavaScript: sandboxed Web Worker (terminable on infinite loop) ────────────
+// One long-lived worker is reused across runs and warmed on lesson mount, so the
+// ~1s first-Run cost (instantiating + compiling the worker) is paid during the
+// learner's think-time instead of on their first click. Requests are correlated
+// by id; a timed-out (possibly stuck) worker is torn down so the next run starts
+// from a fresh one.
+type PendingRun = {
+  resolve: (o: RunOutcome) => void;
+  timer: ReturnType<typeof setTimeout>;
+  tests: TestCase[];
+};
+
+let sharedWorker: Worker | null = null;
+let runSeq = 0;
+const pendingRuns = new Map<number, PendingRun>();
+
+function resetWorker() {
+  if (sharedWorker) {
+    sharedWorker.terminate();
+    sharedWorker = null;
+  }
+}
+
+function failAllPending(error: string) {
+  pendingRuns.forEach((entry) => {
+    clearTimeout(entry.timer);
+    entry.resolve({
+      timedOut: false,
+      results: entry.tests.map((t) => ({ name: t.name, pass: false, error, logs: [] })),
+    });
+  });
+  pendingRuns.clear();
+}
+
+function getWorker(): Worker {
+  if (sharedWorker) return sharedWorker;
+  const worker = new Worker(new URL("../workers/codeRunner.ts", import.meta.url));
+  worker.onmessage = (e: MessageEvent<{ id: number; results: TestResult[] }>) => {
+    const entry = pendingRuns.get(e.data.id);
+    if (!entry) return;
+    clearTimeout(entry.timer);
+    pendingRuns.delete(e.data.id);
+    entry.resolve({ results: e.data.results, timedOut: false });
+  };
+  worker.onerror = (e) => {
+    // An uncaught worker error kills it — fail everything in flight and rebuild.
+    failAllPending(e.message || "Worker error");
+    resetWorker();
+  };
+  sharedWorker = worker;
+  return worker;
+}
+
+/** Warm the JS runtime ahead of the first Run (call on lesson mount / idle). */
+export function warmJsRuntime(): void {
+  if (typeof window === "undefined") return;
+  try {
+    getWorker();
+  } catch {
+    // Best-effort; runJs will surface any real failure on first use.
+  }
+}
+
 function runJs(code: string, tests: TestCase[]): Promise<RunOutcome> {
   return new Promise((resolve) => {
-    const worker = new Worker(
-      new URL("../workers/codeRunner.ts", import.meta.url),
-    );
+    let worker: Worker;
+    try {
+      worker = getWorker();
+    } catch (err) {
+      resolve({
+        timedOut: false,
+        results: tests.map((t) => ({
+          name: t.name,
+          pass: false,
+          error: err instanceof Error ? err.message : "Worker error",
+          logs: [],
+        })),
+      });
+      return;
+    }
 
+    const id = ++runSeq;
     const timer = setTimeout(() => {
-      worker.terminate();
+      pendingRuns.delete(id);
+      // The worker may be stuck in an infinite loop — tear it down so the next
+      // run rebuilds a clean one.
+      resetWorker();
       resolve({
         timedOut: true,
         results: tests.map((t) => ({
@@ -124,27 +205,8 @@ function runJs(code: string, tests: TestCase[]): Promise<RunOutcome> {
       });
     }, TIMEOUT_MS);
 
-    worker.onmessage = (e: MessageEvent<{ results: TestResult[] }>) => {
-      clearTimeout(timer);
-      worker.terminate();
-      resolve({ results: e.data.results, timedOut: false });
-    };
-
-    worker.onerror = (e) => {
-      clearTimeout(timer);
-      worker.terminate();
-      resolve({
-        timedOut: false,
-        results: tests.map((t) => ({
-          name: t.name,
-          pass: false,
-          error: e.message || "Worker error",
-          logs: [],
-        })),
-      });
-    };
-
-    worker.postMessage({ code, tests });
+    pendingRuns.set(id, { resolve, timer, tests });
+    worker.postMessage({ id, code, tests });
   });
 }
 
@@ -256,8 +318,19 @@ function loadSqlJs(): Promise<SqlJs> {
   return sqlJsPromise;
 }
 
-function execToString(db: SqlDb, query: string): string {
-  return JSON.stringify(db.exec(query));
+type SqlResultSet = { columns: string[]; values: unknown[][] };
+
+function execResults(db: SqlDb, query: string): SqlResultSet[] {
+  return db.exec(query) as SqlResultSet[];
+}
+
+// A query that yields no result set, or only empty result sets, is "degenerate"
+// — e.g. an empty submission, a non-SELECT, or a SELECT matching nothing. We
+// never count that as a pass, otherwise a no-op would match any lesson whose
+// reference query also (accidentally) returns nothing.
+function isDegenerate(results: SqlResultSet[]): boolean {
+  if (results.length === 0) return true;
+  return results.every((r) => !r.values || r.values.length === 0);
 }
 
 async function runSql(code: string, lesson: Lesson): Promise<RunOutcome> {
@@ -286,7 +359,7 @@ async function runSql(code: string, lesson: Lesson): Promise<RunOutcome> {
     const db = new SQL.Database();
     try {
       db.run(setup);
-      expected = execToString(db, lesson.solution ?? "");
+      expected = JSON.stringify(execResults(db, lesson.solution ?? ""));
     } catch (err) {
       return {
         timedOut: false,
@@ -308,18 +381,19 @@ async function runSql(code: string, lesson: Lesson): Promise<RunOutcome> {
   const db = new SQL.Database();
   try {
     db.run(setup);
-    const actual = execToString(db, code);
-    const pass = actual === expected;
+    const actualResults = execResults(db, code);
+    const actual = JSON.stringify(actualResults);
+    // A degenerate (empty) student result never passes, even if the reference
+    // also returned nothing — that would let a no-op query "match".
+    const pass = !isDegenerate(actualResults) && actual === expected;
+    const error = pass
+      ? undefined
+      : isDegenerate(actualResults)
+        ? "Your query didn't return any rows."
+        : "Your query's result doesn't match the expected rows.";
     return {
       timedOut: false,
-      results: [
-        {
-          name: testName,
-          pass,
-          error: pass ? undefined : "Your query's result doesn't match the expected rows.",
-          logs: [],
-        },
-      ],
+      results: [{ name: testName, pass, error, logs: [] }],
     };
   } catch (err) {
     return {

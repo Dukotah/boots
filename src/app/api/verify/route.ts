@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getLesson } from "@/lib/curriculum";
 import { lessonLanguage } from "@/lib/curriculum/lang";
+import { canInteract } from "@/lib/access";
 import { gradeJsOrTs } from "@/lib/serverGrade";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -37,6 +38,46 @@ export async function POST(req: Request) {
 
   const language = lessonLanguage(found.lesson, found.module);
 
+  // Resolve the signed-in user (if any) so we can enforce the paywall before
+  // doing any grading work. The complete_lesson RPC is the authoritative gate,
+  // but checking here lets us refuse locked lessons up front (and not spend the
+  // server sandbox on content the caller can't claim).
+  const sb = getSupabaseServerClient();
+  let user: { id: string } | null = null;
+  let profile: { is_pro?: boolean; streak?: number } | null = null;
+  if (sb) {
+    try {
+      const {
+        data: { user: u },
+      } = await sb.auth.getUser();
+      user = (u as { id: string } | null) ?? null;
+      if (user) {
+        const { data } = await sb
+          .from("profiles")
+          .select("is_pro, streak")
+          .eq("id", user.id)
+          .single();
+        profile = (data as { is_pro?: boolean; streak?: number } | null) ?? null;
+      }
+    } catch {
+      // Treat as anonymous; awarding below simply won't happen.
+    }
+  }
+
+  // Paywall: a signed-in learner may only claim a lesson they're entitled to.
+  // (Anonymous callers can't be awarded anyway — the RPC requires auth.)
+  if (
+    user &&
+    !canInteract({
+      isPro: Boolean(profile?.is_pro),
+      lessonIndex: found.index,
+      free: found.module.free,
+      streak: profile?.streak ?? 0,
+    })
+  ) {
+    return NextResponse.json({ error: "Lesson locked" }, { status: 403 });
+  }
+
   // Python/SQL run in browser WASM runtimes we don't host server-side yet.
   // Signal "not verifiable here" so the client keeps its existing flow.
   if (language !== "js" && language !== "ts") {
@@ -49,30 +90,22 @@ export async function POST(req: Request) {
   const { results, allPass } = await gradeJsOrTs(code, found.lesson, language);
 
   let awardedXp: number | null = null;
-  if (allPass) {
-    const sb = getSupabaseServerClient();
-    if (sb) {
-      try {
-        const {
-          data: { user },
-        } = await sb.auth.getUser();
-        if (user) {
-          const { data } = await (
-            sb as unknown as {
-              rpc: (
-                fn: string,
-                args: Record<string, unknown>,
-              ) => Promise<{ data: unknown }>;
-            }
-          ).rpc("complete_lesson", {
-            p_course_slug: courseSlug,
-            p_lesson_slug: lessonSlug,
-          });
-          if (typeof data === "number") awardedXp = data;
+  if (allPass && sb && user) {
+    try {
+      const { data } = await (
+        sb as unknown as {
+          rpc: (
+            fn: string,
+            args: Record<string, unknown>,
+          ) => Promise<{ data: unknown }>;
         }
-      } catch {
-        // Awarding is best-effort; verification result still returns below.
-      }
+      ).rpc("complete_lesson", {
+        p_course_slug: courseSlug,
+        p_lesson_slug: lessonSlug,
+      });
+      if (typeof data === "number") awardedXp = data;
+    } catch {
+      // Awarding is best-effort; verification result still returns below.
     }
   }
 

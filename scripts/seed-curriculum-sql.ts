@@ -14,10 +14,10 @@ let sql =
 
 MODULES.forEach((m, mi) => {
   sql +=
-    `insert into public.courses (slug, title, description, emoji, gradient, tagline, sort_order)\n` +
-    `values ('${esc(m.slug)}', '${esc(m.title)}', '${esc(m.description)}', '${m.emoji}', '${esc(m.gradient)}', '${esc(m.tagline)}', ${mi})\n` +
+    `insert into public.courses (slug, title, description, emoji, gradient, tagline, sort_order, free)\n` +
+    `values ('${esc(m.slug)}', '${esc(m.title)}', '${esc(m.description)}', '${m.emoji}', '${esc(m.gradient)}', '${esc(m.tagline)}', ${mi}, ${m.free ? "true" : "false"})\n` +
     `on conflict (slug) do update set title=excluded.title, description=excluded.description, ` +
-    `emoji=excluded.emoji, gradient=excluded.gradient, tagline=excluded.tagline, sort_order=excluded.sort_order;\n`;
+    `emoji=excluded.emoji, gradient=excluded.gradient, tagline=excluded.tagline, sort_order=excluded.sort_order, free=excluded.free;\n`;
 
   m.lessons.forEach((l, li) => {
     sql +=

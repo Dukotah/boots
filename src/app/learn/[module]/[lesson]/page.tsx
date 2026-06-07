@@ -5,6 +5,7 @@ import { lessonJsonLd, breadcrumbJsonLd } from "@/lib/seo";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { LessonView } from "@/components/LessonView";
 import { QuizView } from "@/components/QuizView";
+import { ProjectView } from "@/components/ProjectView";
 import { HtmlLessonView } from "@/components/HtmlLessonView";
 import { lessonLanguage } from "@/lib/curriculum/lang";
 
@@ -75,6 +76,8 @@ export default function LessonPage({
       />
       {lesson.kind === "quiz" ? (
         <QuizView module={module} lesson={lesson} nextHref={nextHref} />
+      ) : lesson.kind === "project" ? (
+        <ProjectView module={module} lesson={lesson} nextHref={nextHref} />
       ) : lessonLanguage(lesson, module) === "html" ? (
         <HtmlLessonView module={module} lesson={lesson} nextHref={nextHref} />
       ) : (

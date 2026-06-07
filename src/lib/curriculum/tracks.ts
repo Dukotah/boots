@@ -23,6 +23,7 @@ export type TrackId =
   | "python-deep-dives"
   | "sql"
   | "sql-deep-dives"
+  | "ai-for-everyone"
   | "ai"
   | "cybersecurity"
   | "career"
@@ -144,6 +145,22 @@ export const TRACKS: Track[] = [
     blurb: "Go further with SQL: aggregations, grouping, and subqueries.",
     emoji: "📊",
     modules: ["sql-aggregations", "sql-subqueries"],
+  },
+  {
+    id: "ai-for-everyone",
+    label: "AI for Everyone",
+    blurb:
+      "No coding required. Learn to use AI tools like ChatGPT, Claude, and Gemini in your life, your work, and to make things — from total beginner to power user.",
+    emoji: "✨",
+    modules: [
+      "ai-foundations",
+      "ai-conversations",
+      "ai-everyday-life",
+      "ai-make-things",
+      "ai-at-work",
+      "ai-power-user",
+      "ai-responsible",
+    ],
   },
   {
     id: "ai",
