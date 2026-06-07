@@ -10,6 +10,11 @@ import reverseStringPost from "./posts/how-to-reverse-a-string-in-python";
 import bigOPost from "./posts/what-is-big-o-notation";
 import sqlJoinsPost from "./posts/sql-joins-explained";
 import closurePost from "./posts/what-is-a-closure-in-javascript";
+import whatIsVibeCodingPost from "./posts/what-is-vibe-coding";
+import howToStartVibeCodingPost from "./posts/how-to-start-vibe-coding";
+import bestAiCodingTools2026Post from "./posts/best-ai-coding-tools-2026";
+import vibeCodingVsTraditionalPost from "./posts/vibe-coding-vs-traditional-coding";
+import isVibeCodingWorthItPost from "./posts/is-vibe-coding-worth-it";
 
 export type BlogPost = {
   slug: string;
@@ -846,6 +851,11 @@ The barrier to learning to code was never money — it's consistency and focus. 
   bigOPost,
   sqlJoinsPost,
   closurePost,
+  whatIsVibeCodingPost,
+  howToStartVibeCodingPost,
+  bestAiCodingTools2026Post,
+  vibeCodingVsTraditionalPost,
+  isVibeCodingWorthItPost,
 ];
 
 /** Look up a single post by its slug. Returns undefined if not found. */
