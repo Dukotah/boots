@@ -29,6 +29,52 @@ export type QuizQuestion = {
   explanation?: string;
 };
 
+// ── Guided AI projects (kind === "project") ──
+// "Project" lessons teach by doing: the learner performs real work in a real AI
+// tool (ChatGPT, Claude, Gemini, an image generator, etc.) and is graded on what
+// they bring back. Like the rest of the platform, grading is 100% client-side —
+// steps are self-attested and checkpoints use a *declarative* rubric evaluated in
+// the browser. No API key, no network, no per-submission cost: project lessons
+// are free for everyone, exactly like the code and quiz engines.
+
+// One actionable, do-it-in-a-real-tool step the learner checks off.
+export type ProjectStep = {
+  // What to do (Markdown allowed). Imperative — "Open Claude and paste your draft."
+  instruction: string;
+  // Optional tool badge shown beside the step ("ChatGPT", "Claude", "Gemini", "v0").
+  tool?: string;
+  // Optional nudge for learners who aren't sure how to do the step.
+  hint?: string;
+};
+
+// A single declarative check run against text the learner pastes. Pure string
+// logic so it grades in the browser with no API:
+//  - minWords   → value is a number; text must have at least that many words.
+//  - minLength  → value is a number; text must be at least that many characters.
+//  - includes   → text must contain `value` as a substring.
+//  - includesAny→ value is a comma-separated list; ANY one present passes.
+//  - regex      → text must match the regular expression in `value`.
+// includes/includesAny/regex are case-insensitive unless `caseSensitive` is true.
+export type RubricCheck = {
+  // Shown to the learner as a live checklist item ("Gives the model a clear role").
+  label: string;
+  test: "minWords" | "minLength" | "includes" | "includesAny" | "regex";
+  value: string;
+  caseSensitive?: boolean;
+};
+
+// An optional graded checkpoint inside a project lesson. The learner pastes their
+// prompt (or what the AI produced) and the rubric checks it client-side. All
+// rubric checks must pass — together with every step being ticked — to complete
+// the lesson and earn its XP.
+export type ProjectCheckpoint = {
+  // What to paste, and why (Markdown). e.g. "Paste the prompt you sent to Claude."
+  prompt: string;
+  // Greyed placeholder shown in the empty textarea.
+  placeholder?: string;
+  rubric: RubricCheck[];
+};
+
 export type Lesson = {
   slug: string;
   title: string;
@@ -39,7 +85,9 @@ export type Lesson = {
   // Markdown lesson body (the reading shown left of the editor, or above a quiz).
   content: string;
   // "code" (default) → editor + auto-graded tests. "quiz" → reading + questions.
-  kind?: "code" | "quiz";
+  // "project" → reading + a do-it-in-a-real-AI-tool checklist and optional
+  // paste-and-grade checkpoint (the "use AI / make things" lessons).
+  kind?: "code" | "quiz" | "project";
 
   // ── code lessons (kind !== "quiz") ──
   // Code the editor is pre-filled with.
@@ -60,6 +108,12 @@ export type Lesson = {
 
   // ── quiz lessons (kind === "quiz") ──
   questions?: QuizQuestion[];
+
+  // ── project lessons (kind === "project") ──
+  // Ordered steps the learner performs in a real AI tool and checks off.
+  steps?: ProjectStep[];
+  // Optional paste-and-grade checkpoint (client-side rubric, no API).
+  checkpoint?: ProjectCheckpoint;
 
   // Optional "code blocks" — bite-sized snippets shown beside the lesson that a
   // beginner can drag (or tap) into the editor to assemble the answer, instead of

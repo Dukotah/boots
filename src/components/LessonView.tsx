@@ -17,7 +17,20 @@ import { commitLessonToJournal } from "@/lib/github/journalClient";
 import { useGameStore } from "@/store/useGameStore";
 import { useAccess } from "@/hooks/useAccess";
 import { useMounted } from "@/hooks/useMounted";
-import { CodeEditor } from "./CodeEditor";
+
+// Monaco is the heaviest dependency on the page — load it only on the client and
+// only when the lesson actually renders, keeping it out of the route's initial JS.
+const CodeEditor = dynamic(
+  () => import("./CodeEditor").then((m) => m.CodeEditor),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-full items-center justify-center bg-[#1e1e1e] text-xs text-gray-500">
+        Loading editor…
+      </div>
+    ),
+  },
+);
 import { BlockTray } from "./BlockTray";
 import { TestResults } from "./TestResults";
 import { LevelUpToast } from "./LevelUpToast";

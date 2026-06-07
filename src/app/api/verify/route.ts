@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getLesson } from "@/lib/curriculum";
 import { lessonLanguage } from "@/lib/curriculum/lang";
+import { canInteract } from "@/lib/access";
 import { gradeJsOrTs } from "@/lib/serverGrade";
 import { gradeQuiz } from "@/lib/quizGrade";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
@@ -90,6 +91,42 @@ export async function POST(req: Request) {
   }
 
   const language = lessonLanguage(found.lesson, found.module);
+
+  // Paywall: a signed-in learner may only claim a lesson they're entitled to.
+  // The complete_lesson RPC is the authoritative gate, but refusing locked
+  // lessons here avoids spending the server sandbox on content the caller can't
+  // claim. (Anonymous callers can't be awarded anyway — the RPC requires auth.)
+  const sb = getSupabaseServerClient();
+  if (sb) {
+    try {
+      const {
+        data: { user },
+      } = await sb.auth.getUser();
+      if (user) {
+        const { data } = await sb
+          .from("profiles")
+          .select("is_pro, streak")
+          .eq("id", user.id)
+          .single();
+        const profile = (data as { is_pro?: boolean; streak?: number } | null) ?? null;
+        if (
+          !canInteract({
+            isPro: Boolean(profile?.is_pro),
+            lessonIndex: found.index,
+            free: found.module.free,
+            streak: profile?.streak ?? 0,
+          })
+        ) {
+          return NextResponse.json({ error: "Lesson locked" }, { status: 403 });
+        }
+      }
+    } catch {
+      // Treat as anonymous; awarding below simply won't happen (RPC needs auth).
+    }
+  }
+
+  // Python/SQL run in browser WASM runtimes we don't host server-side yet.
+  // Signal "not verifiable here" so the client keeps its existing flow.
   if (language !== "js" && language !== "ts") {
     return NextResponse.json({
       verified: false,

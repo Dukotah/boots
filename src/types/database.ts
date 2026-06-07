@@ -27,6 +27,7 @@ export type Database = {
           avatar_url: string | null;
           xp: number;
           gold: number;
+          verified_xp: number;
           streak: number;
           last_active_day: string | null;
           completed: string[];
@@ -63,6 +64,7 @@ export type Database = {
           avatar_url?: string | null;
           xp?: number;
           gold?: number;
+          verified_xp?: number;
           streak?: number;
           last_active_day?: string | null;
           completed?: string[];

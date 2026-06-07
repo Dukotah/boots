@@ -8,8 +8,10 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      // Private/app-shell surfaces render as empty hydration shells to crawlers —
-      // keep them out of the index so crawl budget goes to real content.
+      // Private / signed-in app surfaces render as empty client shells to a
+      // crawler — keep them out of the index so they don't dilute crawl budget or
+      // surface thin pages. (Public profiles at /u/* stay crawlable — shareable,
+      // with their own OG card.)
       disallow: [
         "/api/",
         "/login",
