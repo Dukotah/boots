@@ -10,12 +10,16 @@
  *
  * This is the "testing effect" path: recall before recognition ≈ +50% retention
  * over re-reading (Roediger & Karpicke 2006, cited in STRATEGY-RESEARCH-2026-06).
+ *
+ * PERF: the heavy curriculum barrel (2.6 MB) is loaded via dynamic import inside
+ * a useEffect so it stays OUT of the initial /review chunk. The component renders
+ * a lightweight skeleton until the import resolves (typically <200 ms on fast
+ * connections, handled gracefully with a spinner).
  */
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Brain, Eye, RotateCcw, CheckCircle2, ChevronRight } from "lucide-react";
 import { useGameStore } from "@/store/useGameStore";
-import { getLesson } from "@/lib/curriculum";
 import type { Rating } from "@/lib/mastery";
 
 type DueLesson = {
@@ -237,6 +241,30 @@ function SessionSummaryView({
   );
 }
 
+// ── Loading skeleton (shown while curriculum barrel loads) ────────────────────
+
+function CardSkeleton() {
+  return (
+    <div className="flex flex-col gap-4" aria-busy="true" aria-label="Loading cards…">
+      <div className="card rounded-xl p-6 animate-pulse">
+        <div className="mb-4 flex items-start gap-3">
+          <div className="mt-0.5 h-5 w-5 shrink-0 rounded bg-white/10" />
+          <div className="flex-1 space-y-2">
+            <div className="h-3 w-24 rounded bg-white/10" />
+            <div className="h-5 w-48 rounded bg-white/10" />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <div className="h-3 w-full rounded bg-white/10" />
+          <div className="h-3 w-5/6 rounded bg-white/10" />
+        </div>
+        <div className="mt-4 h-24 w-full rounded-lg bg-white/5" />
+        <div className="mt-3 h-10 w-full rounded-lg bg-white/10" />
+      </div>
+    </div>
+  );
+}
+
 // ── Main ReviewSession ────────────────────────────────────────────────────────
 
 export function ReviewSession({
@@ -248,22 +276,34 @@ export function ReviewSession({
 }) {
   const completeLesson = useGameStore((s) => s.completeLesson);
 
-  // Resolve ids → lesson metadata, dropping any stale ids.
-  const cards: DueLesson[] = dueIds
-    .map((id) => {
-      const [m, l] = id.split("/");
-      const found = getLesson(m, l);
-      if (!found) return null;
-      return {
-        id,
-        moduleSlug: m,
-        lessonSlug: l,
-        title: found.lesson.title,
-        blurb: found.lesson.blurb,
-        content: found.lesson.content,
-      };
-    })
-    .filter(Boolean) as DueLesson[];
+  // Curriculum barrel is loaded lazily — stays out of the initial /review chunk.
+  const [cards, setCards] = useState<DueLesson[] | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    import("@/lib/curriculum").then(({ getLesson }) => {
+      if (cancelled) return;
+      const resolved: DueLesson[] = dueIds
+        .map((id) => {
+          const [m, l] = id.split("/");
+          const found = getLesson(m, l);
+          if (!found) return null;
+          return {
+            id,
+            moduleSlug: m,
+            lessonSlug: l,
+            title: found.lesson.title,
+            blurb: found.lesson.blurb,
+            content: found.lesson.content,
+          };
+        })
+        .filter(Boolean) as DueLesson[];
+      setCards(resolved);
+    });
+    return () => { cancelled = true; };
+    // dueIds identity is stable for the lifetime of a session; no re-run needed.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [cardIndex, setCardIndex] = useState(0);
   const [phase, setPhase] = useState<CardPhase>("recall");
@@ -271,7 +311,7 @@ export function ReviewSession({
   const [summary, setSummary] = useState<SessionSummary | null>(null);
   const [ratingAccum, setRatingAccum] = useState<Record<string, number>>({});
 
-  const currentCard = cards[cardIndex];
+  const currentCard = cards?.[cardIndex];
 
   const handleReveal = useCallback(() => {
     setPhase("revealed");
@@ -279,7 +319,7 @@ export function ReviewSession({
 
   const handleRate = useCallback(
     (rating: Rating) => {
-      if (!currentCard) return;
+      if (!currentCard || !cards) return;
 
       // Record the rating in FSRS via completeLesson (re-review path).
       // XP = 0 for re-reviews (the store ignores it for already-completed lessons).
@@ -301,8 +341,13 @@ export function ReviewSession({
         setRecallText("");
       }
     },
-    [currentCard, cardIndex, cards.length, ratingAccum, completeLesson],
+    [currentCard, cards, cardIndex, ratingAccum, completeLesson],
   );
+
+  // Still loading the curriculum barrel.
+  if (cards === null) {
+    return <CardSkeleton />;
+  }
 
   if (cards.length === 0) {
     return (
@@ -342,7 +387,7 @@ export function ReviewSession({
 
       {/* Card */}
       <ReviewCard
-        lesson={currentCard}
+        lesson={currentCard!}
         phase={phase}
         recallText={recallText}
         onRecallChange={setRecallText}
@@ -354,6 +399,7 @@ export function ReviewSession({
       {phase === "recall" && (
         <button
           onClick={() => {
+            if (!cards) return;
             if (cardIndex + 1 >= cards.length) {
               setSummary({
                 total: cards.length,

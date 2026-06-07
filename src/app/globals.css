@@ -2,8 +2,100 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * A11y contrast audit (2026-06): per-component fixes still needed
+ *
+ * BACKGROUND
+ * ----------
+ * Canvas  #0a0a12  →  luminance 0.00325
+ * Surface #12121f  →  luminance 0.00660
+ * surface-2 #1a1a2e →  luminance 0.01156
+ *
+ * WCAG AA requires 4.5:1 (normal text) / 3:1 (large text ≥18 px regular or ≥14 px bold)
+ *
+ * CONTRAST RATIOS
+ * ---------------
+ * text-gray-400 (#9ca3af)  on canvas/surface/surface-2 → 7.8 / 7.3 / 6.7 : 1  ✓ passes AA
+ * text-gray-500 (#6b7280)  on canvas/surface/surface-2 → 4.1 / 3.8 / 3.5 : 1  ✗ fails AA (normal text)
+ * text-gray-600 (#4b5563)  on canvas/surface/surface-2 → 2.6 / 2.5 / 2.3 : 1  ✗ hard fail (all sizes)
+ *
+ * TOKEN-LEVEL FIXES APPLIED HERE (globals.css only)
+ * -------------------------------------------------
+ * 1. html/body base text nudged from #e5e7eb (gray-200) — already fine; no change.
+ * 2. .btn-ghost text: was text-gray-200 → no change needed (already passes).
+ * 3. .prose-lesson p / ul: was text-gray-300 → no change needed (passes AA).
+ * 4. Added --color-muted CSS variable (gray-400 level) as a safe shared token;
+ *    individual components should migrate gray-500/600 prose text to this token.
+ *
+ * PER-COMPONENT FOLLOW-UPS (edit those files, not globals.css)
+ * ---------------------------------------------------------------
+ * Priority 1 — gray-600 (hard fail 2.3–2.6:1, fix urgently):
+ *   src/app/career/interview-prep/page.tsx:139     — italic placeholder <span> text-gray-600 → text-gray-400
+ *   src/app/career/job-match/page.tsx:253          — gap-detail <span> text-gray-600 → text-gray-400
+ *   src/app/career/page.tsx:546                    — Lock icon text-gray-600 (icon-only; add aria-label and upgrade to text-gray-400)
+ *   src/app/login/page.tsx:117                     — divider "or continue with" text-gray-600 → text-gray-400
+ *   src/app/notifications/page.tsx:157,174         — empty-state text-gray-600 → text-gray-400
+ *   src/app/privacy/page.tsx:80                    — legal footnote text-gray-600 → text-gray-400
+ *   src/app/profile/page.tsx:169                   — "none" placeholder text-gray-600 → text-gray-400
+ *   src/app/refer/page.tsx:156                     — fine-print text-gray-600 → text-gray-400
+ *   src/app/skill-tree/page.tsx:365                — section label text-gray-600 → text-gray-400
+ *   src/app/teams/page.tsx:392,423                 — "(optional)" label + empty state text-gray-600 → text-gray-400
+ *   src/app/terms/page.tsx:62                      — legal footnote text-gray-600 → text-gray-400
+ *   src/components/features/career/CareerOnePager.tsx:220   — body paragraph text-gray-600 → text-gray-400
+ *   src/components/features/career/ResumeTemplates.tsx:197  — resume list item text-gray-600 → text-gray-400
+ *   src/components/features/friends/StudyBuddySection.tsx:248 — decorative icon text-gray-600 → text-gray-400 (or aria-hidden already, then just visual)
+ *   src/components/features/map/CampaignMap.tsx:193          — locked node label text-gray-600 → text-gray-400
+ *   src/components/features/quests/QuestChains.tsx:111       — Lock icon text-gray-600 → text-gray-400
+ *   src/components/LessonSidebar.tsx:70,75                   — inactive lesson label + mono lesson number text-gray-600 → text-gray-400
+ *   src/components/PathRoadmap.tsx:224                       — locked node text-gray-600 → text-gray-400
+ *   src/components/visualizer/Visualizer.tsx:98,131,137,157  — gutter line-numbers + "no output" labels text-gray-600 → text-gray-400
+ *   src/app/review/ReviewSession.tsx:188                     — keyboard shortcut hint text-gray-600 → text-gray-400
+ *
+ * Priority 2 — gray-500 used as normal (non-large) text (fails 4.5:1):
+ *   src/app/account/page.tsx:174,176              — "Signed in as" / user ID labels → text-gray-400
+ *   src/app/achievements/page.tsx:82              — sub-label xs text → text-gray-400
+ *   src/app/blog/page.tsx:48, blog/[slug]/page.tsx:102 — date/author meta text → text-gray-400
+ *   src/app/boss/page.tsx:94,108,134             — boss footnote / separator / cooldown note → text-gray-400
+ *   src/app/career/interview-prep/page.tsx (multiple) — section labels, breadcrumb, detail lines → text-gray-400
+ *   src/app/career/job-match/page.tsx:65,204,230  — "%" unit label + skill scores → text-gray-400
+ *   src/app/career/page.tsx (multiple)            — progress labels, gap details, track labels → text-gray-400
+ *   src/app/certificate/[module]/CertificateView.tsx:72,78,85 — decorative certificate meta → text-gray-400
+ *   src/app/daily/page.tsx:115,196,203           — tag chips, completed-lesson meta → text-gray-400
+ *   src/app/dashboard/page.tsx:145,242           — "/100" denominator, activity desc → text-gray-400
+ *   src/app/events/page.tsx:86,97,123            — event tags + threshold labels → text-gray-400
+ *   src/app/friends/page.tsx:209,249,258         — friend stats + rank placeholders → text-gray-400
+ *   src/app/guilds/page.tsx:196,210,282,307      — guild meta, progress bar labels, table headers → text-gray-400
+ *   src/app/leaderboard/page.tsx (multiple)      — empty-state, rank labels, column headers → text-gray-400
+ *   src/app/leagues/page.tsx:123,129,218,244     — member count, separator, locked state → text-gray-400
+ *   src/app/notifications/page.tsx:137           — "no notifications" subtext → text-gray-400
+ *   src/app/paths/[slug]/page.tsx:151            — roadmap subheading → text-gray-400
+ *   src/app/pricing/page.tsx:27                  — fine-print under CTA → text-gray-400
+ *   src/components/BlockTray.tsx:19,22           — block tray heading + helper text → text-gray-400
+ *   src/components/CodeEditor.tsx:16,143         — "loading editor" placeholder → text-gray-400
+ *   src/components/features/achievements/AchievementProgressBar.tsx:22 — progress sub-label → text-gray-400
+ *   src/components/features/billing/PricingPlans.tsx:108,217  — plan footnote + security badges → text-gray-400
+ *   src/components/features/billing/ProGate.tsx:53            — "learn more" link text → text-gray-400
+ *   src/components/features/career/CareerOnePager.tsx:216,299,457 — section header, role label, footer → text-gray-400
+ *   src/components/features/career/ResumeTemplates.tsx:63,102,296 — resume headline, mono date, sub-headline → text-gray-400
+ *   src/components/features/catalog/CatalogSearch.tsx:124,165,174 — filter count, track XP, progress % → text-gray-400
+ *
+ * Priority 3 — gray-400 at very small sizes (text-[9px]/text-[10px]/text-[11px]):
+ *   These pass AA numerically but are fragile at micro sizes; prefer text-xs minimum with gray-300
+ *   where possible. No exhaustive list here — grep for text-\[(?:9|10|11)px\] combined with
+ *   text-gray-400/500 for a full sweep.
+ */
+
 :root {
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+
+  /*
+   * --color-muted: minimum safe text color on all dark surfaces (canvas, surface, surface-2).
+   * Equivalent to Tailwind's gray-400 (#9ca3af) — contrast ≥ 6.7:1 on surface-2 (AA pass).
+   * Use this token instead of text-gray-500 / text-gray-600 for sub-label / secondary text.
+   * Components should migrate: text-gray-500 → [--color-muted] or text-gray-400
+   *                            text-gray-600 → text-gray-400 (or text-gray-500 if large/bold text)
+   */
+  --color-muted: #9ca3af; /* gray-400 — safe floor for secondary text on dark canvas */
 }
 
 html,
@@ -37,6 +129,27 @@ body {
   .card {
     @apply rounded-2xl border border-line bg-surface p-5;
   }
+
+  /*
+   * .text-muted — safe shared token for secondary/sub-label text on dark surfaces.
+   * color: var(--color-muted) = gray-400 (#9ca3af), contrast ≥ 6.7:1 on surface-2.
+   * Components should adopt this class instead of text-gray-500 / text-gray-600.
+   */
+  .text-muted {
+    color: var(--color-muted);
+  }
+}
+
+/*
+ * Global placeholder contrast fix.
+ * placeholder:text-gray-600 (#4b5563) has only 2.3–2.6:1 on dark surfaces — hard WCAG fail.
+ * This rule raises all <input>/<textarea> placeholders to gray-400 (#9ca3af, ≥6.7:1) globally.
+ * Components that hard-code placeholder:text-gray-600 will be overridden here; they can remove
+ * that class since this rule provides correct contrast by default.
+ */
+::placeholder {
+  color: var(--color-muted); /* #9ca3af — gray-400, 6.7:1 min on dark backgrounds */
+  opacity: 1; /* Firefox reduces opacity by default — reset so our color is exact */
 }
 
 /* Markdown lesson body styling. */

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { RefreshCw, ArrowRight, Brain, BookOpen } from "lucide-react";
 import { useGameStore } from "@/store/useGameStore";
 import { useMounted } from "@/hooks/useMounted";
-import { MODULES, getLesson, lessonId } from "@/lib/curriculum";
+import { CATALOG, getCatalogModule, lessonId } from "@/lib/curriculum/catalogClient";
 import { masteryTier, MASTERY_LABEL } from "@/lib/mastery";
 import { ReviewSession } from "./ReviewSession";
 
@@ -32,13 +32,15 @@ export default function ReviewPage() {
   const dueLessons = due
     .map((id) => {
       const [m, l] = id.split("/");
-      const found = getLesson(m, l);
-      return found ? { id, module: found.module, lesson: found.lesson } : null;
+      const mod = getCatalogModule(m);
+      if (!mod) return null;
+      const lesson = mod.lessons.find((ls) => ls.slug === l);
+      return lesson ? { id, module: mod, lesson } : null;
     })
     .filter(Boolean)
     .slice(0, 25) as {
     id: string;
-    module: (typeof MODULES)[number];
+    module: (typeof CATALOG)[number];
     lesson: { slug: string; title: string };
   }[];
 
@@ -157,7 +159,7 @@ export default function ReviewPage() {
       <section className="mt-10">
         <h2 className="mb-3 text-lg font-semibold text-white">Skill mastery</h2>
         <div className="space-y-2">
-          {MODULES.map((m) => {
+          {CATALOG.map((m) => {
             const done = m.lessons.filter((l) =>
               completedSet.has(lessonId(m.slug, l.slug)),
             ).length;

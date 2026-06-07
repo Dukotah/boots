@@ -32,6 +32,7 @@ import {
 import type { PlayerStats } from "@/types/game";
 import { PageSkeleton } from "@/components/PageSkeleton";
 import { RecommendedBuilds } from "@/components/features/talents/RecommendedBuilds";
+import { SkillTreeWalkthrough } from "@/components/features/talents/SkillTreeWalkthrough";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -237,8 +238,13 @@ export default function SkillTreePage() {
         )}
       </div>
 
-      {/* ── Recommended Builds (owned by another agent) ─────────────────── */}
+      {/* ── First-visit walkthrough coachmark ───────────────────────────── */}
       <div className="mt-6">
+        <SkillTreeWalkthrough />
+      </div>
+
+      {/* ── Recommended Builds (owned by another agent) ─────────────────── */}
+      <div className="mt-2">
         <RecommendedBuilds />
       </div>
 

@@ -22,6 +22,7 @@ import { BlockTray } from "./BlockTray";
 import { TestResults } from "./TestResults";
 import { LevelUpToast } from "./LevelUpToast";
 import { SkillPointToast } from "./SkillPointToast";
+import { TalentGoldToast } from "./features/talents/TalentGoldToast";
 import { ProGate } from "./features/billing/ProGate";
 // Tutor panels + code review are interaction-gated and heavy — load them in
 // their own client chunks so they're not in the initial lesson bundle.
@@ -189,6 +190,7 @@ export function LessonView({
     <div className="mx-auto flex max-w-[88rem] gap-4 px-4 py-6">
       <LevelUpToast />
       <SkillPointToast />
+      <TalentGoldToast />
 
       {/* Course progress map — inline column on desktop, drawer on mobile.
           `contents` on mobile so the wrapper claims no flex gap (its children

@@ -172,6 +172,48 @@ export default function CareerPage() {
             </p>
           </div>
         </Link>
+
+        <Link
+          href="/career/resume"
+          className="group card flex items-start gap-4 hover:border-accent/60 transition"
+        >
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/15 text-accent-soft">
+            <FileText size={20} />
+          </span>
+          <div>
+            <h2 className="font-bold text-white group-hover:text-accent-soft transition">
+              Resume Builder
+            </h2>
+            <p className="mt-0.5 text-sm text-gray-400">
+              Generate a recruiter-ready one-pager from your completed lessons.
+            </p>
+            <p className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-accent-soft">
+              Build Resume{" "}
+              <ArrowRight size={13} className="transition group-hover:translate-x-0.5" />
+            </p>
+          </div>
+        </Link>
+
+        <Link
+          href="/career/mock-interview"
+          className="group card flex items-start gap-4 hover:border-accent/60 transition"
+        >
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/15 text-accent-soft">
+            <MessageSquare size={20} />
+          </span>
+          <div>
+            <h2 className="font-bold text-white group-hover:text-accent-soft transition">
+              Mock Interview
+            </h2>
+            <p className="mt-0.5 text-sm text-gray-400">
+              Run an AI-powered mock interview session for your target role.
+            </p>
+            <p className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-accent-soft">
+              Start Mock Interview{" "}
+              <ArrowRight size={13} className="transition group-hover:translate-x-0.5" />
+            </p>
+          </div>
+        </Link>
       </div>
 
       {/* ── Job-readiness score ── */}

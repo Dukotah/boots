@@ -218,6 +218,10 @@ export type GameState = {
   recentSkillPoints: number | null;
   // The variable-roll result from the most-recently claimed boss chest; null = none.
   lastBossRoll: BossLootResult | null;
+  // Gold paid by a talent effect on the last completion (for the TalentGoldToast).
+  // null = no talent gold was paid. Breakdown: which source (gold-mult / daily-gold /
+  // review-gold) and the total amount so the toast can be informative.
+  recentTalentGold: { amount: number; source: "lesson" | "daily" | "review" } | null;
   // ── auth / sync (not persisted) ──
   user: User | null;
   session: Session | null;
@@ -295,6 +299,7 @@ export type GameState = {
   clearLevelUp: () => void;
   clearRecentAchievement: () => void;
   clearRecentSkillPoints: () => void;
+  clearRecentTalentGold: () => void;
   clearSeasonResult: () => void;
   clearBossRoll: () => void;
   reset: () => void;
@@ -345,6 +350,7 @@ const INITIAL = {
   recentAchievement: null as string | null,
   recentSkillPoints: null as number | null,
   lastBossRoll: null as BossLootResult | null,
+  recentTalentGold: null as { amount: number; source: "lesson" | "daily" | "review" } | null,
 };
 
 // ── Supabase sync helpers — the live snapshot lives on the profiles row ──
@@ -591,6 +597,10 @@ export const useGameStore = create<GameState>()(
                 last: today,
               },
             },
+            // Signal the TalentGoldToast when the Scholar review bonus paid out.
+            ...(reviewGold > 0
+              ? { recentTalentGold: { amount: reviewGold, source: "review" as const } }
+              : {}),
           });
           const unlocked = grantAchievements(get, set);
           const gainedSkillPoints = Math.max(
@@ -628,9 +638,15 @@ export const useGameStore = create<GameState>()(
         // XP — so Leagues stay pay-to-win-free.)
         const fx = talentEffects(state.talents);
         const firstLessonToday = baseDailyLessons === 0;
-        const gainedGold =
-          Math.round(xp * GOLD_PER_XP * (1 + fx.goldMultPct / 100)) +
-          (firstLessonToday ? fx.dailyGold : 0);
+        const baseGold = Math.round(xp * GOLD_PER_XP);
+        const multBonus = Math.round(xp * GOLD_PER_XP * (1 + fx.goldMultPct / 100)) - baseGold;
+        const dailyBonus = firstLessonToday ? fx.dailyGold : 0;
+        const gainedGold = baseGold + multBonus + dailyBonus;
+        // Which talent bonus fired (for the toast — prefer dailyGold since it's
+        // the most noticeable first-lesson payout; fall back to mult bonus).
+        const talentGoldAmount = dailyBonus + multBonus;
+        const talentGoldSource: "lesson" | "daily" =
+          dailyBonus > 0 ? "daily" : "lesson";
 
         set({
           xp: newXp,
@@ -657,6 +673,10 @@ export const useGameStore = create<GameState>()(
           },
           lastLevelUp: leveledUp ? newLevel : state.lastLevelUp,
           activeQuest: state.activeQuest === id ? null : state.activeQuest,
+          // Signal TalentGoldToast when a talent multiplied or added gold.
+          ...(talentGoldAmount > 0
+            ? { recentTalentGold: { amount: talentGoldAmount, source: talentGoldSource } }
+            : {}),
         });
 
         const unlockedAchievements = grantAchievements(get, set);
@@ -947,6 +967,7 @@ export const useGameStore = create<GameState>()(
       clearLevelUp: () => set({ lastLevelUp: null }),
       clearRecentAchievement: () => set({ recentAchievement: null }),
       clearRecentSkillPoints: () => set({ recentSkillPoints: null }),
+      clearRecentTalentGold: () => set({ recentTalentGold: null }),
       clearSeasonResult: () => set({ lastSeasonResult: null }),
       clearBossRoll: () => set({ lastBossRoll: null }),
 
