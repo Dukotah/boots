@@ -3,7 +3,7 @@
 // "portfolio", so every new portfolio-* module surfaces here automatically.
 // Completion still derives from the flat `completed[]` array — no migration.
 
-import { MODULES, lessonId, type Lesson } from "@/lib/curriculum";
+import { CATALOG, type CatalogLesson } from "@/lib/curriculum/catalogClient";
 import { languageName } from "@/lib/languages";
 
 // Kept for backward-compatibility (career.ts + tests reference it).
@@ -97,7 +97,7 @@ export type Project = {
 };
 
 function toProject(
-  lesson: Lesson,
+  lesson: CatalogLesson,
   moduleLang: string,
   moduleSlug: string,
   domain: string,
@@ -111,12 +111,12 @@ function toProject(
   return {
     slug: lesson.slug,
     moduleSlug,
-    id: lessonId(moduleSlug, lesson.slug),
+    id: lesson.id,
     href: `/learn/${moduleSlug}/${lesson.slug}`,
     title: lesson.title,
     blurb: lesson.blurb,
     xp: lesson.xp,
-    language: languageName(lesson.language ?? moduleLang),
+    language: languageName(moduleLang),
     tags,
     demonstrates,
     difficulty,
@@ -127,7 +127,7 @@ function toProject(
 /** Every portfolio project across all portfolio-* modules, in catalog order. */
 export function allProjects(): Project[] {
   const results: Project[] = [];
-  for (const mod of MODULES) {
+  for (const mod of CATALOG) {
     if (!mod.slug.startsWith("portfolio")) continue;
     const moduleLang = mod.language ?? "js";
     const domain = MODULE_DOMAIN[mod.slug] ?? mod.title;

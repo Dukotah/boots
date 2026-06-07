@@ -2,7 +2,10 @@
 // learner has a clear "what next?" and we capture intent keywords like
 // "become a frontend developer". Paths are pure data over module slugs — no
 // content duplication; the modules live in lib/curriculum.
-import { getModule, type Module } from "./curriculum";
+import {
+  getCatalogModule,
+  type CatalogModule,
+} from "./curriculum/catalogClient";
 
 export type Difficulty = "Beginner" | "Intermediate" | "Advanced";
 
@@ -504,10 +507,10 @@ export function getPath(slug: string): Path | undefined {
 }
 
 /** Resolve a path's module slugs to Module objects (skips any that don't exist). */
-export function pathModules(path: Path): Module[] {
+export function pathModules(path: Path): CatalogModule[] {
   return path.moduleSlugs
-    .map((s) => getModule(s))
-    .filter((m): m is Module => Boolean(m));
+    .map((s) => getCatalogModule(s))
+    .filter((m): m is CatalogModule => Boolean(m));
 }
 
 export function pathStats(path: Path): {

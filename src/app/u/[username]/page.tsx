@@ -23,7 +23,7 @@ import { useGameStore } from "@/store/useGameStore";
 import { useMounted } from "@/hooks/useMounted";
 import { levelFromXp } from "@/lib/levels";
 import { ACHIEVEMENTS, ACHIEVEMENT_CATEGORIES } from "@/lib/achievements";
-import { MODULES } from "@/lib/curriculum";
+import { CATALOG, getCatalogModule } from "@/lib/curriculum/catalogClient";
 import { deriveBreadth } from "@/lib/progress";
 import { computeReadiness, CAREER_MODULES } from "@/lib/career";
 import { completedProjects } from "@/lib/projects";
@@ -302,7 +302,7 @@ export default function PublicProfilePage() {
   };
   const careerPct = computeReadiness(careerStats).score;
 
-  const touchedModules = MODULES.filter((mod) =>
+  const touchedModules = CATALOG.filter((mod) =>
     data.completed.some((id) => id.startsWith(mod.slug + "/")),
   );
 
@@ -434,7 +434,7 @@ export default function PublicProfilePage() {
         <div className="flex flex-wrap gap-2">
           {CAREER_MODULES.map((slug) => {
             const done = completedModules.has(slug);
-            const mod = MODULES.find((m) => m.slug === slug);
+            const mod = getCatalogModule(slug);
             return (
               <span
                 key={slug}
@@ -549,10 +549,10 @@ export default function PublicProfilePage() {
                     <p className="text-[11px] text-gray-500">
                       {data.completed.filter((id) => {
                         const [modSlug, lesSlug] = id.split("/");
-                        const mod = MODULES.find((m) => m.slug === modSlug);
+                        const mod = getCatalogModule(modSlug);
                         if (!mod) return false;
                         const les = mod.lessons.find((l) => l.slug === lesSlug);
-                        return (les?.language ?? mod.language ?? "js") === lang;
+                        return (mod.language ?? "js") === lang;
                       }).length}{" "}
                       lessons
                     </p>

@@ -12,21 +12,21 @@
 //   • The lesson matching the store's `activeQuest` is surfaced as "active".
 
 import { useMemo } from "react";
-import { MODULES, lessonId } from "@/lib/curriculum";
-import type { Lesson, Module } from "@/lib/curriculum/types";
+import { CATALOG, totalLessonCount } from "@/lib/curriculum/catalogClient";
+import type { CatalogLesson, CatalogModule } from "@/lib/curriculum/catalogClient";
 import { useGameStore } from "@/store/useGameStore";
 import type { QuestNodeStatus } from "@/types/game";
 
 export type CampaignNode = {
   id: string; // "moduleSlug/lessonSlug"
   index: number; // position within the module
-  lesson: Lesson;
+  lesson: CatalogLesson;
   href: string;
   status: QuestNodeStatus;
 };
 
 export type CampaignModule = {
-  module: Module;
+  module: CatalogModule;
   unlocked: boolean;
   completedCount: number;
   total: number;
@@ -52,17 +52,17 @@ export function useCampaign(): Campaign {
     let prevModuleComplete = true; // first module is always reachable
     let nextUp: CampaignNode | null = null;
 
-    const modules: CampaignModule[] = MODULES.map((module) => {
+    const modules: CampaignModule[] = CATALOG.map((module) => {
       const unlocked = prevModuleComplete;
       let completedCount = 0;
 
       const nodes: CampaignNode[] = module.lessons.map((lesson, index) => {
-        const id = lessonId(module.slug, lesson.slug);
+        const id = lesson.id;
         const isDone = done.has(id);
         if (isDone) completedCount++;
 
         const prevDone =
-          index === 0 ? true : done.has(lessonId(module.slug, module.lessons[index - 1].slug));
+          index === 0 ? true : done.has(module.lessons[index - 1].id);
         const reachable = unlocked && prevDone;
 
         let status: QuestNodeStatus;
@@ -101,7 +101,7 @@ export function useCampaign(): Campaign {
       modules,
       nextUp,
       completedCount: done.size,
-      totalLessons: MODULES.reduce((sum, m) => sum + m.lessons.length, 0),
+      totalLessons: totalLessonCount,
     };
   }, [completed, activeQuest]);
 }

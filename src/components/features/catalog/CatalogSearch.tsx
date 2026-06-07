@@ -3,22 +3,22 @@
 import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { ArrowRight, Search, X, ChevronDown } from "lucide-react";
-import type { Module } from "@/lib/curriculum/types";
-import type { TrackGroup } from "@/lib/curriculum/tracks";
-import { lessonId } from "@/lib/curriculum";
+import type {
+  CatalogModule,
+  CatalogTrackGroup,
+} from "@/lib/curriculum/catalogClient";
 import { useGameStore } from "@/store/useGameStore";
 import { useMounted } from "@/hooks/useMounted";
 
 interface Props {
-  groups: TrackGroup[];
+  groups: CatalogTrackGroup[];
 }
 
-function moduleMatchesQuery(m: Module, q: string): boolean {
+function moduleMatchesQuery(m: CatalogModule, q: string): boolean {
   const needle = q.toLowerCase();
   if (m.title.toLowerCase().includes(needle)) return true;
   if (m.description.toLowerCase().includes(needle)) return true;
   if (m.tagline.toLowerCase().includes(needle)) return true;
-  if (m.lessons.some((l) => l.title.toLowerCase().includes(needle))) return true;
   return false;
 }
 
@@ -40,7 +40,7 @@ export function CatalogSearch({ groups }: Props) {
       for (const m of modules) {
         for (const l of m.lessons) {
           total++;
-          if (completedSet.has(lessonId(m.slug, l.slug))) done++;
+          if (completedSet.has(l.id)) done++;
         }
       }
       map[track.id] = { done, total };
@@ -53,7 +53,7 @@ export function CatalogSearch({ groups }: Props) {
   const filtered = useMemo(() => {
     const q = query.trim();
     if (!q) return groups;
-    const result: TrackGroup[] = [];
+    const result: CatalogTrackGroup[] = [];
     for (const { track, modules } of groups) {
       const matched = modules.filter((m) => moduleMatchesQuery(m, q));
       if (matched.length > 0) result.push({ track, modules: matched });
@@ -202,7 +202,7 @@ export function CatalogSearch({ groups }: Props) {
                         <div className="flex items-center justify-between">
                           <span className="text-2xl">{m.emoji}</span>
                           <span className="rounded-full bg-black/30 px-2 py-0.5 text-xs text-gray-300">
-                            {m.lessons.length} lessons
+                            {m.lessonCount} lessons
                           </span>
                         </div>
                         <h3 className="text-base font-bold text-white">{m.title}</h3>

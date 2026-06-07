@@ -6,8 +6,7 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { Flame, Zap, Trophy, Target, RotateCcw, Briefcase, RefreshCw } from "lucide-react";
 import { useGameStore, streakRepairCost } from "@/store/useGameStore";
 import { levelFromXp } from "@/lib/levels";
-import { MODULES, totalLessons, totalXpAvailable, lessonId } from "@/lib/curriculum";
-import { groupByTrack } from "@/lib/curriculum/tracks";
+import { CATALOG, totalLessonCount, totalXpAvailable, lessonId, catalogByTrack } from "@/lib/curriculum/catalogClient";
 import { deriveBreadth } from "@/lib/progress";
 import { computeReadiness } from "@/lib/career";
 import type { PlayerStats } from "@/types/game";
@@ -53,7 +52,7 @@ export default function Dashboard() {
 
   const info = levelFromXp(xp);
   const doneCount = completed.length;
-  const pct = Math.round((doneCount / totalLessons()) * 100);
+  const pct = Math.round((doneCount / totalLessonCount) * 100);
 
   // Reuse the store's single source of truth for skill-point math (earned −
   // invested, floored at 0) rather than re-deriving it here.
@@ -76,7 +75,7 @@ export default function Dashboard() {
 
   // Find the first unfinished lesson to "Continue".
   let continueHref = "/learn";
-  for (const m of MODULES) {
+  for (const m of CATALOG) {
     const next = m.lessons.find((l) => !completed.includes(lessonId(m.slug, l.slug)));
     if (next) {
       continueHref = `/learn/${m.slug}/${next.slug}`;
@@ -126,7 +125,7 @@ export default function Dashboard() {
           <Zap className="mb-2 text-accent-soft" />
           <p className="text-3xl font-bold text-white">{xp}</p>
           <p className="text-sm text-gray-400">
-            total XP · {totalXpAvailable()} available
+            total XP · {totalXpAvailable} available
           </p>
         </div>
         <div className="card">
@@ -261,11 +260,11 @@ export default function Dashboard() {
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-xl font-semibold text-white">Course progress</h2>
           <span className="text-sm text-gray-400">
-            {doneCount}/{totalLessons()} lessons ({pct}%)
+            {doneCount}/{totalLessonCount} lessons ({pct}%)
           </span>
         </div>
         <div className="space-y-3">
-          {groupByTrack(MODULES).map(({ track, modules }) => {
+          {catalogByTrack().map(({ track, modules }) => {
             const tLessons = modules.reduce((s, m) => s + m.lessons.length, 0);
             const tDone = modules.reduce(
               (s, m) =>

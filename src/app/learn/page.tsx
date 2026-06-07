@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
-import { MODULES, totalLessons } from "@/lib/curriculum";
-import { groupByTrack } from "@/lib/curriculum/tracks";
+import {
+  catalogByTrack,
+  totalModuleCount,
+  totalLessonCount,
+} from "@/lib/curriculum/catalogClient";
 import { CatalogSearch } from "@/components/features/catalog/CatalogSearch";
 
 export const metadata: Metadata = {
@@ -19,7 +22,8 @@ export const metadata: Metadata = {
 };
 
 export default function LearnIndex() {
-  const groups = groupByTrack(MODULES);
+  // Lightweight catalog (no lesson bodies cross the wire).
+  const groups = catalogByTrack();
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
@@ -27,7 +31,7 @@ export default function LearnIndex() {
         Learn to code, the fun way
       </h1>
       <p className="mt-2 max-w-2xl text-gray-400">
-        {MODULES.length} interactive courses · {totalLessons()} hands-on lessons.
+        {totalModuleCount} interactive courses · {totalLessonCount} hands-on lessons.
         Write real code in JavaScript, Python, and SQL — everything runs and
         auto-grades right in your browser. Free to start, no setup.
       </p>

@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Award, Printer, Lock, ArrowRight } from "lucide-react";
 import { getPath, pathModules, pathStats } from "@/lib/paths";
-import { lessonId } from "@/lib/curriculum";
+import { lessonId } from "@/lib/curriculum/ids";
 import { certVerifyCode } from "@/lib/career";
 import { useGameStore } from "@/store/useGameStore";
 import { useMounted } from "@/hooks/useMounted";

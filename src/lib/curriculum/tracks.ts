@@ -263,15 +263,17 @@ const FALLBACK: Track = {
  * resolve are skipped; modules that belong to no track are appended under
  * "More courses" so the catalog can never silently drop a course.
  */
-export function groupByTrack(modules: Module[]): TrackGroup[] {
+export function groupByTrack<T extends { slug: string }>(
+  modules: T[],
+): { track: Track; modules: T[] }[] {
   const bySlug = new Map(modules.map((m) => [m.slug, m]));
   const claimed = new Set<string>();
 
-  const groups: TrackGroup[] = [];
+  const groups: { track: Track; modules: T[] }[] = [];
   for (const track of TRACKS) {
     const resolved = track.modules
       .map((slug) => bySlug.get(slug))
-      .filter((m): m is Module => Boolean(m));
+      .filter((m): m is T => Boolean(m));
     for (const m of resolved) claimed.add(m.slug);
     if (resolved.length) groups.push({ track, modules: resolved });
   }

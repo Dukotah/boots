@@ -9,7 +9,11 @@
 // same lesson without any shared state. No server, no migration — the claim
 // state rides along in the localStorage-persisted store, same as goals/onboarding.
 
-import { MODULES, lessonId, type Lesson, type Module } from "@/lib/curriculum";
+import {
+  CATALOG,
+  type CatalogLesson,
+  type CatalogModule,
+} from "@/lib/curriculum/catalogClient";
 
 // ── Reward (a small, bounded gold faucet — see docs/economy.md) ──────────────
 // Modest by design: at most DAILY_BONUS_GOLD per day, so it never rivals the
@@ -18,8 +22,8 @@ export const DAILY_BONUS_GOLD = 20;
 export const DAILY_BONUS_XP = 15;
 
 export type DailyPick = {
-  module: Module;
-  lesson: Lesson;
+  module: CatalogModule;
+  lesson: CatalogLesson;
   /** "moduleSlug/lessonSlug" — the canonical completion id. */
   id: string;
   /** Deep link to the lesson. */
@@ -28,7 +32,7 @@ export type DailyPick = {
 
 // Flat list of every lesson, built once. Order is stable (module order in
 // index.ts → lesson order), so a given day key always maps to the same lesson.
-const POOL = MODULES.flatMap((m) =>
+const POOL = CATALOG.flatMap((m) =>
   m.lessons.map((lesson) => ({ module: m, lesson })),
 );
 
@@ -62,7 +66,7 @@ export function pickDaily(dayKey: string): DailyPick {
   return {
     module,
     lesson,
-    id: lessonId(module.slug, lesson.slug),
+    id: lesson.id,
     href: `/learn/${module.slug}/${lesson.slug}`,
   };
 }

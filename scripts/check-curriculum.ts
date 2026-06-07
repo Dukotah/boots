@@ -168,7 +168,11 @@ const KNOWN_PRESOLVED: ReadonlySet<string> = new Set<string>([
 ]);
 
 // Keep in sync with src/lib/curriculum/index.ts. (New module? Add it here too.)
-const MODULES: Module[] = [
+// NOTE: gen-catalog imports MODULES from this file. Safe: it only reads MODULES
+// at call-time (inside generateCatalog()), never at module load.
+import { generateCatalog } from "./gen-catalog.ts";
+
+export const MODULES: Module[] = [
   beginner,
   kids,
   html,
@@ -450,6 +454,12 @@ let lessonCount = 0;
 let testCount = 0;
 
 async function main() {
+  // Keep the lightweight client catalog (catalog.data.json) in sync with the
+  // curriculum every time we check, so it never goes stale when modules change.
+  if (generateCatalog()) {
+    console.log("✍️  regenerated catalog.data.json (was stale)");
+  }
+
   for (const mod of MODULES) {
     const seen = new Set<string>();
     if (!mod.lessons.length) errors.push(`${mod.slug}: module has no lessons`);
@@ -486,4 +496,6 @@ async function main() {
   );
 }
 
-main();
+// Only run the checks when invoked directly — importing this file (e.g. from
+// gen-catalog.ts to reuse the MODULES list) must not trigger the check/exit.
+if (process.argv[1]?.endsWith("check-curriculum.ts")) main();

@@ -3,7 +3,7 @@
 // Kept separate from the achievement catalog so the catalog stays a pure
 // predicate over PlayerStats — this file owns the curriculum coupling.
 
-import { getModule } from "@/lib/curriculum";
+import { getCatalogModule } from "@/lib/curriculum/catalogClient";
 
 export type BreadthStats = {
   /** Distinct lesson languages completed (e.g. ["js", "py", "sql"]). */
@@ -28,12 +28,12 @@ export function deriveBreadth(completedIds: string[]): BreadthStats {
     const moduleSlug = id.slice(0, slash);
     const lessonSlug = id.slice(slash + 1);
 
-    const module = getModule(moduleSlug);
+    const module = getCatalogModule(moduleSlug);
     if (!module) continue;
     const lesson = module.lessons.find((l) => l.slug === lessonSlug);
     if (!lesson) continue;
 
-    languages.add(lesson.language ?? module.language ?? "js");
+    languages.add(lesson.language);
 
     let done = doneByModule.get(moduleSlug);
     if (!done) {
@@ -46,8 +46,8 @@ export function deriveBreadth(completedIds: string[]): BreadthStats {
   const completedModules: string[] = [];
   for (const slug of Array.from(doneByModule.keys())) {
     const done = doneByModule.get(slug)!;
-    const module = getModule(slug);
-    if (module && done.size >= module.lessons.length) completedModules.push(slug);
+    const module = getCatalogModule(slug);
+    if (module && done.size >= module.lessonCount) completedModules.push(slug);
   }
 
   return {

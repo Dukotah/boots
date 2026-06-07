@@ -10,7 +10,7 @@
 //   2. buildResume() / resumeMarkdown() — a structured résumé + Markdown export.
 //   3. certVerifyCode() — the shared certificate id (also used by Certificate.tsx).
 
-import { getModule } from "@/lib/curriculum";
+import { getCatalogModule } from "@/lib/curriculum/catalogClient";
 import {
   PATHS,
   completedPaths,
@@ -231,7 +231,7 @@ export function buildResume(stats: PlayerStats, name: string): ResumeData {
   const skills = stats.languages.map(languageName);
 
   const courses = stats.completedModules
-    .map((slug) => getModule(slug)?.title)
+    .map((slug) => getCatalogModule(slug)?.title)
     .filter((t): t is string => Boolean(t));
 
   const projects = completedProjects(stats.completedIds).map((p) => ({

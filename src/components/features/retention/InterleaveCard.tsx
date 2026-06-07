@@ -5,11 +5,11 @@ import { Shuffle } from "lucide-react";
 import { useGameStore } from "@/store/useGameStore";
 import { useMounted } from "@/hooks/useMounted";
 import { pickInterleaved } from "@/lib/interleaving";
-import { MODULES } from "@/lib/curriculum";
+import { getCatalogModule } from "@/lib/curriculum/catalogClient";
 
-// Build a flat module+lesson lookup so we can resolve titles and emojis from
-// a lessonId without pulling the whole curriculum barrel into the render path —
-// MODULES is already imported by the parent dashboard, so no extra cost here.
+// Resolve display metadata (title, emoji, blurb) from a lessonId without
+// importing the full curriculum barrel. getCatalogModule pulls only the
+// lightweight catalog.data.json — no lesson bodies, no bundle bloat.
 function resolveMeta(lessonId: string): {
   emoji: string;
   moduleTitle: string;
@@ -18,7 +18,7 @@ function resolveMeta(lessonId: string): {
   href: string;
 } | null {
   const [moduleSlug, lessonSlug] = lessonId.split("/");
-  const mod = MODULES.find((m) => m.slug === moduleSlug);
+  const mod = getCatalogModule(moduleSlug);
   if (!mod) return null;
   const lesson = mod.lessons.find((l) => l.slug === lessonSlug);
   if (!lesson) return null;

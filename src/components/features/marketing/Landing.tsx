@@ -18,7 +18,7 @@ import {
   Play,
   Briefcase,
 } from "lucide-react";
-import { MODULES, totalLessons } from "@/lib/curriculum";
+import { totalModuleCount, totalLessonCount } from "@/lib/curriculum/catalogClient";
 import { PATHS, pathStats, type Path } from "@/lib/paths";
 import { MascotBoots } from "@/components/MascotBoots";
 
@@ -97,7 +97,7 @@ function Hero() {
           ))}
         </div>
         <p className="mt-4 text-xs text-gray-500">
-          {totalLessons()} interactive lessons · No signup needed to try
+          {totalLessonCount} interactive lessons · No signup needed to try
         </p>
       </motion.div>
 
@@ -189,7 +189,7 @@ function HeroDemo() {
 function StatStrip() {
   const stats = [
     { value: `${PATHS.length}`, label: "career paths" },
-    { value: `${totalLessons()}+`, label: "interactive lessons" },
+    { value: `${totalLessonCount}+`, label: "interactive lessons" },
     { value: "$0", label: "to start — no card" },
     { value: "100%", label: "runs in your browser" },
   ];
@@ -296,7 +296,7 @@ function CareerPaths() {
           <Compass size={16} /> Not sure? Take the 30-second quiz
         </Link>
         <Link href="/learn" className="text-sm text-gray-400 hover:text-white">
-          Or browse all {MODULES.length} courses →
+          Or browse all {totalModuleCount} courses →
         </Link>
       </motion.div>
     </section>

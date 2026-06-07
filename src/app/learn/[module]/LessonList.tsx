@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { CheckCircle2, Lock, HelpCircle } from "lucide-react";
 import type { Module } from "@/lib/curriculum/types";
-import { lessonId } from "@/lib/curriculum";
+import { lessonId } from "@/lib/curriculum/ids";
 import { useGameStore } from "@/store/useGameStore";
 import { useProAccess } from "@/store/useEntitlements";
 import { freeLessonLimit } from "@/lib/access";
