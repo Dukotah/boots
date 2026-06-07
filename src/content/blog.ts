@@ -15,6 +15,10 @@ import howToStartVibeCodingPost from "./posts/how-to-start-vibe-coding";
 import bestAiCodingTools2026Post from "./posts/best-ai-coding-tools-2026";
 import vibeCodingVsTraditionalPost from "./posts/vibe-coding-vs-traditional-coding";
 import isVibeCodingWorthItPost from "./posts/is-vibe-coding-worth-it";
+import bestFreeWaysToLearnToCode2026Post from "./posts/best-free-ways-to-learn-to-code-2026";
+import codecademyAlternativesPost from "./posts/codecademy-alternatives";
+import freecodecampAlternativesPost from "./posts/freecodecamp-alternatives";
+import howToLearnToUseAi2026Post from "./posts/how-to-learn-to-use-ai-2026";
 
 export type BlogPost = {
   slug: string;
@@ -856,6 +860,10 @@ The barrier to learning to code was never money — it's consistency and focus. 
   bestAiCodingTools2026Post,
   vibeCodingVsTraditionalPost,
   isVibeCodingWorthItPost,
+  bestFreeWaysToLearnToCode2026Post,
+  codecademyAlternativesPost,
+  freecodecampAlternativesPost,
+  howToLearnToUseAi2026Post,
 ];
 
 /** Look up a single post by its slug. Returns undefined if not found. */

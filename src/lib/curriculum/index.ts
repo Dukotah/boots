@@ -43,9 +43,11 @@ import { aiLlms } from "./ai-llms";
 import { promptEngineering } from "./prompt-engineering";
 import { aiPowerUser } from "./ai-power-user";
 import { aiImageGeneration } from "./ai-image-generation";
+import { aiVideoAndVoice } from "./ai-video-and-voice";
 import { aiApps } from "./ai-apps";
 import { vibeCoding } from "./vibe-coding";
 import { aiIntegrations } from "./ai-integrations";
+import { aiCustomAssistants } from "./ai-custom-assistants";
 import { aiForBusiness } from "./ai-for-business";
 import { aiAgents } from "./ai-agents";
 import { aiEmbeddings } from "./ai-embeddings";
@@ -174,9 +176,11 @@ export const MODULES: Module[] = [
   promptEngineering,
   aiPowerUser,
   aiImageGeneration,
+  aiVideoAndVoice,
   aiApps,
   vibeCoding,
   aiIntegrations,
+  aiCustomAssistants,
   aiForBusiness,
   aiAgents,
   aiEmbeddings,
