@@ -20,9 +20,11 @@ type RpcClient = {
 };
 
 /**
- * Records a lesson completion server-side. Returns the XP the server awarded
- * (0 if already completed), or null when not applicable (no backend / signed out
- * / failure) — callers should treat null as "kept local only".
+ * Records a CLIENT-ASSERTED completion (languages the server can't re-grade yet:
+ * Python/SQL). Uses complete_lesson_client, which grants only cosmetic credit
+ * (xp/gold/completed) — never the competitive verified_xp/weekly_xp, so an
+ * unverified claim can't inflate the leaderboard or league. Returns the cosmetic
+ * XP awarded (0 if already completed), or null when not applicable.
  */
 export async function recordCompletion(
   courseSlug: string,
@@ -37,17 +39,17 @@ export async function recordCompletion(
     } = await sb.auth.getUser();
     if (!user) return null;
 
-    const { data, error } = await sb.rpc("complete_lesson", {
+    const { data, error } = await sb.rpc("complete_lesson_client", {
       p_course_slug: courseSlug,
       p_lesson_slug: lessonSlug,
     });
     if (error) {
-      console.warn("[scoring] complete_lesson failed:", error.message);
+      console.warn("[scoring] complete_lesson_client failed:", error.message);
       return null;
     }
     return typeof data === "number" ? data : null;
   } catch (err) {
-    console.warn("[scoring] complete_lesson threw:", err);
+    console.warn("[scoring] complete_lesson_client threw:", err);
     return null;
   }
 }

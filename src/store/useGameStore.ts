@@ -136,6 +136,10 @@ export type GameState = {
   // ── core resources ──
   xp: number;
   gold: number;
+  // Server-authoritative all-time XP (sum of XP the server awarded for completed
+  // lessons). Read-only on the client — locked server-side (migration 0007) and
+  // used to rank the all-time leaderboard. `xp` above stays the cosmetic total.
+  verifiedXp: number;
   // ── progress ──
   completed: string[]; // "moduleSlug/lessonSlug"
   achievements: string[]; // unlocked achievement ids
@@ -254,6 +258,7 @@ export type GameState = {
 const INITIAL = {
   xp: 0,
   gold: 0,
+  verifiedXp: 0,
   completed: [] as string[],
   achievements: [] as string[],
   streak: 0,
@@ -299,6 +304,7 @@ type EquippedLoadout = {
 type ProfileSnapshot = {
   xp: number;
   gold: number;
+  verified_xp: number;
   streak: number;
   last_active_day: string | null;
   completed: string[];
@@ -318,7 +324,7 @@ type ProfileSnapshot = {
 };
 
 const PROFILE_COLUMNS =
-  "xp, gold, streak, last_active_day, completed, achievements, active_quest, " +
+  "xp, gold, verified_xp, streak, last_active_day, completed, achievements, active_quest, " +
   "weekly_xp, league_tier, season_start, cosmetics, talents, equipped, " +
   "streak_freezes, guild_id, guild_name, rev";
 
@@ -559,6 +565,10 @@ export const useGameStore = create<GameState>()(
           dailyLessons: baseDailyLessons + 1,
           claimedQuests,
           weeklyXp: state.weeklyXp + xp,
+          // NOTE: verifiedXp is server-authoritative and awarded only for
+          // server-verified (JS/TS) completions — it's reconciled on pull, not
+          // bumped optimistically here (a local bump would over-count Python/SQL,
+          // which only earn cosmetic credit).
           weeklyLessons: state.weeklyLessons + 1,
           // First completion seeds the spaced-repetition record at box 0.
           reviews: { ...state.reviews, [id]: { box: 0, last: today } },
@@ -876,6 +886,8 @@ export const useGameStore = create<GameState>()(
         set({
           // Monotonic progress — keep the best of either side, always.
           xp: Math.max(local.xp, remote.xp ?? 0),
+          // Server-authoritative — the DB total wins (locked column, can't be forged).
+          verifiedXp: Math.max(local.verifiedXp, remote.verified_xp ?? 0),
           streak: Math.max(local.streak, remote.streak ?? 0),
           weeklyXp: Math.max(local.weeklyXp, remote.weekly_xp ?? 0),
           leagueTier: Math.max(local.leagueTier, remote.league_tier ?? 0),
@@ -911,6 +923,7 @@ export const useGameStore = create<GameState>()(
       partialize: (s) => ({
         xp: s.xp,
         gold: s.gold,
+        verifiedXp: s.verifiedXp,
         completed: s.completed,
         achievements: s.achievements,
         streak: s.streak,

@@ -105,9 +105,26 @@ and the doubled-suffix metadata bug are all fixed in prior passes.
 `tsc --noEmit` clean · `next build` succeeds · `npm run check` (915 tests),
 `check:logic`, `check:quality`, `check:viz` all green.
 
+### P0/P1 — Third batch (closing the residual security loopholes)
+- **All-time leaderboard forge closed** (migration 0007). Added `verified_xp` — the
+  server-summed XP for completed lessons, locked from client writes — and the
+  all-time board now ranks by it. Forging the cosmetic `xp` total only inflates a
+  user's own level display; it no longer affects rankings. (Same principle already
+  applied to `weekly_xp` for leagues.) `gold` stays client-trusted by design (soft
+  currency, never sold).
+  Files: `migrations/0007`, `src/store/useGameStore.ts`, `src/app/leaderboard/page.tsx`,
+  `src/types/database.ts`.
+- **Python/SQL unverified-award hole closed** (migration 0008). Those languages run
+  in browser WASM we don't host server-side, so they can't be re-graded. They now
+  award via `complete_lesson_client` — cosmetic credit only (xp/gold/completed for
+  level + cross-device progress + certificates), never the competitive
+  `verified_xp`/`weekly_xp`. A self-claimed Python/SQL completion can't touch the
+  leaderboard or league.
+  Files: `migrations/0008`, `src/lib/scoring.ts`.
+
 ## Deferred (next pass)
-Full server-authority for `xp`/`gold` (achievement/quest award RPCs, then lock
-`xp`) to close the all-time-leaderboard soft-trust, and server-side Python/SQL
-re-grading (those languages are still client-trusted — they run in browser WASM
-runtimes we don't host server-side yet). Both are larger architectural changes
-best done deliberately against a testable database.
+Server-side Python/SQL *grading* (host Pyodide/sql.js in a function) to restore
+full competitive credit for those languages — until then they earn cosmetic credit
+only. Certificate eligibility for Python/SQL remains client-asserted (a personal,
+non-competitive achievement — low severity). The `pullFromServer` client-`rev`
+race (P1) and per-instance tutor rate limiter (P3, needs Upstash) also remain.

@@ -14,6 +14,9 @@ type LeaderboardPlayer = {
   id: string;
   username: string;
   xp: number;
+  // Server-authoritative all-time XP (locked column) — the all-time board ranks
+  // by this so it can't be forged via the client's cosmetic `xp` total.
+  verified_xp: number;
   weekly_xp: number;
   streak: number;
   league_tier: number;
@@ -40,6 +43,7 @@ function seededPlayers(): LeaderboardPlayer[] {
       id: `seed-${i}`,
       username,
       xp,
+      verified_xp: xp,
       weekly_xp: Math.abs((hash * 7) % 1200),
       streak: Math.abs((hash * 13) % 45),
       league_tier: Math.min(4, Math.floor(xp / 2000)),
@@ -55,6 +59,7 @@ const TIER_COLORS = [
 export default function LeaderboardPage() {
   const mounted = useMounted();
   const myXp = useGameStore((s) => s.xp);
+  const myVerifiedXp = useGameStore((s) => s.verifiedXp);
   const myStreak = useGameStore((s) => s.streak);
   const myWeeklyXp = useGameStore((s) => s.weeklyXp);
   const myLeagueTier = useGameStore((s) => s.leagueTier);
@@ -77,10 +82,10 @@ export default function LeaderboardPage() {
       if (isSupabaseConfigured) {
         const sb = getSupabaseBrowserClient();
         if (sb) {
-          const col = tab === "weekly" ? "weekly_xp" : "xp";
+          const col = tab === "weekly" ? "weekly_xp" : "verified_xp";
           const { data } = await sb
             .from("profiles")
-            .select("id, username, xp, weekly_xp, streak, league_tier")
+            .select("id, username, xp, verified_xp, weekly_xp, streak, league_tier")
             .order(col, { ascending: false })
             .limit(50);
           fetched = (data ?? []) as LeaderboardPlayer[];
@@ -100,6 +105,7 @@ export default function LeaderboardPage() {
             id: "me",
             username: myHandle,
             xp: myXp,
+            verified_xp: myVerifiedXp,
             weekly_xp: myWeeklyXp,
             streak: myStreak,
             league_tier: myLeagueTier,
@@ -107,14 +113,14 @@ export default function LeaderboardPage() {
         ];
       }
 
-      const sortKey = tab === "weekly" ? "weekly_xp" : "xp";
+      const sortKey = tab === "weekly" ? "weekly_xp" : "verified_xp";
       fetched.sort((a, b) => b[sortKey] - a[sortKey]);
       setPlayers(fetched);
       setLoading(false);
     }
 
     load();
-  }, [mounted, tab, myXp, myWeeklyXp, myStreak, myLeagueTier, myHandle]);
+  }, [mounted, tab, myXp, myVerifiedXp, myWeeklyXp, myStreak, myLeagueTier, myHandle]);
 
   const myRank = players.findIndex((p) => p.id === "me" || p.username === myHandle) + 1;
 
@@ -185,7 +191,7 @@ export default function LeaderboardPage() {
           players={players}
           loading={loading || !mounted}
           myHandle={myHandle}
-          sortKey={tab === "weekly" ? "weekly_xp" : "xp"}
+          sortKey={tab === "weekly" ? "weekly_xp" : "verified_xp"}
         />
       )}
     </div>
@@ -201,7 +207,7 @@ function PlayerLeaderboard({
   players: LeaderboardPlayer[];
   loading: boolean;
   myHandle: string;
-  sortKey: "xp" | "weekly_xp";
+  sortKey: "verified_xp" | "weekly_xp";
 }) {
   if (loading) {
     return (
