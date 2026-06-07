@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Crown, Swords, ArrowUp, ArrowDown, Clock } from "lucide-react";
+import { Crown, Swords, ArrowUp, ArrowDown, Clock, Users } from "lucide-react";
 import { useGameStore } from "@/store/useGameStore";
 import { useMounted } from "@/hooks/useMounted";
 import {
@@ -12,6 +12,8 @@ import {
   tierAt,
   seasonStandings,
   rankSeason,
+  cohortLabel,
+  cohortPercentile,
   type WeeklyRow,
   type RankedWeeklyRow,
   type SeasonResult,
@@ -114,6 +116,24 @@ export default function LeaguesPage() {
           </p>
         </div>
       </div>
+
+      {/* Cohort segment badge */}
+      {mounted && (
+        <div className="mt-3 flex items-center gap-3 rounded-xl border border-line bg-canvas/30 px-4 py-2.5">
+          <Users size={14} className="shrink-0 text-gray-500" />
+          <div className="flex flex-1 items-center gap-2 text-sm">
+            <span className="text-gray-400">Pool:</span>
+            <span className="font-semibold text-white">
+              {cohortLabel(weeklyXp, tier)} cohort
+            </span>
+            <span className="text-gray-500">·</span>
+            <span className="text-gray-400">{cohortPercentile(weeklyXp, tier)} in pool</span>
+          </div>
+          <span className="shrink-0 rounded-full bg-white/5 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-400">
+            matched
+          </span>
+        </div>
+      )}
 
       {/* Tier ladder */}
       <div className="mt-6 flex items-center justify-center gap-1 text-sm">

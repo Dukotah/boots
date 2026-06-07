@@ -8,6 +8,24 @@
 // Pure + deterministic so the same inputs always map to the same standings, on
 // the client now and (later) server-side. The rival field is seeded (no real
 // users) and scales its XP per tier so each promotion genuinely feels harder.
+//
+// POOL SEGMENTATION
+// ─────────────────
+// Instead of one fixed tier-wide field, each player is placed into an
+// activity-matched cohort whose XP is centered near the player's own weeklyXp.
+// This means mid-tier learners compete against similarly-active peers, so
+// promotion/relegation always feel winnable rather than hopeless or trivial.
+//
+// cohortBase = clamp(playerXp, tierMin, tierMax)
+//   where tierMin = rivalBase * 0.20  (floor — avoids 0-XP ghost pools)
+//         tierMax = rivalBase * 1.90  (ceiling — avoids escaping the tier)
+//
+// The 10 fixed rival handles retain their relative-effort ordering (factors
+// 1.7 → 0.25 around the cohortBase), so the field always has a realistic
+// distribution above and below the player. "You" land near the median,
+// giving a genuine shot at top-3 (promote) or bottom-3 risk (relegate).
+//
+// Economy invariants: weeklyXp is read-only here; gold/XP/level are untouched.
 
 export const SEASON_DAYS = 7;
 /** Top N of the field are promoted at season end. */
@@ -38,18 +56,21 @@ export function tierAt(index: number): LeagueTier {
   return LEAGUE_TIERS[Math.max(0, Math.min(TOP_TIER, index))];
 }
 
-// Deterministic rival field: fixed handles × a factor, scaled by the tier's base.
+// Deterministic rival handles with relative-effort factors.
+// Factors are evenly distributed above (>1) and below (<1) 1.0 so that when
+// the cohortBase equals the player's XP, roughly half the field is above and
+// half below — mid-pack placement by design.
 const RIVAL_SEEDS: { name: string; factor: number }[] = [
-  { name: "ByteWizard", factor: 1.7 },
-  { name: "NullPointer", factor: 1.45 },
-  { name: "asyncAwaitlin", factor: 1.25 },
-  { name: "RegexRanger", factor: 1.1 },
-  { name: "SyntaxSelene", factor: 0.95 },
-  { name: "loop_master", factor: 0.8 },
-  { name: "PandasNotBears", factor: 0.65 },
-  { name: "git_gud", factor: 0.5 },
-  { name: "CamelCaseCarol", factor: 0.38 },
-  { name: "semicolon;", factor: 0.25 },
+  { name: "ByteWizard",      factor: 1.70 },
+  { name: "NullPointer",     factor: 1.45 },
+  { name: "asyncAwaitlin",   factor: 1.25 },
+  { name: "RegexRanger",     factor: 1.10 },
+  { name: "SyntaxSelene",    factor: 0.95 },
+  { name: "loop_master",     factor: 0.80 },
+  { name: "PandasNotBears",  factor: 0.65 },
+  { name: "git_gud",         factor: 0.50 },
+  { name: "CamelCaseCarol",  factor: 0.38 },
+  { name: "semicolon;",      factor: 0.25 },
 ];
 
 export type WeeklyRow = {
@@ -59,9 +80,75 @@ export type WeeklyRow = {
   isYou?: boolean;
 };
 
-/** The seeded rival field for a tier (deterministic, no real users). */
-export function rivalField(tierIndex: number): WeeklyRow[] {
+// ── Pool-segmentation constants ───────────────────────────────────────────────
+/** Cohort center floor: at least 20% of the tier's rivalBase so pools are never degenerate. */
+const COHORT_FLOOR_RATIO = 0.20;
+/** Cohort center ceiling: cap at 190% so high-activity players don't escape the tier shape. */
+const COHORT_CEIL_RATIO  = 1.90;
+
+/**
+ * Derive the cohort base for a player.
+ *
+ * The returned value is clamped between [rivalBase × 0.20, rivalBase × 1.90]
+ * so the rival field always has a realistic spread — even when the player
+ * has earned 0 XP this week (floor prevents an all-zero ghost pool) or is
+ * extremely active (ceiling keeps the top rival from inflating past 3.2× base).
+ *
+ * Pure + deterministic: same (weeklyXp, tierIndex) → same cohortBase every time.
+ */
+export function cohortBase(weeklyXp: number, tierIndex: number): number {
   const base = tierAt(tierIndex).rivalBase;
+  const floor = Math.round(base * COHORT_FLOOR_RATIO);
+  const ceil  = Math.round(base * COHORT_CEIL_RATIO);
+  return Math.max(floor, Math.min(ceil, weeklyXp));
+}
+
+/**
+ * Compute the activity percentile label for the player within their cohort.
+ * Percentile is determined by how many of the 10 rival seeds the player beats.
+ * Returns a human-readable string surfaced in the UI ("Top 30 %", etc.).
+ */
+export function cohortPercentile(weeklyXp: number, tierIndex: number): string {
+  const base = cohortBase(weeklyXp, tierIndex);
+  // Count how many rivals the player would beat at their current XP.
+  const beatenCount = RIVAL_SEEDS.filter(
+    (r) => weeklyXp > Math.round(base * r.factor),
+  ).length;
+  // beatenCount ∈ [0, 10]; express as percentile out of 11 total (10 rivals + you).
+  const pct = Math.round((beatenCount / RIVAL_SEEDS.length) * 100);
+  if (pct >= 90) return "Top 10%";
+  if (pct >= 70) return "Top 30%";
+  if (pct >= 50) return "Top 50%";
+  if (pct >= 30) return "Bottom 50%";
+  return "Bottom 30%";
+}
+
+/**
+ * The activity-matched cohort label shown in the UI.
+ * Bucketed by the player's cohortBase relative to rivalBase so players can see
+ * which segment they are in without exposing raw numbers.
+ */
+export function cohortLabel(weeklyXp: number, tierIndex: number): string {
+  const base = tierAt(tierIndex).rivalBase;
+  const cb = cohortBase(weeklyXp, tierIndex);
+  const ratio = cb / base;
+  if (ratio >= 1.40) return "Elite";
+  if (ratio >= 0.90) return "Active";
+  if (ratio >= 0.50) return "Developing";
+  return "Starter";
+}
+
+/**
+ * The seeded rival field for a tier, segmented around the player's activity.
+ *
+ * When weeklyXp is undefined (legacy / Supabase real-field path), falls back
+ * to the old tier-median behavior so external callers are unaffected.
+ */
+export function rivalField(tierIndex: number, weeklyXp?: number): WeeklyRow[] {
+  const base =
+    weeklyXp !== undefined
+      ? cohortBase(weeklyXp, tierIndex)
+      : tierAt(tierIndex).rivalBase;
   return RIVAL_SEEDS.map((r) => ({
     name: r.name,
     weeklyXp: Math.round(base * r.factor),
@@ -97,7 +184,7 @@ export function seasonStandings(
   tierIndex: number,
 ): RankedWeeklyRow[] {
   const withYou: WeeklyRow[] = [
-    ...rivalField(tierIndex),
+    ...rivalField(tierIndex, weeklyXp),
     { name: "You", weeklyXp, isYou: true },
   ];
   return rankSeason(withYou, tierIndex);

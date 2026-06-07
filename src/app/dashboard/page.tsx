@@ -22,6 +22,7 @@ import { ReferralCard } from "@/components/features/referral/ReferralCard";
 import { PurchaseTracker } from "@/components/features/billing/PurchaseTracker";
 import { TrialBanner } from "@/components/features/billing/TrialBanner";
 import { DoubleXpBanner } from "@/components/features/retention/DoubleXpBanner";
+import { InterleaveCard } from "@/components/features/retention/InterleaveCard";
 import { PageSkeleton } from "@/components/PageSkeleton";
 
 export default function Dashboard() {
@@ -203,6 +204,11 @@ export default function Dashboard() {
       {/* Challenge of the day */}
       <div className="mt-4">
         <DailyChallenge />
+      </div>
+
+      {/* Interleaving — revisit well-learned lessons for variety / transfer */}
+      <div className="mt-4">
+        <InterleaveCard />
       </div>
 
       {/* Talent build summary */}
