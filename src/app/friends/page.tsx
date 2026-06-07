@@ -10,6 +10,7 @@ import {
   getSupabaseBrowserClient,
   isSupabaseConfigured,
 } from "@/lib/supabase/client";
+import StudyBuddySection from "@/components/features/friends/StudyBuddySection";
 
 type Friend = { id: string; username: string; xp: number; weekly_xp: number };
 type Duel = {
@@ -214,6 +215,9 @@ export default function FriendsPage() {
           </div>
         </section>
       )}
+
+      {/* Study Buddies */}
+      <StudyBuddySection user={user} friends={friends} onChanged={load} />
 
       {/* Friend leaderboard */}
       <section className="mt-8">

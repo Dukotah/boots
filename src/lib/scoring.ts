@@ -9,7 +9,9 @@
 // No-ops gracefully when Supabase isn't configured or the user is logged out, so
 // the app keeps working entirely on local state during development.
 
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { getSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
+import { currentWeekKey, DAMAGE_PER_LESSON } from "@/lib/guildBoss";
+import { useGameStore } from "@/store/useGameStore";
 
 type RpcClient = {
   auth: { getUser: () => Promise<{ data: { user: unknown | null } }> };
@@ -18,6 +20,34 @@ type RpcClient = {
     args: Record<string, unknown>,
   ) => Promise<{ data: unknown; error: { message: string } | null }>;
 };
+
+/**
+ * Fire-and-forget: call contribute_guild_boss_damage when the user is in a guild.
+ * Never throws, never blocks the lesson-completion flow.
+ */
+function fireGuildBossDamage(): void {
+  if (!isSupabaseConfigured) return;
+  const { guildId } = useGameStore.getState();
+  if (!guildId) return;
+
+  const sb = getSupabaseBrowserClient() as unknown as RpcClient | null;
+  if (!sb) return;
+
+  const weekKey = currentWeekKey();
+
+  void (async () => {
+    try {
+      await sb.rpc("contribute_guild_boss_damage", {
+        p_guild_id: guildId,
+        p_week: weekKey,
+        p_boss_id: `${weekKey}|${guildId}`, // deterministic; matches bossForWeek key
+        p_damage: DAMAGE_PER_LESSON,
+      });
+    } catch {
+      // Intentionally swallowed — boss damage is best-effort.
+    }
+  })();
+}
 
 /**
  * Records a lesson completion server-side. Returns the XP the server awarded
@@ -45,6 +75,10 @@ export async function recordCompletion(
       console.warn("[scoring] complete_lesson failed:", error.message);
       return null;
     }
+
+    // Guild co-op boss damage — fire-and-forget, no-op without a guild.
+    fireGuildBossDamage();
+
     return typeof data === "number" ? data : null;
   } catch (err) {
     console.warn("[scoring] complete_lesson threw:", err);

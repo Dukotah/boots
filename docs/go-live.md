@@ -142,3 +142,32 @@ and no-op until activated. To turn on: `npm i @sentry/nextjs` and set `SENTRY_DS
 3. Buy a cosmetic, equip it, open `/u/<your-handle>` → cosmetic + build card show.
 4. `curl` each cron URL with the Bearer header → `{"ok":true}` (not `skipped`).
 5. Skill Tree `/skill-tree` shows all **four** branches incl. 📚 Scholar.
+
+---
+
+## Migration 0008 — Pair Streaks + Guild Boss
+
+**`0008_pair_streaks_and_guild_boss.sql`** must be applied to live Supabase (after
+`0007`) before the two new features write durable data. Both features
+graceful-degrade until it is applied — pair streak progress stays in
+`localStorage` only, and guild boss calls will return an error which the client
+should swallow silently.
+
+What the migration adds:
+
+- **`study_buddies`** table — one row per `(user_id, buddy_id)` pair. Tracks
+  `pair_streak` (int) and `last_advanced` (day-key string matching
+  `profiles.last_active_day`). RLS: each user can select/insert/update/delete
+  only rows where `user_id = auth.uid()`. Client-driven CRUD; no RPC needed.
+
+- **`guild_boss`** table — one row per `(guild_id, week)` key. Tracks
+  `boss_id`, `total_damage`, and `defeated`. RLS: any authenticated user may
+  SELECT (shared leaderboard); no direct insert/update policy — all writes are
+  gated through the RPC below.
+
+- **`contribute_guild_boss_damage(p_guild_id, p_week, p_boss_id, p_damage)`**
+  RPC — `SECURITY DEFINER` function that atomically upserts the boss row and
+  adds `p_damage` (clamped to ≥ 0) to `total_damage`. Returns the new
+  `total_damage` as an `int`. Granted to the `authenticated` role.
+
+Apply via the Supabase SQL editor (paste the file and run) or `supabase db push`.

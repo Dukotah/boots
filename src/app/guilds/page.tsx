@@ -13,6 +13,7 @@ import {
   seededWeeklyXp,
   type Guild,
 } from "@/lib/guilds";
+import { GuildBossPanel } from "@/components/features/guilds/GuildBossPanel";
 
 export default function GuildsPage() {
   const mounted = useMounted();
@@ -124,8 +125,11 @@ export default function GuildsPage() {
         </motion.div>
       )}
 
+      {/* Weekly co-op boss — only shown when the user is in a guild */}
+      {myGuild && guildId && <GuildBossPanel guildId={guildId} />}
+
       {/* Filter tabs */}
-      <div className="mb-6 flex flex-wrap gap-2">
+      <div className="mb-6 flex flex-wrap gap-2 mt-10">
         {["all", "algorithms", "ai-llms", "javascript", "sql", "streaks"].map((f) => (
           <button
             key={f}

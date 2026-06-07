@@ -285,12 +285,58 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["stripe_events"]["Insert"]>;
         Relationships: [];
       };
+      study_buddies: {
+        Row: {
+          id: string;
+          user_id: string;
+          buddy_id: string;
+          pair_streak: number;
+          last_advanced: string | null;
+          created_at: string;
+        };
+        Insert: {
+          user_id: string;
+          buddy_id: string;
+          pair_streak?: number;
+          last_advanced?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["study_buddies"]["Insert"]>;
+        Relationships: [];
+      };
+      guild_boss: {
+        Row: {
+          id: string;
+          guild_id: string;
+          week: string;
+          boss_id: string;
+          total_damage: number;
+          defeated: boolean;
+          created_at: string;
+        };
+        Insert: {
+          guild_id: string;
+          week: string;
+          boss_id: string;
+          total_damage?: number;
+          defeated?: boolean;
+        };
+        Update: Partial<Database["public"]["Tables"]["guild_boss"]["Insert"]>;
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      contribute_guild_boss_damage: {
+        Args: {
+          p_guild_id: string;
+          p_week: string;
+          p_boss_id: string;
+          p_damage: number;
+        };
+        Returns: number;
+      };
     };
     Enums: {
       lesson_status: LessonStatus;
@@ -310,3 +356,7 @@ export type UserProgress = Database["public"]["Tables"]["user_progress"]["Row"];
 export type AchievementRow = Database["public"]["Tables"]["achievements"]["Row"];
 export type UserAchievement =
   Database["public"]["Tables"]["user_achievements"]["Row"];
+export type StudyBuddy =
+  Database["public"]["Tables"]["study_buddies"]["Row"];
+export type GuildBoss =
+  Database["public"]["Tables"]["guild_boss"]["Row"];
