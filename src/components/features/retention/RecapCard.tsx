@@ -42,7 +42,7 @@ function StatCard({
     >
       <p className={`text-xl font-bold ${textColor}`}>{value}</p>
       <p className="mt-0.5 text-xs font-medium text-gray-400">{label}</p>
-      {sub && <p className="mt-1 text-[11px] text-gray-600">{sub}</p>}
+      {sub && <p className="mt-1 text-[11px] text-gray-400">{sub}</p>}
     </div>
   );
 }

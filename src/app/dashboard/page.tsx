@@ -20,6 +20,7 @@ import { EnableNotifications } from "@/components/features/push/EnableNotificati
 import { RecommendedNextCard } from "@/components/features/onboarding/RecommendedNextCard";
 import { ReferralCard } from "@/components/features/referral/ReferralCard";
 import { PurchaseTracker } from "@/components/features/billing/PurchaseTracker";
+import { PageSkeleton } from "@/components/PageSkeleton";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -81,7 +82,7 @@ export default function Dashboard() {
   }
 
   if (!mounted) {
-    return <div className="mx-auto max-w-5xl px-4 py-10 text-gray-500">Loading…</div>;
+    return <PageSkeleton maxW="max-w-5xl" rows={4} />;
   }
 
   // Spaced-repetition reviews coming due — surfaced here because the feature is

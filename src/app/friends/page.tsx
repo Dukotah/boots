@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { UserPlus, Swords, X, Clock } from "lucide-react";
 import { useGameStore } from "@/store/useGameStore";
@@ -32,6 +32,20 @@ export default function FriendsPage() {
   const [duels, setDuels] = useState<Duel[]>([]);
   const [query, setQuery] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const msgTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Show a transient status message that auto-dismisses (and is announced to
+  // screen readers via the aria-live region below).
+  const flash = useCallback((text: string) => {
+    setMsg(text);
+    if (msgTimer.current) clearTimeout(msgTimer.current);
+    msgTimer.current = setTimeout(() => setMsg(null), 3500);
+  }, []);
+
+  useEffect(() => () => {
+    if (msgTimer.current) clearTimeout(msgTimer.current);
+  }, []);
 
   const load = useCallback(async () => {
     const sb = getSupabaseBrowserClient();
@@ -72,19 +86,19 @@ export default function FriendsPage() {
       .eq("username", handle)
       .maybeSingle();
     if (!target) {
-      setMsg(`No learner named “${handle}”.`);
+      flash(`No learner named “${handle}”.`);
       return;
     }
     const targetId = (target as { id: string }).id;
     if (targetId === user.id) {
-      setMsg("You can't follow yourself.");
+      flash("You can't follow yourself.");
       return;
     }
     await sb
       .from("follows")
       .upsert({ follower_id: user.id, following_id: targetId });
     setQuery("");
-    setMsg(`Following @${handle}!`);
+    flash(`Following @${handle}!`);
     load();
   }
 
@@ -102,6 +116,14 @@ export default function FriendsPage() {
   async function challenge(opponentId: string) {
     const sb = getSupabaseBrowserClient();
     if (!sb || !user) return;
+    if (
+      duels.some(
+        (d) => d.challenger_id === opponentId || d.opponent_id === opponentId,
+      )
+    ) {
+      flash("You already have an active duel with this learner.");
+      return;
+    }
     const endsAt = new Date(Date.now() + 24 * 3600_000).toISOString();
     await sb.from("duels").insert({
       challenger_id: user.id,
@@ -110,7 +132,7 @@ export default function FriendsPage() {
       ends_at: endsAt,
       status: "active",
     });
-    setMsg("Duel sent! First to complete 5 lessons in 24h wins.");
+    flash("Duel sent! First to complete 5 lessons in 24h wins.");
     load();
   }
 
@@ -145,17 +167,21 @@ export default function FriendsPage() {
       {/* Follow */}
       <div className="mt-6 flex items-center gap-2">
         <input
+          ref={inputRef}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && follow()}
           placeholder="Follow by username…"
+          aria-label="Follow a learner by username"
           className="flex-1 rounded-lg border border-line bg-canvas/60 px-3 py-2.5 text-sm text-white placeholder:text-gray-600"
         />
         <button onClick={follow} className="btn-primary">
           <UserPlus size={15} /> Follow
         </button>
       </div>
-      {msg && <p className="mt-2 text-xs text-accent-soft">{msg}</p>}
+      <p role="status" aria-live="polite" className="mt-2 text-xs text-accent-soft">
+        {msg}
+      </p>
 
       {/* Active duels */}
       {duels.length > 0 && (
@@ -193,13 +219,27 @@ export default function FriendsPage() {
       <section className="mt-8">
         <h2 className="mb-3 text-lg font-semibold text-white">Your friends</h2>
         {board.length === 0 ? (
-          <div className="card text-center text-sm text-gray-400">
-            No friends yet — follow someone above to get started.
+          <div className="card flex flex-col items-center gap-3 py-12 text-center">
+            <span className="text-4xl">🤝</span>
+            <p className="text-base font-semibold text-white">No friends yet</p>
+            <p className="max-w-xs text-sm text-gray-400">
+              Follow other learners to compare XP and challenge them to duels.
+              Type a username above and press Enter to get started.
+            </p>
+            <button
+              onClick={() => inputRef.current?.focus()}
+              className="btn-primary mt-1"
+            >
+              <UserPlus size={14} /> Find a friend
+            </button>
           </div>
         ) : (
           <div className="space-y-2">
             {board.map((f, i) => {
               const info = levelFromXp(f.xp);
+              const dueling = duels.some(
+                (d) => d.challenger_id === f.id || d.opponent_id === f.id,
+              );
               return (
                 <div key={f.id} className="card flex items-center gap-3 py-3">
                   <span className="w-6 text-center text-sm font-bold text-gray-500">
@@ -217,8 +257,9 @@ export default function FriendsPage() {
                   </Link>
                   <button
                     onClick={() => challenge(f.id)}
-                    className="btn-ghost px-2 py-1 text-xs"
-                    title="Challenge to a duel"
+                    disabled={dueling}
+                    className="btn-ghost px-2 py-1 text-xs disabled:opacity-40"
+                    title={dueling ? "Duel already active" : "Challenge to a duel"}
                   >
                     <Swords size={13} /> Duel
                   </button>

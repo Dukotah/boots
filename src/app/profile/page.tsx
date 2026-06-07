@@ -14,6 +14,7 @@ import { GithubJournalCard } from "@/components/features/github/GithubJournalCar
 import { BadgeEmbed } from "@/components/features/github/BadgeEmbed";
 import { XPBar } from "@/components/XPBar";
 import { SITE } from "@/lib/site";
+import { PageSkeleton } from "@/components/PageSkeleton";
 
 const BANNER_GRADIENTS: Record<string, string> = {
   midnight: "from-slate-900 via-blue-950 to-indigo-950",
@@ -66,7 +67,7 @@ export default function ProfilePage() {
   }
 
   if (!mounted) {
-    return <div className="mx-auto max-w-2xl px-4 py-10 text-gray-500">Loading…</div>;
+    return <PageSkeleton maxW="max-w-2xl" rows={3} />;
   }
 
   // Cosmetics the player owns, by slot

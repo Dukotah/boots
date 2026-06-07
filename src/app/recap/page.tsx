@@ -12,7 +12,7 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
-import { ArrowLeft, CalendarDays } from "lucide-react";
+import { ArrowLeft, CalendarDays, BookOpen } from "lucide-react";
 import { useGameStore } from "@/store/useGameStore";
 import { useMounted } from "@/hooks/useMounted";
 import { computeRecap } from "@/lib/recap";
@@ -53,6 +53,9 @@ export default function RecapPage() {
     );
   }
 
+  // First-run empty state: brand-new user with no activity yet.
+  const isEmpty = recap.weeklyXp === 0 && recap.weeklyLessons === 0;
+
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
       {/* Back link */}
@@ -69,8 +72,25 @@ export default function RecapPage() {
         Your week in code
       </h1>
 
-      {/* Recap card (polished, shareable) */}
-      <RecapCard data={recap} />
+      {/* Zero-data first-run state */}
+      {isEmpty ? (
+        <div className="card flex flex-col items-center gap-4 py-14 text-center">
+          <span className="text-5xl">📅</span>
+          <div>
+            <p className="text-lg font-bold text-white">Nothing to recap yet</p>
+            <p className="mt-1 max-w-xs text-sm text-gray-400">
+              Complete your first lesson and your weekly stats will appear here
+              — XP, streak, league standing, and more.
+            </p>
+          </div>
+          <Link href="/learn" className="btn-primary mt-2 flex items-center gap-1.5">
+            <BookOpen size={15} /> Start your first lesson
+          </Link>
+        </div>
+      ) : (
+        /* Recap card (polished, shareable) */
+        <RecapCard data={recap} />
+      )}
 
       {/* CTAs */}
       <div className="mt-6 grid grid-cols-2 gap-3">

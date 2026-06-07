@@ -135,7 +135,7 @@ export default function NotificationsPage() {
         )}
       </div>
       <p className="mt-1 text-sm text-gray-500">
-        Derived from your real progress — no backend needed.
+        Your achievements, level-ups, league results, and reminders — all in one place.
       </p>
 
       {/* List */}

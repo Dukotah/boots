@@ -46,14 +46,6 @@ export function Footer() {
             </span>
           </Link>
           <p className="mt-3 max-w-xs text-sm text-gray-400">{SITE.tagline}</p>
-          <a
-            href="https://github.com/Dukotah/boots"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-3 inline-block text-xs text-gray-500 hover:text-gray-300"
-          >
-            GitHub ↗
-          </a>
         </div>
 
         {COLS.map((col) => (

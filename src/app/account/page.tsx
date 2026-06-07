@@ -15,6 +15,7 @@ import { useMounted } from "@/hooks/useMounted";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { getSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { SITE } from "@/lib/site";
+import { PageSkeleton } from "@/components/PageSkeleton";
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -70,7 +71,7 @@ export default function AccountPage() {
   const modalTrapRef = useFocusTrap<HTMLDivElement>(deleteOpen);
 
   if (!mounted) {
-    return <div className="mx-auto max-w-2xl px-4 py-10 text-gray-500">Loading…</div>;
+    return <PageSkeleton maxW="max-w-2xl" rows={2} />;
   }
 
   // ── Export ─────────────────────────────────────────────────────────────────

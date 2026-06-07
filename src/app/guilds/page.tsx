@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Users, Zap, Trophy, Shield, CheckCircle, LogOut } from "lucide-react";
+import { Users, Zap, Trophy, Shield, CheckCircle, LogOut, Sparkles } from "lucide-react";
 import { useGameStore } from "@/store/useGameStore";
 import { useMounted } from "@/hooks/useMounted";
 import {
@@ -53,6 +53,24 @@ export default function GuildsPage() {
           the guild leaderboard together. One guild at a time.
         </p>
       </div>
+
+      {/* First-run prompt — shown only when not yet in a guild */}
+      {!myGuild && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8 flex items-start gap-4 rounded-2xl border border-accent/20 bg-accent/5 px-5 py-4"
+        >
+          <Sparkles size={20} className="mt-0.5 shrink-0 text-accent-soft" />
+          <div>
+            <p className="text-sm font-semibold text-white">Pick your crew</p>
+            <p className="mt-0.5 text-sm text-gray-400">
+              Join a guild to share weekly XP goals with a team and climb the
+              guild leaderboard together. You can switch guilds at any time.
+            </p>
+          </div>
+        </motion.div>
+      )}
 
       {/* My Guild Banner */}
       {myGuild && (
@@ -254,8 +272,8 @@ export default function GuildsPage() {
           <Trophy size={20} className="inline mr-2 text-gold" />
           Guild Leaderboard
         </h2>
-        <div className="rounded-2xl border border-line bg-surface overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="overflow-x-auto rounded-2xl border border-line bg-surface">
+          <table className="w-full min-w-[28rem] text-sm">
             <thead>
               <tr className="border-b border-line text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                 <th className="px-4 py-3 w-10">#</th>

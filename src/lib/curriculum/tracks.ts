@@ -156,6 +156,7 @@ export const TRACKS: Track[] = [
       "ai-image-generation",
       "vibe-coding",
       "ai-integrations",
+      "ai-for-business",
       "ai-llms",
       "prompt-engineering",
       "ai-apps",

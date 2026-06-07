@@ -7,7 +7,7 @@ import { useGameStore } from "@/store/useGameStore";
 import { levelFromXp } from "@/lib/levels";
 import { MascotBoots } from "./MascotBoots";
 import { NotificationBell } from "@/components/features/notifications/NotificationBell";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 // Routes that render their own AppShell chrome (sidebar) — hide the top Navbar there.
 const APP_SHELL_ROUTES = ["/map"];
@@ -40,6 +40,8 @@ export function Navbar() {
   // Avoid hydration mismatch: store is persisted/client-only.
   const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const hamburgerRef = useRef<HTMLButtonElement>(null);
   useEffect(() => setMounted(true), []);
 
   // All hooks are called unconditionally (before any early return) to satisfy
@@ -53,13 +55,35 @@ export function Navbar() {
   const hidden = APP_SHELL_ROUTES.some(
     (r) => pathname === r || pathname.startsWith(r + "/"),
   );
+
+  // Close mobile menu on route change.
+  useEffect(() => { setOpen(false); }, [pathname]);
+
+  // Escape key closes mobile menu; return focus to hamburger button.
+  useEffect(() => {
+    if (!open) return;
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setOpen(false);
+        hamburgerRef.current?.focus();
+      }
+    }
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [open]);
+
+  // Move focus into the menu when it opens.
+  useEffect(() => {
+    if (open) {
+      const first = menuRef.current?.querySelector<HTMLElement>("a, button");
+      first?.focus();
+    }
+  }, [open]);
+
   if (hidden) return null;
 
   return (
-    <header
-      className="sticky top-0 z-40 border-b border-line bg-canvas/80 backdrop-blur"
-      onKeyDown={(e) => { if (e.key === "Escape" && open) setOpen(false); }}
-    >
+    <header className="sticky top-0 z-40 border-b border-line bg-canvas/80 backdrop-blur">
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <Link href="/" className="flex items-center gap-2">
           <MascotBoots size={34} />
@@ -69,7 +93,7 @@ export function Navbar() {
         </Link>
 
         <div className="flex items-center gap-2 sm:gap-4">
-          {/* Desktop links */}
+          {/* Desktop links — hidden on mobile */}
           <div className="hidden items-center gap-4 sm:flex">
             {NAV_LINKS.filter((l) => l.desktop).map((l) => (
               <Link
@@ -82,7 +106,9 @@ export function Navbar() {
             ))}
           </div>
 
-          {mounted && (
+          {/* Stats pill: render a stable-size placeholder before mount to avoid
+              layout shift that can re-trigger scroll and cause a blank flash. */}
+          {mounted ? (
             <Link
               href="/dashboard"
               aria-label={`Dashboard — ${streak} day streak, level ${info.level}`}
@@ -97,8 +123,16 @@ export function Navbar() {
                 Lv {info.level}
               </span>
             </Link>
+          ) : (
+            /* Skeleton preserves the pill's width so the hamburger doesn't jump */
+            <div
+              aria-hidden="true"
+              className="h-8 w-24 rounded-full border border-line bg-surface-2"
+            />
           )}
-          {mounted && <NotificationBell />}
+
+          <NotificationBell />
+
           {mounted && !user && (
             <Link
               href="/login"
@@ -108,8 +142,9 @@ export function Navbar() {
             </Link>
           )}
 
-          {/* Mobile hamburger */}
+          {/* Mobile hamburger — hidden on sm+ */}
           <button
+            ref={hamburgerRef}
             type="button"
             onClick={() => setOpen((o) => !o)}
             aria-label={open ? "Close menu" : "Open menu"}
@@ -122,10 +157,14 @@ export function Navbar() {
         </div>
       </nav>
 
-      {/* Mobile menu — reaches every route */}
+      {/* Mobile menu — visible only on small screens; reaches every route */}
       {open && (
         <div
+          ref={menuRef}
           id="mobile-nav"
+          role="dialog"
+          aria-label="Navigation menu"
+          aria-modal="false"
           className="border-t border-line bg-canvas/95 backdrop-blur sm:hidden"
         >
           <div className="mx-auto flex max-w-6xl flex-col px-4 py-2">

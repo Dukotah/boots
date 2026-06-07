@@ -26,6 +26,7 @@ import {
 } from "@/lib/career";
 import { SITE } from "@/lib/site";
 import type { PlayerStats } from "@/types/game";
+import { PageSkeleton } from "@/components/PageSkeleton";
 
 export default function CareerPage() {
   const mounted = useMounted();
@@ -86,7 +87,7 @@ export default function CareerPage() {
 
   if (!mounted) {
     return (
-      <div className="mx-auto max-w-4xl px-4 py-10 text-gray-500">Loading…</div>
+      <PageSkeleton maxW="max-w-4xl" rows={3} />
     );
   }
 
@@ -322,8 +323,11 @@ export default function CareerPage() {
       <section className="mt-10">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3 print:hidden">
           <div className="flex items-center gap-2">
-            <label className="text-sm text-gray-400">Name on résumé:</label>
+            <label htmlFor="resume-name" className="text-sm text-gray-400">
+              Name on résumé:
+            </label>
             <input
+              id="resume-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder={displayName}

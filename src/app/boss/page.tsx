@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { Swords, Users, User, Coins, Zap } from "lucide-react";
 import { useGameStore } from "@/store/useGameStore";
 import { useMounted } from "@/hooks/useMounted";
+import { PageSkeleton } from "@/components/PageSkeleton";
 
 export default function BossPage() {
   const mounted = useMounted();
@@ -17,7 +18,7 @@ export default function BossPage() {
   }, [checkSeason]);
 
   if (!mounted) {
-    return <div className="mx-auto max-w-2xl px-4 py-10 text-gray-500">Loading…</div>;
+    return <PageSkeleton maxW="max-w-2xl" rows={2} />;
   }
 
   const { boss, state, claimed } = bossSel();

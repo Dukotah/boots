@@ -33,6 +33,7 @@ import { aiForEveryone } from "../src/lib/curriculum/ai-for-everyone.ts";
 import { aiPowerUser } from "../src/lib/curriculum/ai-power-user.ts";
 import { aiImageGeneration } from "../src/lib/curriculum/ai-image-generation.ts";
 import { aiIntegrations } from "../src/lib/curriculum/ai-integrations.ts";
+import { aiForBusiness } from "../src/lib/curriculum/ai-for-business.ts";
 import { vibeCoding } from "../src/lib/curriculum/vibe-coding.ts";
 import { closures } from "../src/lib/curriculum/closures.ts";
 import { dataFormats } from "../src/lib/curriculum/data-formats.ts";
@@ -164,6 +165,7 @@ const MODULES: Module[] = [
   aiApps,
   vibeCoding,
   aiIntegrations,
+  aiForBusiness,
   aiAgents,
   aiEmbeddings,
   aiEthics,

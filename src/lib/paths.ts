@@ -57,6 +57,7 @@ export const PATHS: Path[] = [
       "prompt-engineering",
       "vibe-coding",
       "ai-integrations",
+      "ai-for-business",
       "ai-llms",
       "ai-apps",
       "ai-agents",

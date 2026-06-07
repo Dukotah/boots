@@ -46,6 +46,7 @@ import { aiImageGeneration } from "./ai-image-generation";
 import { aiApps } from "./ai-apps";
 import { vibeCoding } from "./vibe-coding";
 import { aiIntegrations } from "./ai-integrations";
+import { aiForBusiness } from "./ai-for-business";
 import { aiAgents } from "./ai-agents";
 import { aiEmbeddings } from "./ai-embeddings";
 import { aiEthics } from "./ai-ethics";
@@ -176,6 +177,7 @@ export const MODULES: Module[] = [
   aiApps,
   vibeCoding,
   aiIntegrations,
+  aiForBusiness,
   aiAgents,
   aiEmbeddings,
   aiEthics,

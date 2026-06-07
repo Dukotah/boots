@@ -21,6 +21,7 @@ import {
   type TalentBranch,
 } from "@/lib/talents";
 import type { PlayerStats } from "@/types/game";
+import { PageSkeleton } from "@/components/PageSkeleton";
 
 type NodeState = "owned" | "available" | "prereq-locked" | "gate-locked";
 
@@ -76,9 +77,7 @@ export default function SkillTreePage() {
   }
 
   if (!mounted) {
-    return (
-      <div className="mx-auto max-w-5xl px-4 py-10 text-gray-500">Loading…</div>
-    );
+    return <PageSkeleton maxW="max-w-5xl" rows={4} />;
   }
 
   // Active-bonus chips from the current build.
