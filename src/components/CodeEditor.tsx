@@ -44,6 +44,36 @@ export function CodeEditor({
     typeof window !== "undefined" &&
     window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
+  // Where a tapped code block should land before the learner has clicked into
+  // the editor. Beginner templates leave a blank (usually indented) line inside
+  // the function body for the answer — default the cursor there so "tap to
+  // insert" drops blocks in the right place instead of at line 1, column 1
+  // (which would wedge them in front of the function signature).
+  function defaultInsertPosition(
+    model: MonacoEditor.ITextModel,
+  ): IPosition {
+    const lineCount = model.getLineCount();
+    let firstIndentedBlank = -1;
+    let firstBlank = -1;
+    for (let ln = 1; ln <= lineCount; ln++) {
+      const content = model.getLineContent(ln);
+      if (content.trim() === "") {
+        if (firstBlank === -1) firstBlank = ln;
+        if (content.length > 0 && firstIndentedBlank === -1) {
+          firstIndentedBlank = ln;
+          break; // an indented blank line is the strongest "answer goes here" cue
+        }
+      }
+    }
+    const target =
+      firstIndentedBlank !== -1
+        ? firstIndentedBlank
+        : firstBlank !== -1
+          ? firstBlank
+          : lineCount;
+    return { lineNumber: target, column: model.getLineMaxColumn(target) };
+  }
+
   function insertText(text: string, position?: IPosition) {
     const editor = editorRef.current;
     const monaco = monacoRef.current;
@@ -121,6 +151,14 @@ export function CodeEditor({
           editor.onDidChangeCursorPosition((e) => {
             lastPosRef.current = e.position;
           });
+          // Seed the insertion point at the template's answer slot so the first
+          // tapped block lands inside the body (not before the signature).
+          const model = editor.getModel();
+          if (model) {
+            const seed = defaultInsertPosition(model);
+            lastPosRef.current = seed;
+            editor.setPosition(seed);
+          }
           registerInsert?.((text) => insertText(text));
           registerHighlight?.((s, e) => highlightLines(s, e));
         }}

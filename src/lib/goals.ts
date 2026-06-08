@@ -17,6 +17,13 @@ export type LearnerGoal = {
   blurb: string;
   /** The career path we sequence for this goal. */
   pathSlug: string;
+  /**
+   * Optional override for the "first win" deep link. Use when the gentlest entry
+   * point isn't the path's first lesson — e.g. an absolute beginner should start
+   * in the Programming for Complete Beginners course, not the Intermediate
+   * CS-Fundamentals path's first (object-literals) lesson.
+   */
+  firstLessonHref?: string;
 };
 
 export const GOALS: LearnerGoal[] = [
@@ -73,8 +80,10 @@ export const GOALS: LearnerGoal[] = [
     id: "fundamentals",
     label: "Just learn the basics",
     emoji: "🎓",
-    blurb: "The timeless CS foundations that outlast any single framework.",
+    blurb: "Start from absolute zero, then grow into the timeless CS foundations.",
     pathSlug: "cs-fundamentals",
+    // Begin in the gentle beginner course, not the Intermediate path's first lesson.
+    firstLessonHref: "/learn/beginner/first-function",
   },
   {
     id: "kids",
@@ -97,6 +106,9 @@ export function goalPath(id: string | null | undefined): Path | undefined {
 
 /** Route to the first lesson of a goal's path — the "first win" deep link. */
 export function goalFirstLessonHref(id: string | null | undefined): string {
+  const goal = getGoal(id);
+  // An explicit override wins (e.g. beginners start in the intro course).
+  if (goal?.firstLessonHref) return goal.firstLessonHref;
   const path = goalPath(id);
   if (!path) return "/learn";
   const first = pathLessonIds(path)[0];

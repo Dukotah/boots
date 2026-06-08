@@ -24,12 +24,8 @@ import { LevelUpToast } from "./LevelUpToast";
 import { SkillPointToast } from "./SkillPointToast";
 import { TalentGoldToast } from "./features/talents/TalentGoldToast";
 import { ProGate } from "./features/billing/ProGate";
-// Tutor panels + code review are interaction-gated and heavy — load them in
-// their own client chunks so they're not in the initial lesson bundle.
-const AskBoots = dynamic(
-  () => import("./features/tutor/AskBoots").then((m) => m.AskBoots),
-  { ssr: false },
-);
+// The tutor + code review are interaction-gated and heavy — load them in their
+// own client chunks so they're not in the initial lesson bundle.
 const TutorPanel = dynamic(
   () => import("./TutorPanel").then((m) => m.TutorPanel),
   { ssr: false },
@@ -73,7 +69,7 @@ export function LessonView({
   const hints = ladder.hints;
   const hintCode = ladder.hintCode;
   const blocks = lesson.blocks ?? [];
-  // Bumped to ask AskBoots to open + scroll into view (the "Explain this to me"
+  // Bumped to open the tutor + scroll it into view (the "Explain this to me"
   // affordance). Starts at 0 so the panel stays closed on first render.
   const [explainSignal, setExplainSignal] = useState(0);
 
@@ -121,8 +117,8 @@ export function LessonView({
   const completeLesson = useGameStore((s) => s.completeLesson);
   const alreadyDone = useGameStore((s) => s.completed.includes(id));
 
-  // On-device / BYOK tutor (free, runs in the learner's browser) — separate from
-  // the Pro "Ask Cantrip" server tutor below. Renders as an inline card now.
+  // On-device / BYOK tutor (free, runs in the learner's browser) — the one and
+  // only lesson tutor. Renders as an inline card below the editor.
   const tutorContext: TutorContext = useMemo(() => {
     let testSummary = "not run yet";
     if (outcome) {
@@ -218,8 +214,8 @@ export function LessonView({
           <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/15 px-3 py-1 text-xs font-semibold text-accent-soft">
             ⚡ {lesson.xp} XP
           </span>
-          {/* Surfaces the Socratic tutor below — guides, never hands over the
-              answer. (Pro-gated inside AskBoots; the gate is preserved.) */}
+          {/* Opens the free on-device Socratic tutor below — guides, never
+              hands over the answer. */}
           <button
             onClick={() => setExplainSignal((n) => n + 1)}
             className="inline-flex items-center gap-1.5 rounded-full border border-accent/40 bg-accent/10 px-3 py-1 text-xs font-semibold text-accent-soft transition-colors hover:bg-accent/20"
@@ -397,27 +393,15 @@ export function LessonView({
             <TestResults
               results={outcome?.results ?? []}
               hasRun={outcome !== null}
+              pendingTests={lesson.tests ?? []}
             />
           </div>
         )}
 
-        {/* Socratic AI tutor — hints, never the answer (Pro). Opened by the
-            "Explain this to me" button via openSignal. */}
-        <AskBoots
-          module={module}
-          lesson={lesson}
-          language={language}
-          code={code}
-          failingTests={
-            outcome?.results
-              .filter((r) => !r.pass)
-              .map((r) => ({ name: r.name, error: r.error })) ?? []
-          }
-          openSignal={explainSignal}
-        />
-
-        {/* Free on-device tutor — inline card, runs in the learner's browser, $0 to the platform */}
-        <TutorPanel context={tutorContext} />
+        {/* Free on-device Socratic tutor — hints, never the answer; runs in the
+            learner's browser, $0 to the platform. Opened by the "Explain this to
+            me" button via openSignal. */}
+        <TutorPanel context={tutorContext} openSignal={explainSignal} />
 
         {/* Prev / Next quest navigation — Next is emphasized once you pass. */}
         <div className="mt-1 border-t border-line pt-3">
