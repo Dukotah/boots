@@ -42,6 +42,18 @@ import aiSkillsEmployersWant2026 from "./posts/ai-skills-employers-want-2026";
 import learnToCodeVsVibeCoding from "./posts/learn-to-code-vs-vibe-coding";
 import bestWayToLearnAiForNonTechies from "./posts/best-way-to-learn-ai-for-non-techies";
 import gamifiedLearningWhyItWorks from "./posts/gamified-learning-why-it-works";
+import howToUseChatgptForCoding from "./posts/how-to-use-chatgpt-for-coding";
+import howToLearnTypescript2026 from "./posts/how-to-learn-typescript-2026";
+import learnAiPromptingStepByStep from "./posts/learn-ai-prompting-step-by-step";
+import learnDataStructuresAndAlgorithms from "./posts/learn-data-structures-and-algorithms";
+import vibeCodingToolsCompared2026 from "./posts/vibe-coding-tools-compared-2026";
+import howToPrepareForACodingInterviewGuide from "./posts/how-to-prepare-for-a-coding-interview-guide";
+import aiForBeginnersNoExperience from "./posts/ai-for-beginners-no-experience";
+import bestCodingProjectsForBeginners from "./posts/best-coding-projects-for-beginners";
+import howToBuildAnAppWithAi from "./posts/how-to-build-an-app-with-ai";
+import howLongToLearnToCode from "./posts/how-long-to-learn-to-code";
+import whatCanYouBuildWithAi2026 from "./posts/what-can-you-build-with-ai-2026";
+import pythonVsJavascriptWhichToLearn from "./posts/python-vs-javascript-which-to-learn";
 
 export type BlogPost = {
   slug: string;
@@ -910,6 +922,18 @@ The barrier to learning to code was never money — it's consistency and focus. 
   learnToCodeVsVibeCoding,
   bestWayToLearnAiForNonTechies,
   gamifiedLearningWhyItWorks,
+  howToUseChatgptForCoding,
+  howToLearnTypescript2026,
+  learnAiPromptingStepByStep,
+  learnDataStructuresAndAlgorithms,
+  vibeCodingToolsCompared2026,
+  howToPrepareForACodingInterviewGuide,
+  aiForBeginnersNoExperience,
+  bestCodingProjectsForBeginners,
+  howToBuildAnAppWithAi,
+  howLongToLearnToCode,
+  whatCanYouBuildWithAi2026,
+  pythonVsJavascriptWhichToLearn,
 ];
 
 /** Look up a single post by its slug. Returns undefined if not found. */

@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { Check, Layers, Clock, Target } from "lucide-react";
 import { getPath, pathModules, pathStats, pathSkillTags, PATHS } from "@/lib/paths";
 import { lessonId } from "@/lib/curriculum";
-import { breadcrumbJsonLd } from "@/lib/seo";
+import { breadcrumbJsonLd, pathItemListJsonLd } from "@/lib/seo";
 import { absoluteUrl } from "@/lib/site";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { PathRoadmap, type RoadmapModule } from "@/components/PathRoadmap";
@@ -64,20 +64,6 @@ export default function PathPage({ params }: { params: { slug: string } }) {
   );
   const skills = pathSkillTags(path);
 
-  // ItemList structured data — the ordered course sequence.
-  const itemList = {
-    "@context": "https://schema.org",
-    "@type": "ItemList",
-    name: path.title,
-    description: path.description,
-    itemListElement: mods.map((m, i) => ({
-      "@type": "ListItem",
-      position: i + 1,
-      name: m.title,
-      url: absoluteUrl(`/learn/${m.slug}`),
-    })),
-  };
-
   // Serializable shape for the client roadmap (progress comes from the store).
   const roadmap: RoadmapModule[] = mods.map((m) => ({
     slug: m.slug,
@@ -90,7 +76,7 @@ export default function PathPage({ params }: { params: { slug: string } }) {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
-      <JsonLd data={itemList} />
+      <JsonLd data={pathItemListJsonLd(path, mods)} />
       <JsonLd
         data={breadcrumbJsonLd([
           { name: "Home", path: "/" },

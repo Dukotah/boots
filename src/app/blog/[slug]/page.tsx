@@ -4,9 +4,10 @@ import type { Metadata } from "next";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { getPost, POSTS } from "@/content/blog";
-import { breadcrumbJsonLd } from "@/lib/seo";
+import { breadcrumbJsonLd, faqJsonLd } from "@/lib/seo";
 import { absoluteUrl, SITE } from "@/lib/site";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { parseFaqs } from "@/lib/faqParse";
 
 export function generateStaticParams() {
   return POSTS.map((p) => ({ slug: p.slug }));
@@ -62,6 +63,8 @@ export default function BlogPostPage({
   const post = getPost(params.slug);
   if (!post) notFound();
 
+  const faqs = parseFaqs(post.body);
+
   const articleJsonLd = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
@@ -90,6 +93,7 @@ export default function BlogPostPage({
           { name: post.title, path: `/blog/${post.slug}` },
         ])}
       />
+      {faqs.length > 0 && <JsonLd data={faqJsonLd(faqs)} />}
 
       <Link href="/blog" className="text-sm text-accent-soft hover:underline">
         ← All articles
