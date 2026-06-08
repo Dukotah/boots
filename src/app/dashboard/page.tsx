@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
-import { Flame, Zap, Trophy, Target, RotateCcw, Briefcase, RefreshCw } from "lucide-react";
+import { Flame, Zap, Trophy, RotateCcw, Briefcase, RefreshCw } from "lucide-react";
 import { useGameStore, streakRepairCost } from "@/store/useGameStore";
 import { levelFromXp } from "@/lib/levels";
-import { CATALOG, totalLessonCount, totalXpAvailable, lessonId, catalogByTrack } from "@/lib/curriculum/catalogClient";
+import { totalLessonCount, totalXpAvailable, lessonId, catalogByTrack } from "@/lib/curriculum/catalogClient";
 import { deriveBreadth } from "@/lib/progress";
 import { computeReadiness } from "@/lib/career";
 import type { PlayerStats } from "@/types/game";
@@ -17,6 +17,8 @@ import { DailyChallenge } from "@/components/features/retention/DailyChallenge";
 import { StreakHeatmap } from "@/components/features/retention/StreakHeatmap";
 import { EnableNotifications } from "@/components/features/push/EnableNotifications";
 import { RecommendedNextCard } from "@/components/features/onboarding/RecommendedNextCard";
+import { ContinueLearningCard } from "@/components/features/dashboard/ContinueLearningCard";
+import { ExploreMore } from "@/components/features/dashboard/ExploreMore";
 import { ReferralCard } from "@/components/features/referral/ReferralCard";
 import { PurchaseTracker } from "@/components/features/billing/PurchaseTracker";
 import { TrialBanner } from "@/components/features/billing/TrialBanner";
@@ -73,16 +75,6 @@ export default function Dashboard() {
     return computeReadiness(stats).score;
   }, [xp, info.level, gold, streak, completed]);
 
-  // Find the first unfinished lesson to "Continue".
-  let continueHref = "/learn";
-  for (const m of CATALOG) {
-    const next = m.lessons.find((l) => !completed.includes(lessonId(m.slug, l.slug)));
-    if (next) {
-      continueHref = `/learn/${m.slug}/${next.slug}`;
-      break;
-    }
-  }
-
   if (!mounted) {
     return <PageSkeleton maxW="max-w-5xl" rows={4} />;
   }
@@ -102,15 +94,17 @@ export default function Dashboard() {
       </Suspense>
       <TrialBanner />
       <DoubleXpBanner />
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-white">Your dashboard</h1>
-        <Link href={continueHref} className="btn-primary">
-          <Target size={16} /> Continue learning
-        </Link>
+      <h1 className="text-3xl font-bold text-white">Your dashboard</h1>
+
+      {/* DOMINANT primary action: the learner's specific next lesson, one click
+          back into learning. Everything else on the page is secondary to this. */}
+      <div className="mt-6">
+        <ContinueLearningCard />
       </div>
 
-      {/* Recommended next — the learner's chosen path (or a nudge to pick one) */}
-      <div className="mt-6">
+      {/* Path context — chosen path progress, or a nudge to pick a goal. Kept
+          directly under the hero as supporting context (lighter than before). */}
+      <div className="mt-4">
         <RecommendedNextCard />
       </div>
 
@@ -220,28 +214,11 @@ export default function Dashboard() {
         <ReferralCard />
       </div>
 
-      {/* Quick links to new features */}
-      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
-        {[
-          { href: "/guilds", icon: "🛡️", label: "Guilds", desc: "Team competition" },
-          { href: "/events", icon: "🎉", label: "Events", desc: "Seasonal challenges" },
-          { href: "/leaderboard", icon: "🏅", label: "Leaderboard", desc: "Global rankings" },
-          { href: "/achievements", icon: "🏆", label: "Achievements", desc: "55+ badges" },
-          { href: "/leagues", icon: "⚔️", label: "Leagues", desc: "Weekly ranking" },
-          { href: "/paths", icon: "🎯", label: "Career Paths", desc: "Job-ready tracks" },
-          { href: "/skill-tree", icon: "🌳", label: "Skill Tree", desc: "Unlock abilities" },
-          { href: "/review", icon: "🔁", label: "Review", desc: "Spaced repetition" },
-        ].map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className="card flex flex-col items-center gap-1 text-center hover:border-accent/60 py-4"
-          >
-            <span className="text-2xl">{item.icon}</span>
-            <p className="text-sm font-semibold text-white">{item.label}</p>
-            <p className="text-[11px] text-gray-500">{item.desc}</p>
-          </Link>
-        ))}
+      {/* Gamification / meta-systems — demoted into one lighter, collapsible
+          "Explore more" group so they no longer compete with Continue learning.
+          Every link remains reachable. */}
+      <div className="mt-6">
+        <ExploreMore />
       </div>
 
       {/* Daily quests */}

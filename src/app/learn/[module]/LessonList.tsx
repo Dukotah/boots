@@ -51,8 +51,11 @@ export function LessonList({ module }: { module: Module }) {
                 <p className="truncate text-sm text-gray-400">{lesson.blurb}</p>
               </div>
               {locked && !done && (
-                <span className="flex shrink-0 items-center gap-1 rounded-full bg-white/5 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-400">
-                  <Lock size={11} /> Pro
+                <span
+                  className="flex shrink-0 items-center gap-1 rounded-full bg-white/5 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-400"
+                  aria-label="Pro lesson — locked"
+                >
+                  <Lock size={11} aria-hidden="true" /> Pro
                 </span>
               )}
               <span className="shrink-0 text-xs font-semibold text-accent-soft">
