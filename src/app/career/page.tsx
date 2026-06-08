@@ -4,7 +4,6 @@ import "./career-print.css";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
-  Award,
   Briefcase,
   Check,
   ChevronDown,
@@ -14,7 +13,6 @@ import {
   Printer,
   ArrowRight,
   Sparkles,
-  Lock,
   Target,
 } from "lucide-react";
 import { useGameStore } from "@/store/useGameStore";
@@ -26,13 +24,13 @@ import {
   buildResume,
   resumeMarkdown,
   pathCredentials,
-  languageName,
 } from "@/lib/career";
 import {
   ROLE_TARGETS,
   computeRoleReadiness,
 } from "@/lib/roleReadiness";
 import { ResumeTemplatePicker } from "@/components/features/career/ResumeTemplates";
+import { CertificateGallery } from "@/components/features/career/CertificateGallery";
 import { SITE } from "@/lib/site";
 import type { PlayerStats } from "@/types/game";
 import { PageSkeleton } from "@/components/PageSkeleton";
@@ -89,9 +87,6 @@ export default function CareerPage() {
   );
 
   const earned = creds.filter((c) => c.earned);
-  const inProgress = creds
-    .filter((c) => !c.earned && c.done > 0)
-    .sort((a, b) => b.pct - a.pct);
   const tips = readiness.factors.filter((f) => f.points < f.max);
 
   async function copyMarkdown() {
@@ -130,31 +125,10 @@ export default function CareerPage() {
       </div>
 
       {/* ── Quick-access tool cards ── */}
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 print:hidden">
-        <Link
-          href="/career/job-match"
-          className="group card flex items-start gap-4 hover:border-accent/60 transition"
-        >
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/15 text-accent-soft">
-            <FileText size={20} />
-          </span>
-          <div>
-            <h2 className="font-bold text-white group-hover:text-accent-soft transition">
-              Job Match
-            </h2>
-            <p className="mt-0.5 text-sm text-gray-400">
-              Paste a job description and see how well your skills align.
-            </p>
-            <p className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-accent-soft">
-              Open Job Match{" "}
-              <ArrowRight size={13} className="transition group-hover:translate-x-0.5" />
-            </p>
-          </div>
-        </Link>
-
+      <div className="mt-8 grid gap-4 sm:grid-cols-3 print:hidden">
         <Link
           href="/career/interview-prep"
-          className="group card flex items-start gap-4 hover:border-accent/60 transition"
+          className="group card flex items-start gap-4 transition hover:border-accent/60 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
         >
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/15 text-accent-soft">
             <MessageSquare size={20} />
@@ -175,7 +149,7 @@ export default function CareerPage() {
 
         <Link
           href="/career/resume"
-          className="group card flex items-start gap-4 hover:border-accent/60 transition"
+          className="group card flex items-start gap-4 transition hover:border-accent/60 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
         >
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/15 text-accent-soft">
             <FileText size={20} />
@@ -196,7 +170,7 @@ export default function CareerPage() {
 
         <Link
           href="/career/mock-interview"
-          className="group card flex items-start gap-4 hover:border-accent/60 transition"
+          className="group card flex items-start gap-4 transition hover:border-accent/60 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
         >
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/15 text-accent-soft">
             <MessageSquare size={20} />
@@ -523,73 +497,14 @@ export default function CareerPage() {
             {earned.length}/{creds.length} earned
           </span>
         </div>
+        <p className="mt-1 text-sm text-gray-400">
+          Complete a full career path to earn a verifiable certificate you can
+          share with employers.
+        </p>
 
-        {earned.length === 0 && (
-          <p className="mt-2 text-sm text-gray-400">
-            Finish a full career path to earn your first verifiable certificate.
-          </p>
-        )}
-
-        {earned.length > 0 && (
-          <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            {earned.map((c) => (
-              <Link
-                key={c.path.slug}
-                href={`/certificate/path/${c.path.slug}`}
-                className={`group relative overflow-hidden rounded-2xl border border-accent/40 bg-gradient-to-br ${c.path.gradient} p-5 transition hover:border-accent`}
-              >
-                <div className="flex items-start justify-between">
-                  <span className="text-3xl">{c.path.emoji}</span>
-                  <Award className="text-gold" size={22} />
-                </div>
-                <h3 className="mt-3 font-bold text-white">{c.path.title}</h3>
-                <p className="text-sm text-gray-300">{c.path.role}</p>
-                <p className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-accent-soft">
-                  View certificate{" "}
-                  <ArrowRight
-                    size={13}
-                    className="transition group-hover:translate-x-0.5"
-                  />
-                </p>
-              </Link>
-            ))}
-          </div>
-        )}
-
-        {/* In-progress paths — the path to the next cert */}
-        {inProgress.length > 0 && (
-          <div className="mt-4 space-y-2">
-            <p className="text-xs uppercase tracking-wide text-gray-400">
-              In progress
-            </p>
-            {inProgress.slice(0, 4).map((c) => (
-              <Link
-                key={c.path.slug}
-                href={`/paths/${c.path.slug}`}
-                className="card flex items-center gap-4 hover:border-accent/60"
-              >
-                <span className="text-2xl opacity-70">{c.path.emoji}</span>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="truncate text-sm font-medium text-white">
-                      {c.path.title}
-                    </p>
-                    <span className="shrink-0 text-xs text-gray-400">
-                      {c.done}/{c.total}
-                    </span>
-                  </div>
-                  <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-2">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-accent to-accent-soft"
-                      style={{ width: `${c.pct}%` }}
-                    />
-                  </div>
-                </div>
-                <Lock size={15} className="shrink-0 text-gray-400" aria-hidden="true" />
-              </Link>
-            ))}
-          </div>
-        )}
+        <div className="mt-4">
+          <CertificateGallery creds={creds} learnerName={displayName} />
+        </div>
       </section>
 
       {/* ── Résumé / portfolio ── */}

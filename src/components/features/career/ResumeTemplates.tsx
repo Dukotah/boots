@@ -54,7 +54,7 @@ export function ClassicTemplate({ resume }: { resume: ResumeData }) {
   const accent = "#4c1d95"; // accent-deep (matches career-print.css override)
 
   return (
-    <article className="resume-sheet rounded-2xl border border-line bg-white p-8 text-gray-900 shadow-glow print:border-0 print:shadow-none sm:p-10">
+    <article className="resume-sheet rounded-2xl border border-line bg-white p-8 text-gray-900 shadow-glow ring-1 ring-black/5 print:border-0 print:shadow-none print:ring-0 sm:p-10">
       {/* Header */}
       <header className="border-b border-gray-200 pb-5">
         <h2 className="text-3xl font-extrabold tracking-tight text-gray-900">
@@ -146,7 +146,7 @@ export function ModernTemplate({ resume }: { resume: ResumeData }) {
   const accent = "#7c3aed"; // vivid violet — pops more on white in print
 
   return (
-    <article className="resume-sheet rounded-2xl border border-line bg-white shadow-glow print:border-0 print:shadow-none">
+    <article className="resume-sheet overflow-hidden rounded-2xl border border-line bg-white shadow-glow ring-1 ring-black/5 print:border-0 print:shadow-none print:ring-0">
       {/* Full-bleed accent header bar */}
       <header
         className="rounded-t-2xl px-8 py-6 print:rounded-none"
@@ -287,7 +287,7 @@ export function CompactTemplate({ resume }: { resume: ResumeData }) {
   const accent = "#0f766e"; // teal-700 — distinguishes it from the other two
 
   return (
-    <article className="resume-sheet rounded-2xl border border-line bg-white p-6 text-gray-900 shadow-glow print:border-0 print:shadow-none sm:p-8">
+    <article className="resume-sheet rounded-2xl border border-line bg-white p-6 text-gray-900 shadow-glow ring-1 ring-black/5 print:border-0 print:shadow-none print:ring-0 sm:p-8">
       {/* Header — name + headline inline */}
       <header className="flex flex-wrap items-baseline justify-between gap-x-6 border-b-2 border-gray-900 pb-2">
         <h2 className="text-2xl font-extrabold tracking-tight text-gray-900">
