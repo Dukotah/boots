@@ -98,7 +98,7 @@ function StarBuilder() {
               onChange={(e) => handleChange(key, e.target.value)}
               placeholder={placeholder}
               aria-label={`STAR ${label}`}
-              className="w-full resize-y rounded-lg border border-line bg-surface-2 px-3 py-2 text-sm text-gray-200 placeholder:text-gray-600 outline-none focus:border-accent focus:ring-1 focus:ring-accent/30"
+              className="w-full resize-y rounded-lg border border-line bg-surface-2 px-3 py-2 text-sm text-gray-200 placeholder:text-gray-400 outline-none focus:border-accent focus:ring-1 focus:ring-accent/30"
             />
           </div>
         ))}
@@ -107,7 +107,7 @@ function StarBuilder() {
       {/* Assembled preview */}
       <div className="mt-5">
         <div className="flex items-center justify-between">
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
             Assembled answer
           </p>
           <button
@@ -136,7 +136,7 @@ function StarBuilder() {
           {hasContent ? (
             assembled
           ) : (
-            <span className="text-gray-600 italic">
+            <span className="text-gray-400 italic">
               Your assembled answer will appear here as you type above.
             </span>
           )}
@@ -189,7 +189,7 @@ function StarExplainer() {
           </div>
         ))}
       </div>
-      <p className="mt-4 text-xs text-gray-500">
+      <p className="mt-4 text-xs text-gray-400">
         Target 90–120 seconds out loud. Practice timing — reading notes is not the
         same as saying it.
       </p>
@@ -237,15 +237,15 @@ function Checklist() {
                 className="group flex w-full items-start gap-3 rounded-xl border border-transparent px-3 py-2 text-left transition hover:border-line hover:bg-surface-2"
               >
                 <span className="mt-0.5 shrink-0 text-accent-soft" aria-hidden="true">
-                  {done ? <CheckSquare size={18} /> : <Square size={18} className="text-gray-600" />}
+                  {done ? <CheckSquare size={18} /> : <Square size={18} className="text-gray-400" aria-hidden="true" />}
                 </span>
                 <div>
                   <p
-                    className={`text-sm font-medium transition ${done ? "text-gray-500 line-through" : "text-gray-200"}`}
+                    className={`text-sm font-medium transition ${done ? "text-gray-400 line-through" : "text-gray-200"}`}
                   >
                     {item.label}
                   </p>
-                  <p className="mt-0.5 text-xs text-gray-500">{item.detail}</p>
+                  <p className="mt-0.5 text-xs text-gray-400">{item.detail}</p>
                 </div>
               </button>
             </li>
@@ -262,7 +262,7 @@ export default function InterviewPrepPage() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-10">
       {/* Breadcrumb */}
-      <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-gray-500">
+      <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-gray-400">
         <Link href="/career" className="text-accent-soft hover:underline">
           Career Pack
         </Link>
@@ -331,17 +331,17 @@ export default function InterviewPrepPage() {
                         <p className="truncate text-sm font-medium text-gray-200 group-hover:text-white">
                           {lesson.label}
                         </p>
-                        <span className="shrink-0 text-xs text-gray-500">
+                        <span className="shrink-0 text-xs text-gray-400">
                           +{lesson.xp} XP
                         </span>
                       </div>
-                      <p className="mt-0.5 text-xs text-gray-500">
+                      <p className="mt-0.5 text-xs text-gray-400">
                         {lesson.blurb}
                       </p>
                     </div>
                     <ArrowRight
                       size={14}
-                      className="mt-0.5 shrink-0 text-gray-600 transition group-hover:translate-x-0.5 group-hover:text-accent-soft"
+                      className="mt-0.5 shrink-0 text-gray-400 transition group-hover:translate-x-0.5 group-hover:text-accent-soft"
                       aria-hidden="true"
                     />
                   </Link>
@@ -381,7 +381,7 @@ export default function InterviewPrepPage() {
                               <p className="text-sm font-medium text-gray-200">
                                 {q.question}
                               </p>
-                              <p className="mt-1 text-xs text-gray-500">
+                              <p className="mt-1 text-xs text-gray-400">
                                 <span className="font-medium text-gray-400">
                                   {q.category}
                                 </span>{" "}

@@ -67,12 +67,12 @@ export function LessonSidebar({
               ) : (
                 <Circle
                   size={16}
-                  className={isCurrent ? "text-accent-soft" : "text-gray-600"}
+                  className={isCurrent ? "text-accent-soft" : "text-gray-400"}
                 />
               )}
             </span>
             <span className="min-w-0 flex-1">
-              <span className="mr-1 text-[10px] font-mono text-gray-600">
+              <span className="mr-1 text-[10px] font-mono text-gray-400">
                 {String(i + 1).padStart(2, "0")}
               </span>
               <span className={isCurrent ? "font-semibold" : ""}>{l.title}</span>
@@ -97,7 +97,7 @@ export function LessonSidebar({
         <span>{module.emoji}</span>
         <span className="truncate">{module.title}</span>
       </Link>
-      <p className="mt-1 text-xs text-gray-500" suppressHydrationWarning>
+      <p className="mt-1 text-xs text-gray-400" suppressHydrationWarning>
         {doneCount}/{module.lessons.length} quests cleared
       </p>
       <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10">
@@ -119,13 +119,13 @@ export function LessonSidebar({
         {openDesktop ? (
           <div className="card max-h-[calc(100vh-7rem)] overflow-y-auto p-4 lg:sticky lg:top-20">
             <div className="mb-2 flex items-center justify-between">
-              <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-gray-500">
+              <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-gray-400">
                 <ListChecks size={13} /> Course map
               </span>
               <button
                 onClick={() => setOpenDesktop(false)}
                 aria-label="Collapse course map"
-                className="text-gray-500 hover:text-white"
+                className="text-gray-400 hover:text-white"
               >
                 <PanelLeftClose size={16} />
               </button>
@@ -185,13 +185,13 @@ export function LessonSidebar({
               className="absolute inset-y-0 left-0 w-[82%] max-w-xs overflow-y-auto border-r border-line bg-surface p-4"
             >
               <div className="mb-2 flex items-center justify-between">
-                <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-gray-400">
                   <ListChecks size={13} /> Course map
                 </span>
                 <button
                   onClick={() => setOpenMobile(false)}
                   aria-label="Close course map"
-                  className="text-gray-500 hover:text-white"
+                  className="text-gray-400 hover:text-white"
                 >
                   <X size={18} />
                 </button>

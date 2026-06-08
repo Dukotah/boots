@@ -14,7 +14,7 @@ export default function PrivacyPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-12">
       <h1 className="text-3xl font-bold text-white">Privacy Policy</h1>
-      <p className="mt-2 text-sm text-gray-500">Effective {EFFECTIVE}</p>
+      <p className="mt-2 text-sm text-gray-400">Effective {EFFECTIVE}</p>
 
       <div className="prose-legal mt-8 space-y-6 text-gray-300">
         <Section title="The short version">
@@ -77,7 +77,7 @@ export default function PrivacyPage() {
           .
         </Section>
 
-        <p className="text-xs text-gray-600">
+        <p className="text-xs text-gray-400">
           This policy is a starting template and should be reviewed by legal counsel
           before launch.
         </p>

@@ -110,7 +110,7 @@ export default function ReferPage() {
   // ── Loading state ──────────────────────────────────────────────────────────
   if (signedIn === null) {
     return (
-      <div className="mx-auto max-w-xl px-4 py-16 text-center text-gray-500">
+      <div className="mx-auto max-w-xl px-4 py-16 text-center text-gray-400">
         Loading…
       </div>
     );
@@ -125,6 +125,7 @@ export default function ReferPage() {
         </div>
         <h1 className="text-2xl font-bold text-white">Invite friends, earn free Pro — both of you</h1>
         <p className="mt-3 text-sm text-gray-400">
+
           Share your referral link. When a friend subscribes to Cantrip Pro,{" "}
           <span className="text-white font-medium">you get {REFERRER_REWARD}</span>{" "}
           and{" "}
@@ -135,12 +136,12 @@ export default function ReferPage() {
         {/* Reward cards */}
         <div className="mt-6 grid grid-cols-2 gap-3 text-left">
           <div className="rounded-xl border border-line bg-surface/60 px-4 py-3">
-            <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">You earn</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">You earn</p>
             <p className="text-sm font-bold text-white">{REFERRER_REWARD}</p>
             <p className="mt-0.5 text-xs text-gray-400">per friend who subscribes</p>
           </div>
           <div className="rounded-xl border border-line bg-surface/60 px-4 py-3">
-            <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">They get</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">They get</p>
             <p className="text-sm font-bold text-white">{REFERRED_REWARD}</p>
             <p className="mt-0.5 text-xs text-gray-400">credited when they subscribe</p>
           </div>
@@ -153,7 +154,7 @@ export default function ReferPage() {
           Sign in to get your referral link
         </a>
         {!isSupabaseConfigured && (
-          <p className="mt-4 text-xs text-gray-600">
+          <p className="mt-4 text-xs text-gray-400">
             (Referral backend not configured in this environment.)
           </p>
         )}
@@ -179,12 +180,12 @@ export default function ReferPage() {
       {/* Two-sided reward summary */}
       <div className="mt-5 grid grid-cols-2 gap-3">
         <div className="rounded-xl border border-line bg-surface/60 px-4 py-3">
-          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">You earn</p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">You earn</p>
           <p className="text-sm font-bold text-white">{REFERRER_REWARD}</p>
           <p className="mt-0.5 text-xs text-gray-400">per friend who subscribes</p>
         </div>
         <div className="rounded-xl border border-line bg-surface/60 px-4 py-3">
-          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Your friend gets</p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">Your friend gets</p>
           <p className="text-sm font-bold text-white">{REFERRED_REWARD}</p>
           <p className="mt-0.5 text-xs text-gray-400">credited when they subscribe</p>
         </div>
@@ -192,12 +193,12 @@ export default function ReferPage() {
 
       {/* Shareable link */}
       <div className="card mt-6">
-        <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+        <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">
           Your referral link
         </p>
         <div className="mt-2 flex items-center gap-2">
           <div className="flex min-w-0 flex-1 items-center gap-2 rounded-lg border border-line bg-canvas/60 px-3 py-2">
-            <Link2 size={15} className="shrink-0 text-gray-500" />
+            <Link2 size={15} className="shrink-0 text-gray-400" />
             <span className="truncate font-mono text-sm text-white">
               {referralUrl ?? "Generating…"}
             </span>
@@ -221,7 +222,7 @@ export default function ReferPage() {
             )}
           </button>
         </div>
-        <p className="mt-2 text-xs text-gray-500">
+        <p className="mt-2 text-xs text-gray-400">
           Share this link anywhere — your code is embedded in the URL.
         </p>
       </div>
@@ -280,7 +281,7 @@ export default function ReferPage() {
       {/* Redeem a code you received */}
       <div className="card mt-4">
         <h2 className="mb-1 text-sm font-semibold text-white">Have a referral code?</h2>
-        <p className="mb-3 text-xs text-gray-500">
+        <p className="mb-3 text-xs text-gray-400">
           Enter it here to claim your {REFERRED_REWARD} — and make sure your
           friend gets credit too.
         </p>
@@ -290,7 +291,7 @@ export default function ReferPage() {
             value={redeemInput}
             onChange={(e) => setRedeemInput(e.target.value)}
             placeholder="e.g. a1b2c3d4"
-            className="flex-1 rounded-lg border border-line bg-canvas/60 px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:ring-1 focus:ring-accent/60"
+            className="flex-1 rounded-lg border border-line bg-canvas/60 px-3 py-2 text-sm text-white placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-accent/60"
             disabled={redeeming}
           />
           <button

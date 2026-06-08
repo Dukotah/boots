@@ -251,7 +251,7 @@ export default function CareerPage() {
                 <span className="text-3xl font-extrabold text-white">
                   {readiness.score}
                 </span>
-                <span className="text-[10px] uppercase tracking-wide text-gray-500">
+                <span className="text-[10px] uppercase tracking-wide text-gray-400">
                   / 100
                 </span>
               </div>
@@ -268,7 +268,7 @@ export default function CareerPage() {
             </h2>
             <p className="mt-1 text-sm text-gray-400">{readiness.tier.blurb}</p>
             {readiness.nextTier && (
-              <p className="mt-3 text-xs text-gray-500">
+              <p className="mt-3 text-xs text-gray-400">
                 {readiness.nextTier.min - readiness.score} more points to{" "}
                 <span className="text-gray-300">
                   {readiness.nextTier.emoji} {readiness.nextTier.name}
@@ -286,7 +286,7 @@ export default function CareerPage() {
               <div key={f.key}>
                 <div className="flex items-baseline justify-between text-sm">
                   <span className="font-medium text-gray-200">{f.label}</span>
-                  <span className="text-gray-500">
+                  <span className="text-gray-400">
                     {f.points}/{f.max} pts
                   </span>
                 </div>
@@ -297,7 +297,7 @@ export default function CareerPage() {
                       style={{ width: `${pct}%` }}
                     />
                   </div>
-                  <span className="hidden w-48 shrink-0 text-right text-xs text-gray-500 sm:block">
+                  <span className="hidden w-48 shrink-0 text-right text-xs text-gray-400 sm:block">
                     {f.detail}
                   </span>
                 </div>
@@ -405,7 +405,7 @@ export default function CareerPage() {
                   <span className="text-2xl font-extrabold text-white">
                     {roleReadiness.score}
                   </span>
-                  <span className="text-[9px] uppercase tracking-wide text-gray-500">
+                  <span className="text-[9px] uppercase tracking-wide text-gray-400">
                     / 100
                   </span>
                 </div>
@@ -446,7 +446,7 @@ export default function CareerPage() {
                         >
                           {gap.label}
                         </Link>{" "}
-                        <span className="text-gray-500">— {gap.detail}</span>
+                        <span className="text-gray-400">— {gap.detail}</span>
                       </span>
                     </li>
                   ))}
@@ -559,7 +559,7 @@ export default function CareerPage() {
         {/* In-progress paths — the path to the next cert */}
         {inProgress.length > 0 && (
           <div className="mt-4 space-y-2">
-            <p className="text-xs uppercase tracking-wide text-gray-500">
+            <p className="text-xs uppercase tracking-wide text-gray-400">
               In progress
             </p>
             {inProgress.slice(0, 4).map((c) => (
@@ -585,7 +585,7 @@ export default function CareerPage() {
                     />
                   </div>
                 </div>
-                <Lock size={15} className="shrink-0 text-gray-600" />
+                <Lock size={15} className="shrink-0 text-gray-400" aria-hidden="true" />
               </Link>
             ))}
           </div>

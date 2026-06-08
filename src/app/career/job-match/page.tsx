@@ -62,7 +62,7 @@ function MatchDial({ pct }: { pct: number }) {
       </svg>
       <div className="absolute flex flex-col items-center">
         <span className="text-3xl font-extrabold text-white">{pct}</span>
-        <span className="text-[10px] uppercase tracking-wide text-gray-500">%</span>
+        <span className="text-[10px] uppercase tracking-wide text-gray-400">%</span>
       </div>
     </div>
   );
@@ -147,7 +147,7 @@ export default function JobMatchPage() {
           }}
           placeholder="Paste the full job posting here — requirements, responsibilities, tech stack…"
           rows={10}
-          className="w-full resize-y rounded-xl border border-line bg-surface-2 px-4 py-3 text-sm text-gray-200 placeholder-gray-600 outline-none focus:border-accent focus:ring-1 focus:ring-accent/40"
+          className="w-full resize-y rounded-xl border border-line bg-surface-2 px-4 py-3 text-sm text-gray-200 placeholder-gray-400 outline-none focus:border-accent focus:ring-1 focus:ring-accent/40"
         />
         <div className="mt-3 flex flex-wrap items-center gap-3">
           <button
@@ -201,7 +201,7 @@ export default function JobMatchPage() {
               <h3 className="mb-3 flex items-center gap-2 font-bold text-white">
                 <Check size={16} className="text-emerald-400" />
                 Skills you have
-                <span className="ml-auto text-xs font-normal text-gray-500">
+                <span className="ml-auto text-xs font-normal text-gray-400">
                   {result.have.length} matched
                 </span>
               </h3>
@@ -227,7 +227,7 @@ export default function JobMatchPage() {
               <h3 className="mb-3 flex items-center gap-2 font-bold text-white">
                 <BookOpen size={16} className="text-accent-soft" />
                 Skills to learn
-                <span className="ml-auto text-xs font-normal text-gray-500">
+                <span className="ml-auto text-xs font-normal text-gray-400">
                   {result.missing.length} gap{result.missing.length !== 1 ? "s" : ""}
                 </span>
               </h3>
@@ -250,7 +250,7 @@ export default function JobMatchPage() {
                         <ArrowRight size={12} />
                       </Link>
                     ) : (
-                      <span className="shrink-0 text-xs text-gray-600">
+                      <span className="shrink-0 text-xs text-gray-400">
                         Coming soon
                       </span>
                     )}

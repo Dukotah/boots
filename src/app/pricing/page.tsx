@@ -1,5 +1,10 @@
 import type { Metadata } from "next";
 import { PricingPlans } from "@/components/features/billing/PricingPlans";
+import { absoluteUrl } from "@/lib/site";
+
+const OG = absoluteUrl(
+  `/api/og?title=${encodeURIComponent("Cantrip Pro — the full game")}&subtitle=${encodeURIComponent("Every interactive lesson, the AI tutor, leagues & boss battles. From $9/mo. 14-day Pro trial.")}`,
+);
 
 export const metadata: Metadata = {
   title: "Pricing",
@@ -7,6 +12,15 @@ export const metadata: Metadata = {
     "Start free. Go Pro for the full game: every interactive lesson, the AI tutor, leagues, and boss battles. From $9/mo billed annually.",
   alternates: { canonical: "/pricing" },
   robots: { index: true, follow: true },
+  openGraph: {
+    type: "website",
+    title: "Pricing — Cantrip",
+    description:
+      "Start free. Go Pro for every interactive lesson, the AI tutor, leagues & boss battles. From $9/mo, 14-day trial.",
+    url: absoluteUrl("/pricing"),
+    images: [{ url: OG, width: 1200, height: 630 }],
+  },
+  twitter: { card: "summary_large_image", images: [OG] },
 };
 
 export default function Pricing() {

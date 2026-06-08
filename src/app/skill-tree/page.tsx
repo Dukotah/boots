@@ -208,7 +208,7 @@ export default function SkillTreePage() {
           {/* Collapsible "how SP works" */}
           <button
             onClick={() => setSpInfoOpen((v) => !v)}
-            className="ml-auto flex items-center gap-1 text-xs text-gray-500 hover:text-gray-300"
+            className="ml-auto flex items-center gap-1 text-xs text-gray-400 hover:text-gray-300"
             aria-expanded={spInfoOpen}
             aria-controls="sp-explainer"
           >
@@ -332,7 +332,7 @@ export default function SkillTreePage() {
             {(() => {
               const ks = branchNodes.find((t) => t.keystone);
               return ks ? (
-                <p className="mt-1 text-xs text-gray-500">
+                <p className="mt-1 text-xs text-gray-400">
                   Keystone:{" "}
                   <span className="text-gray-300">{ks.label}</span> —{" "}
                   {effectLine(ks.effect)}
@@ -362,7 +362,7 @@ export default function SkillTreePage() {
 
                 {/* Tier label (only on tier > 0) */}
                 {tier > 0 && (
-                  <p className="mb-2 text-center text-[10px] uppercase tracking-widest text-gray-600">
+                  <p className="mb-2 text-center text-[10px] uppercase tracking-widest text-gray-400">
                     Tier {tier + 1}
                   </p>
                 )}
@@ -399,7 +399,7 @@ export default function SkillTreePage() {
       </section>
 
       {/* ── Footer hint ─────────────────────────────────────────────────── */}
-      <p className="mt-6 text-center text-xs text-gray-500">
+      <p className="mt-6 text-center text-xs text-gray-400">
         {TALENTS.length} talents across 4 branches ·{" "}
         <Link href="/learn" className="text-accent-soft hover:underline">
           finish courses to earn more SP
@@ -490,7 +490,7 @@ function TalentNode({
           </p>
 
           {/* Flavour description (secondary, dimmer) */}
-          <p className="mt-0.5 text-xs leading-snug text-gray-500">
+          <p className="mt-0.5 text-xs leading-snug text-gray-400">
             {t.description}
           </p>
         </div>

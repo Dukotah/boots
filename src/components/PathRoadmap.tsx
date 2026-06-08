@@ -193,7 +193,7 @@ export function PathRoadmap({
                 {state === "complete" ? (
                   <Check className="text-success" size={24} />
                 ) : locked ? (
-                  <Lock className="text-gray-500" size={20} />
+                  <Lock className="text-gray-400" size={20} aria-label="Locked" />
                 ) : (
                   <span className="relative z-10 text-xl">{m.emoji}</span>
                 )}
@@ -204,10 +204,10 @@ export function PathRoadmap({
                 <div className="flex items-center justify-between gap-2">
                   <p
                     className={`truncate font-semibold ${
-                      locked ? "text-gray-500" : "text-white"
+                      locked ? "text-gray-400" : "text-white"
                     }`}
                   >
-                    <span className="text-gray-500">{i + 1}.</span>{" "}
+                    <span className="text-gray-400">{i + 1}.</span>{" "}
                     {!locked && <span>{m.emoji} </span>}
                     {m.title}
                   </p>
@@ -221,7 +221,7 @@ export function PathRoadmap({
                 </div>
                 <p
                   className={`mt-0.5 truncate text-sm ${
-                    locked ? "text-gray-600" : "text-gray-400"
+                    locked ? "text-gray-400" : "text-gray-400"
                   }`}
                 >
                   {locked ? "Finish the previous course to unlock" : m.description}

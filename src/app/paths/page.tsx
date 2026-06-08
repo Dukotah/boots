@@ -3,6 +3,11 @@ import type { Metadata } from "next";
 import { ArrowRight } from "lucide-react";
 import { PATHS, pathModules } from "@/lib/paths";
 import { PathQuiz } from "@/components/features/marketing/PathQuiz";
+import { absoluteUrl } from "@/lib/site";
+
+const PATHS_OG = absoluteUrl(
+  `/api/og?title=${encodeURIComponent("Guided Career Paths")}&subtitle=${encodeURIComponent("From your first line of code to job-ready — frontend, backend, data, AI & more.")}`,
+);
 
 export const metadata: Metadata = {
   title: "Career Paths — Frontend, Backend, Data & Interview Prep",
@@ -15,6 +20,15 @@ export const metadata: Metadata = {
     "learn to code roadmap",
   ],
   alternates: { canonical: "/paths" },
+  openGraph: {
+    type: "website",
+    title: "Career Paths — Cantrip",
+    description:
+      "Guided coding & AI career paths — ordered courses from first line of code to job-ready.",
+    url: absoluteUrl("/paths"),
+    images: [{ url: PATHS_OG, width: 1200, height: 630 }],
+  },
+  twitter: { card: "summary_large_image", images: [PATHS_OG] },
 };
 
 export default function PathsIndex() {

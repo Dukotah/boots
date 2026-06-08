@@ -211,7 +211,7 @@ export default function StudyBuddySection({ user, friends, onChanged }: Props) {
                 Both active today — streak protected!
               </p>
             ) : (
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-400">
                 Complete a lesson today to keep your shared streak.
               </p>
             )}
@@ -226,7 +226,7 @@ export default function StudyBuddySection({ user, friends, onChanged }: Props) {
           </div>
           <button
             onClick={demote}
-            className="text-gray-500 hover:text-danger"
+            className="text-gray-400 hover:text-danger"
             title="Remove Study Buddy"
             aria-label={`Remove @${buddy.username} as Study Buddy`}
           >
@@ -237,7 +237,7 @@ export default function StudyBuddySection({ user, friends, onChanged }: Props) {
 
       {/* Loading state */}
       {loading && !buddy && (
-        <p className="text-xs text-gray-500">Loading…</p>
+        <p className="text-xs text-gray-400">Loading…</p>
       )}
 
       {/* Promote a friend */}
@@ -245,7 +245,7 @@ export default function StudyBuddySection({ user, friends, onChanged }: Props) {
         <>
           {eligible.length === 0 ? (
             <div className="card flex flex-col items-center gap-2 py-8 text-center">
-              <HeartHandshake size={28} className="text-gray-600" aria-hidden="true" />
+              <HeartHandshake size={28} className="text-gray-400" aria-hidden="true" />
               <p className="text-sm text-gray-400">
                 Follow at least one friend to set a Study Buddy.
               </p>
@@ -277,7 +277,7 @@ export default function StudyBuddySection({ user, friends, onChanged }: Props) {
       {/* Swap buddy option when one is already set */}
       {buddy && eligible.length > 0 && (
         <details className="mt-2">
-          <summary className="cursor-pointer text-xs text-gray-500 hover:text-gray-300">
+          <summary className="cursor-pointer text-xs text-gray-400 hover:text-gray-300">
             Switch Study Buddy
           </summary>
           <div className="mt-2 space-y-2">

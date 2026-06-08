@@ -60,7 +60,7 @@ export function Visualizer() {
         <button onClick={run} className="btn-primary mt-3">
           <Play size={16} /> Visualize
         </button>
-        <p className="mt-2 text-xs text-gray-500">
+        <p className="mt-2 text-xs text-gray-400">
           Runs in your browser. Best on plain functions, loops, conditionals, and
           variables — step through to watch the call stack and values change.
         </p>
@@ -95,7 +95,7 @@ export function Visualizer() {
                   key={idx}
                   className={`flex ${active ? "bg-accent/20" : ""}`}
                 >
-                  <span className="w-10 flex-none select-none px-2 text-right text-gray-600">
+                  <span className="w-10 flex-none select-none px-2 text-right text-gray-400">
                     {lineNo}
                   </span>
                   <code className={`flex-1 whitespace-pre px-2 ${active ? "text-white" : "text-gray-300"}`}>
@@ -110,7 +110,7 @@ export function Visualizer() {
         {/* State: call stack + variables + console */}
         <div className="space-y-4">
           <div className="card">
-            <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-gray-500">
+            <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-gray-400">
               <Layers size={13} /> Call stack &amp; variables
             </p>
             <div className="space-y-2">
@@ -128,13 +128,13 @@ export function Visualizer() {
                       {frame.fn}
                     </p>
                     {Object.keys(frame.vars).length === 0 ? (
-                      <p className="mt-1 text-xs text-gray-600">no variables yet</p>
+                      <p className="mt-1 text-xs text-gray-400">no variables yet</p>
                     ) : (
                       <ul className="mt-1 space-y-0.5">
                         {Object.entries(frame.vars).map(([k, v]) => (
                           <li key={k} className="font-mono text-xs">
                             <span className="text-gray-400">{k}</span>
-                            <span className="text-gray-600"> = </span>
+                            <span className="text-gray-400"> = </span>
                             <span className="text-emerald-300">{v}</span>
                           </li>
                         ))}
@@ -146,7 +146,7 @@ export function Visualizer() {
           </div>
 
           <div className="card">
-            <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-gray-500">
+            <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-gray-400">
               <Terminal size={13} /> Console
             </p>
             {step && step.stdout.length > 0 ? (
@@ -154,7 +154,7 @@ export function Visualizer() {
                 {step.stdout.join("\n")}
               </pre>
             ) : (
-              <p className="text-xs text-gray-600">No output yet.</p>
+              <p className="text-xs text-gray-400">No output yet.</p>
             )}
           </div>
         </div>

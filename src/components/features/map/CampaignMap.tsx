@@ -84,7 +84,7 @@ export function CampaignMap() {
                   <p className="text-sm font-semibold text-white">
                     {cm.completedCount}/{cm.total}
                   </p>
-                  <p className="text-xs text-gray-500">lessons</p>
+                  <p className="text-xs text-gray-400">lessons</p>
                 </div>
               </div>
               <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-surface-2">
@@ -112,8 +112,8 @@ export function CampaignMap() {
                 ))}
               </div>
             ) : (
-              <div className="mt-4 flex items-center justify-center gap-2 rounded-xl border border-dashed border-line bg-surface/40 px-4 py-6 text-sm text-gray-500">
-                <Lock size={14} />
+              <div className="mt-4 flex items-center justify-center gap-2 rounded-xl border border-dashed border-line bg-surface/40 px-4 py-6 text-sm text-gray-400">
+                <Lock size={14} aria-hidden />
                 Complete the previous course to unlock these quests.
               </div>
             )}
@@ -122,7 +122,7 @@ export function CampaignMap() {
       </div>
 
       {/* Finale flag */}
-      <div className="mt-14 flex flex-col items-center text-center text-gray-500">
+      <div className="mt-14 flex flex-col items-center text-center text-gray-400">
         <Connector done={false} />
         <div className="flex h-14 w-14 items-center justify-center rounded-full border border-line bg-surface text-2xl">
           <Trophy className="text-gold" />
@@ -190,7 +190,7 @@ function QuestNode({ node, onPick }: { node: CampaignNode; onPick: () => void })
       "border-accent bg-accent/20 text-accent-soft shadow-glow",
     available:
       "border-accent/50 bg-surface-2 text-accent-soft hover:border-accent hover:bg-accent/10",
-    locked: "border-line bg-surface text-gray-600 cursor-not-allowed",
+    locked: "border-line bg-surface text-gray-400 cursor-not-allowed",
   };
 
   const Icon =
@@ -224,7 +224,11 @@ function QuestNode({ node, onPick }: { node: CampaignNode; onPick: () => void })
   );
 
   if (status === "locked") {
-    return <div className="flex justify-center">{inner}</div>;
+    return (
+      <div className="flex justify-center" aria-label={`${node.lesson.title} — locked`}>
+        {inner}
+      </div>
+    );
   }
 
   return (
@@ -260,7 +264,7 @@ function InfoCard({
       <p
         className={[
           "text-sm font-semibold",
-          locked ? "text-gray-500" : "text-white",
+          locked ? "text-gray-400" : "text-white",
         ].join(" ")}
       >
         {node.lesson.title}

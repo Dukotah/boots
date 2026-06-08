@@ -69,7 +69,7 @@ function Hero() {
           <BookOpen size={15} /> Try a free lesson
         </Link>
       </div>
-      <p className="mt-4 text-xs text-gray-500">
+      <p className="mt-4 text-xs text-gray-400">
         Early-access pricing · No credit card to join waitlist
       </p>
     </section>
@@ -236,7 +236,7 @@ function Pricing() {
       <h2 className="mb-2 text-center text-2xl font-bold text-white">
         Early-access pricing
       </h2>
-      <p className="mb-8 text-center text-sm text-gray-500">
+      <p className="mb-8 text-center text-sm text-gray-400">
         Waitlist members lock in launch pricing. Billed annually = 2 months free.
       </p>
       <div className="grid gap-4 sm:grid-cols-3">
@@ -254,7 +254,7 @@ function Pricing() {
                 </span>
               </div>
             )}
-            <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+            <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">
               {seats}
             </p>
             <h3 className="mt-1 text-xl font-bold text-white">{name}</h3>
@@ -383,13 +383,13 @@ function WaitlistSection() {
                   placeholder="you@company.com"
                   required
                   disabled={state === "submitting"}
-                  className="w-full rounded-lg border border-line bg-canvas/60 px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:ring-1 focus:ring-accent/60 disabled:opacity-60"
+                  className="w-full rounded-lg border border-line bg-canvas/60 px-3 py-2 text-sm text-white placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-accent/60 disabled:opacity-60"
                 />
               </div>
               <div>
                 <label htmlFor="teams-size" className="mb-1 block text-xs font-medium text-gray-400">
                   Team size{" "}
-                  <span className="font-normal text-gray-600">(optional)</span>
+                  <span className="font-normal text-gray-400">(optional)</span>
                 </label>
                 <select
                   id="teams-size"
@@ -420,14 +420,14 @@ function WaitlistSection() {
                 {state === "submitting" ? "Joining…" : "Notify me when Teams launches"}
               </button>
 
-              <p className="text-center text-xs text-gray-600">
+              <p className="text-center text-xs text-gray-400">
                 No spam. Unsubscribe any time. No credit card required.
               </p>
             </form>
           )}
         </div>
 
-        <p className="mt-6 text-center text-sm text-gray-500">
+        <p className="mt-6 text-center text-sm text-gray-400">
           Questions?{" "}
           <a
             href="mailto:hello@cantrip.dev"

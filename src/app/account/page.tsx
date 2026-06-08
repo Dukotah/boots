@@ -171,9 +171,9 @@ export default function AccountPage() {
       {/* Identity summary */}
       {user && (
         <div className="rounded-xl border border-line bg-surface px-5 py-4">
-          <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Signed in as</p>
+          <p className="text-xs uppercase tracking-wide text-gray-400 mb-1">Signed in as</p>
           <p className="font-medium text-white">{user.email}</p>
-          <p className="text-xs text-gray-500 mt-0.5">ID: {user.id}</p>
+          <p className="text-xs text-gray-400 mt-0.5">ID: {user.id}</p>
         </div>
       )}
 

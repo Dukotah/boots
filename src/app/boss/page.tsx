@@ -91,7 +91,7 @@ export default function BossPage() {
           </div>
         </div>
 
-        <p className="mt-4 text-xs text-gray-500">
+        <p className="mt-4 text-xs text-gray-400">
           {daysLeft} day{daysLeft === 1 ? "" : "s"} left this season
         </p>
 
@@ -105,7 +105,7 @@ export default function BossPage() {
                 {/* Show the range rather than a misleading fixed number */}
                 {Math.round(boss.rewardGold * 0.60)}–{Math.round(boss.rewardGold * 2.20)} gold
               </span>
-              <span className="text-gray-500">·</span>
+              <span className="text-gray-400">·</span>
               <span className="flex items-center gap-1 font-semibold text-accent-soft">
                 <Zap size={15} /> {boss.rewardXp} XP
               </span>
@@ -131,7 +131,7 @@ export default function BossPage() {
                 ].join(" ")}>
                   {lastBossRoll.tier} drop
                 </p>
-                <p className="mt-2 text-xs text-gray-500">
+                <p className="mt-2 text-xs text-gray-400">
                   +{boss.rewardXp} XP · See you next week!
                 </p>
               </div>

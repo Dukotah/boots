@@ -1,12 +1,24 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { MascotBoots } from "@/components/MascotBoots";
-import { SITE } from "@/lib/site";
+import { SITE, absoluteUrl } from "@/lib/site";
+
+const ABOUT_OG = absoluteUrl(
+  `/api/og?title=${encodeURIComponent(`About ${SITE.name}`)}&subtitle=${encodeURIComponent("Learn to code & use AI the fun way — gamified, hands-on, free to start.")}`,
+);
 
 export const metadata: Metadata = {
   title: "About",
   description: `What ${SITE.name} is and why it exists — learn to code the fun way.`,
   alternates: { canonical: "/about" },
+  openGraph: {
+    type: "website",
+    title: `About — ${SITE.name}`,
+    description: "Learn to code & use AI the fun way — gamified, hands-on, free to start.",
+    url: absoluteUrl("/about"),
+    images: [{ url: ABOUT_OG, width: 1200, height: 630 }],
+  },
+  twitter: { card: "summary_large_image", images: [ABOUT_OG] },
 };
 
 export default function AboutPage() {

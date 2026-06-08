@@ -5,6 +5,11 @@ import {
   totalLessonCount,
 } from "@/lib/curriculum/catalogClient";
 import { CatalogSearch } from "@/components/features/catalog/CatalogSearch";
+import { absoluteUrl } from "@/lib/site";
+
+const LEARN_OG = absoluteUrl(
+  `/api/og?title=${encodeURIComponent("Browse the course catalog")}&subtitle=${encodeURIComponent(`${totalModuleCount} interactive courses · ${totalLessonCount} hands-on lessons in JS, Python, SQL & AI`)}`,
+);
 
 export const metadata: Metadata = {
   title: "All Courses — Learn JavaScript, Python, SQL & AI",
@@ -19,6 +24,15 @@ export const metadata: Metadata = {
     "interactive coding lessons",
   ],
   alternates: { canonical: "/learn" },
+  openGraph: {
+    type: "website",
+    title: "All Courses — Cantrip",
+    description:
+      "Browse interactive, auto-graded coding & AI courses. Earn XP, level up, learn by doing.",
+    url: absoluteUrl("/learn"),
+    images: [{ url: LEARN_OG, width: 1200, height: 630 }],
+  },
+  twitter: { card: "summary_large_image", images: [LEARN_OG] },
 };
 
 export default function LearnIndex() {

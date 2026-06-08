@@ -134,7 +134,7 @@ export default function NotificationsPage() {
           </button>
         )}
       </div>
-      <p className="mt-1 text-sm text-gray-500">
+      <p className="mt-1 text-sm text-gray-400">
         Your achievements, level-ups, league results, and reminders — all in one place.
       </p>
 
@@ -150,11 +150,11 @@ export default function NotificationsPage() {
           ))
         ) : notifications.length === 0 ? (
           <div className="flex flex-col items-center gap-3 rounded-2xl border border-line bg-surface-2/30 py-16 text-center">
-            <BellOff size={32} className="text-gray-600" />
+            <BellOff size={32} className="text-gray-400" aria-label="No notifications" />
             <p className="text-sm font-medium text-gray-400">
               No notifications right now.
             </p>
-            <p className="text-xs text-gray-600">
+            <p className="text-xs text-gray-400">
               Complete lessons, unlock achievements, and level up to see
               activity here.
             </p>
@@ -171,7 +171,7 @@ export default function NotificationsPage() {
 
       {/* Footer */}
       {notifications.length > 0 && (
-        <p className="mt-8 text-center text-xs text-gray-600">
+        <p className="mt-8 text-center text-xs text-gray-400">
           Notifications are derived from your local game state and reset when
           you complete the associated action.
         </p>

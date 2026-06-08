@@ -79,7 +79,7 @@ export default function AchievementsPage() {
               <h2 className="text-xl font-bold text-white">
                 <span className="mr-2">{cat.icon}</span>{cat.label}
               </h2>
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-gray-400">
                 {got}/{items.length}
               </span>
             </div>

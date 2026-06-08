@@ -2,6 +2,11 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { ArrowRight } from "lucide-react";
 import { POSTS } from "@/content/blog";
+import { absoluteUrl } from "@/lib/site";
+
+const BLOG_OG = absoluteUrl(
+  `/api/og?title=${encodeURIComponent("The Cantrip Blog")}&subtitle=${encodeURIComponent("No-hype guides on learning to code & use AI: roadmaps, comparisons, interview prep.")}`,
+);
 
 export const metadata: Metadata = {
   title: "Blog — Learn to Code Guides & Tips",
@@ -14,6 +19,15 @@ export const metadata: Metadata = {
     "coding tips",
   ],
   alternates: { canonical: "/blog" },
+  openGraph: {
+    type: "website",
+    title: "Blog — Cantrip",
+    description:
+      "No-hype guides on learning to code & use AI: roadmaps, comparisons, interview prep.",
+    url: absoluteUrl("/blog"),
+    images: [{ url: BLOG_OG, width: 1200, height: 630 }],
+  },
+  twitter: { card: "summary_large_image", images: [BLOG_OG] },
 };
 
 // Render newest posts first. POSTS uses fixed ISO dates, so this sort is stable.

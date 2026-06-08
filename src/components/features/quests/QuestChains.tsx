@@ -48,7 +48,7 @@ export function QuestChains() {
                 <h3 className="font-semibold text-white">{chain.title}</h3>
                 <p className="text-xs text-gray-400">{chain.description}</p>
               </div>
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-gray-400">
                 {claimedCount}/{chain.steps.length}
               </span>
             </div>
@@ -90,7 +90,7 @@ export function QuestChains() {
                           {step.rewardXp ? ` · ${step.rewardXp} XP` : ""}
                         </span>
                       </div>
-                      <p className="text-xs text-gray-500">{step.description}</p>
+                      <p className="text-xs text-gray-400">{step.description}</p>
                       {!isClaimed && !locked && (
                         <div className="mt-2 flex items-center gap-2">
                           <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-2">
@@ -99,7 +99,7 @@ export function QuestChains() {
                               style={{ width: `${pct}%` }}
                             />
                           </div>
-                          <span className="w-12 text-right text-[11px] text-gray-500">
+                          <span className="w-12 text-right text-[11px] text-gray-400">
                             {progress}/{step.goal}
                           </span>
                         </div>
@@ -108,7 +108,7 @@ export function QuestChains() {
                     {isClaimed ? (
                       <span className="text-xs font-medium text-success">Claimed</span>
                     ) : locked ? (
-                      <Lock size={14} className="text-gray-600" />
+                      <Lock size={14} className="text-gray-400" aria-label="Locked — complete the previous step first" />
                     ) : (
                       <button
                         onClick={() => claimChainStep(chain.id, step.id)}

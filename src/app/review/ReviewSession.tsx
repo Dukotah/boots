@@ -120,7 +120,7 @@ function ReviewCard({
         <div className="mb-4 flex items-start gap-3">
           <Brain size={20} className="mt-0.5 shrink-0 text-accent-soft" />
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+            <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">
               Retrieve from memory
             </p>
             <h2 className="mt-1 text-xl font-bold text-white">{lesson.title}</h2>
@@ -157,7 +157,7 @@ function ReviewCard({
         {/* Revealed content */}
         {phase === "revealed" && (
           <div className="mt-4 rounded-lg border border-white/10 bg-surface-2 p-4">
-            <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-gray-500">
+            <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-gray-400">
               Key concept
             </p>
             <p className="text-sm text-gray-200">{lesson.blurb}</p>
@@ -171,7 +171,7 @@ function ReviewCard({
       {/* Rating buttons (revealed phase only) */}
       {phase === "revealed" && (
         <div>
-          <p className="mb-2 text-center text-xs text-gray-500">
+          <p className="mb-2 text-center text-xs text-gray-400">
             How well did you recall it?
           </p>
           <div className="grid grid-cols-4 gap-2">
@@ -185,7 +185,7 @@ function ReviewCard({
                 <span className="text-center text-[10px] leading-tight text-gray-500">
                   {description}
                 </span>
-                <span className="text-[10px] text-gray-600">[{shortcut}]</span>
+                <span className="text-[10px] text-gray-400">[{shortcut}]</span>
               </button>
             ))}
           </div>
@@ -225,7 +225,7 @@ function SessionSummaryView({
             <span className={`text-xl font-bold ${color}`}>
               {ratings[rating] ?? 0}
             </span>
-            <span className="text-xs text-gray-500">{label}</span>
+            <span className="text-xs text-gray-400">{label}</span>
           </div>
         ))}
       </div>
@@ -374,12 +374,12 @@ export function ReviewSession({
             style={{ width: `${((cardIndex) / cards.length) * 100}%` }}
           />
         </div>
-        <span className="shrink-0 text-xs text-gray-500">
+        <span className="shrink-0 text-xs text-gray-400">
           {cardIndex + 1} / {cards.length}
         </span>
         <button
           onClick={onExit}
-          className="shrink-0 text-xs text-gray-600 hover:text-gray-400"
+          className="shrink-0 text-xs text-gray-400 hover:text-gray-200"
         >
           Exit
         </button>
@@ -410,7 +410,7 @@ export function ReviewSession({
               setRecallText("");
             }
           }}
-          className="flex items-center justify-center gap-1 text-xs text-gray-600 hover:text-gray-400"
+          className="flex items-center justify-center gap-1 text-xs text-gray-400 hover:text-gray-200"
         >
           Skip this card <ChevronRight size={12} />
         </button>

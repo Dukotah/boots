@@ -162,11 +162,11 @@ export default function ProfilePage() {
               );
               return (
                 <div key={slot} className="rounded-lg border border-line bg-canvas/40 p-2 text-center">
-                  <p className="text-[10px] uppercase tracking-wide text-gray-500 mb-1">{slot}</p>
+                  <p className="text-[10px] uppercase tracking-wide text-gray-400 mb-1">{slot}</p>
                   {val ? (
                     <p className="text-sm font-medium text-white truncate">{val}</p>
                   ) : (
-                    <p className="text-xs text-gray-600">none</p>
+                    <p className="text-xs text-gray-400">none</p>
                   )}
                 </div>
               );
@@ -219,7 +219,7 @@ export default function ProfilePage() {
 
       {!hasAnyCosmetic && (
         <div className="rounded-xl border border-dashed border-line bg-surface/40 px-5 py-6 text-center">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-400">
             No cosmetics yet.{" "}
             <Link href="/shop" className="text-accent-soft hover:underline">
               Visit the shop
@@ -280,7 +280,7 @@ function CosmeticEquipRow({
 }) {
   return (
     <div className="card">
-      <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500">{label}</p>
+      <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-400">{label}</p>
       <div className="flex flex-wrap gap-2">
         {items.map((item) => {
           const isEquipped = equipped === item.value;
