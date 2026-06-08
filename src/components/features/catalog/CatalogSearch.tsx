@@ -91,6 +91,19 @@ export function CatalogSearch({ groups }: Props) {
 
   const hasResults = filtered.length > 0;
 
+  // A handful of courses live in more than one track (e.g. a Python course
+  // shown under both "Python" and "Python Deep Dives"), so summing per-track
+  // lengths double-counts them and disagrees with the canonical hero total.
+  // Count DISTINCT course slugs so the catalog reports the same number the hero
+  // does, no matter how many tracks a course is cross-listed in.
+  const courseCount = useMemo(() => {
+    const slugs = new Set<string>();
+    for (const { modules } of groups) {
+      for (const m of modules) slugs.add(m.slug);
+    }
+    return slugs.size;
+  }, [groups]);
+
   return (
     <>
       {/* Search */}
@@ -123,7 +136,7 @@ export function CatalogSearch({ groups }: Props) {
       {!isSearching && (
         <div className="mt-3 flex items-center justify-between text-xs text-gray-500">
           <span>
-            {groups.length} categories · {groups.reduce((n, g) => n + g.modules.length, 0)} courses
+            {groups.length} categories · {courseCount} courses
           </span>
           <div className="flex items-center gap-3">
             <button onClick={expandAll} className="hover:text-white transition-colors">

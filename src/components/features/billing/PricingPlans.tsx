@@ -88,6 +88,9 @@ export function PricingPlans() {
           price={plan.price}
           cadence={plan.cadence}
           note={plan.note}
+          // On the annual view, anchor the discounted /mo price against the real
+          // monthly price so the "save 53%" claim has a visible reference on load.
+          anchorPrice={cycle === "annual" ? PLANS.monthly.price : undefined}
           highlight
         >
           <Features
@@ -138,6 +141,7 @@ function Tier({
   price,
   cadence,
   note,
+  anchorPrice,
   highlight,
   children,
 }: {
@@ -145,6 +149,8 @@ function Tier({
   price: string;
   cadence: string;
   note?: string;
+  /** Optional struck-through "regular" price to anchor a discount against. */
+  anchorPrice?: string;
   highlight?: boolean;
   children: React.ReactNode;
 }) {
@@ -158,7 +164,14 @@ function Tier({
         </span>
       )}
       <h2 className="text-lg font-semibold text-white">{name}</h2>
-      <div className="mt-2 flex items-baseline gap-1">
+      <div className="mt-2 flex flex-wrap items-baseline gap-x-1.5 gap-y-0">
+        {anchorPrice && (
+          <span className="text-lg font-medium text-gray-400 line-through decoration-gray-500">
+            <span className="sr-only">Regular price </span>
+            {anchorPrice}
+            <span aria-hidden="true">/mo</span>
+          </span>
+        )}
         <span className="text-3xl font-bold text-white">{price}</span>
         <span className="text-sm text-gray-400">{cadence}</span>
       </div>

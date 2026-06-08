@@ -6,6 +6,7 @@ import { langMeta } from "@/lib/curriculum/lang";
 import { courseJsonLd, breadcrumbJsonLd } from "@/lib/seo";
 import { absoluteUrl } from "@/lib/site";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { CourseProgress } from "./CourseProgress";
 import { LessonList } from "./LessonList";
 
 export function generateStaticParams() {
@@ -87,6 +88,8 @@ export default function ModulePage({
           <p className="mt-1 text-gray-400">{module.description}</p>
         </div>
       </div>
+
+      <CourseProgress module={module} />
 
       <LessonList module={module} />
     </div>
