@@ -54,6 +54,18 @@ import howToBuildAnAppWithAi from "./posts/how-to-build-an-app-with-ai";
 import howLongToLearnToCode from "./posts/how-long-to-learn-to-code";
 import whatCanYouBuildWithAi2026 from "./posts/what-can-you-build-with-ai-2026";
 import pythonVsJavascriptWhichToLearn from "./posts/python-vs-javascript-which-to-learn";
+import howToUseClaudeCode from "./posts/how-to-use-claude-code";
+import howToGetACodingJobWithNoDegree from "./posts/how-to-get-a-coding-job-with-no-degree";
+import howToUseCursorAi from "./posts/how-to-use-cursor-ai";
+import codingBootcampVsSelfTaught from "./posts/coding-bootcamp-vs-self-taught";
+import whatIsAnAiAgent from "./posts/what-is-an-ai-agent";
+import learnToCodeAsAnAdult from "./posts/learn-to-code-as-an-adult";
+import aiVsMachineLearningExplained from "./posts/ai-vs-machine-learning-explained";
+import whatIsAnApiExplained from "./posts/what-is-an-api-explained";
+import howToWriteBetterAiPrompts from "./posts/how-to-write-better-ai-prompts";
+import whatIsRecursionExplained from "./posts/what-is-recursion-explained";
+import willAiReplaceProgrammers from "./posts/will-ai-replace-programmers";
+import howToStayMotivatedLearningToCode from "./posts/how-to-stay-motivated-learning-to-code";
 
 export type BlogPost = {
   slug: string;
@@ -934,6 +946,18 @@ The barrier to learning to code was never money — it's consistency and focus. 
   howLongToLearnToCode,
   whatCanYouBuildWithAi2026,
   pythonVsJavascriptWhichToLearn,
+  howToUseClaudeCode,
+  howToGetACodingJobWithNoDegree,
+  howToUseCursorAi,
+  codingBootcampVsSelfTaught,
+  whatIsAnAiAgent,
+  learnToCodeAsAnAdult,
+  aiVsMachineLearningExplained,
+  whatIsAnApiExplained,
+  howToWriteBetterAiPrompts,
+  whatIsRecursionExplained,
+  willAiReplaceProgrammers,
+  howToStayMotivatedLearningToCode,
 ];
 
 /** Look up a single post by its slug. Returns undefined if not found. */

@@ -8,6 +8,7 @@ import { breadcrumbJsonLd, faqJsonLd } from "@/lib/seo";
 import { absoluteUrl, SITE } from "@/lib/site";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { parseFaqs } from "@/lib/faqParse";
+import { relatedPosts } from "@/lib/relatedPosts";
 
 export function generateStaticParams() {
   return POSTS.map((p) => ({ slug: p.slug }));
@@ -64,6 +65,7 @@ export default function BlogPostPage({
   if (!post) notFound();
 
   const faqs = parseFaqs(post.body);
+  const related = relatedPosts(post, POSTS);
 
   const articleJsonLd = {
     "@context": "https://schema.org",
@@ -123,6 +125,37 @@ export default function BlogPostPage({
       <div className="prose-lesson mt-8">
         <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.body}</ReactMarkdown>
       </div>
+
+      {related.length > 0 && (
+        <section aria-labelledby="related-reads-heading" className="mt-12">
+          <h2
+            id="related-reads-heading"
+            className="text-lg font-semibold text-white"
+          >
+            Related reads
+          </h2>
+          <ul className="mt-4 grid gap-4 sm:grid-cols-3" role="list">
+            {related.map((r) => (
+              <li key={r.slug}>
+                <Link
+                  href={`/blog/${r.slug}`}
+                  className="flex h-full flex-col rounded-xl border border-line bg-surface p-4 transition-colors hover:border-accent/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+                >
+                  <span className="text-sm font-medium leading-snug text-white">
+                    {r.title}
+                  </span>
+                  <span className="mt-2 line-clamp-2 text-xs text-gray-400">
+                    {r.description}
+                  </span>
+                  <span className="mt-auto pt-3 text-xs text-gray-500">
+                    {r.readingMinutes} min read
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <div className="mt-10 rounded-2xl border border-accent/30 bg-accent/10 p-5 text-center">
         <p className="text-sm text-gray-200">
