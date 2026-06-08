@@ -16,14 +16,25 @@ import {
 } from "@/lib/tutor/types";
 
 // The on-device / BYOK Socratic tutor. Runs entirely in the learner's browser
-// (local WebGPU model or their own Anthropic key) — $0 to the platform.
+// (local WebGPU model or their own Anthropic key) — $0 to the platform. This is
+// THE lesson tutor (there is no separate Pro-gated panel on the lesson loop).
 //
-// It renders as an INLINE collapsible card inside the lesson workspace (same
-// pattern as AskBoots), not a floating side drawer — so the lesson screen reads
-// like an integrated dashboard rather than a window popping over everything.
-export function TutorPanel({ context }: { context: TutorContext }) {
+// It renders as an INLINE collapsible card inside the lesson workspace, not a
+// floating side drawer — so the lesson screen reads like an integrated
+// dashboard rather than a window popping over everything.
+//
+// `openSignal` lets the lesson's "Explain this to me" button reveal + scroll to
+// the panel: each increment opens the card and brings it into view.
+export function TutorPanel({
+  context,
+  openSignal,
+}: {
+  context: TutorContext;
+  openSignal?: number;
+}) {
   const settings = useTutorSettings();
   const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
   const [thread, setThread] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
@@ -43,6 +54,14 @@ export function TutorPanel({ context }: { context: TutorContext }) {
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
   }, [thread, progress]);
+
+  // React to the lesson's "Explain this to me" button: open + scroll into view.
+  // Skip the initial 0/undefined so the panel stays closed on first render.
+  useEffect(() => {
+    if (!openSignal) return;
+    setOpen(true);
+    rootRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [openSignal]);
 
   async function send(text: string) {
     const content = text.trim();
@@ -104,7 +123,7 @@ export function TutorPanel({ context }: { context: TutorContext }) {
   }
 
   return (
-    <div className="card p-0">
+    <div ref={rootRef} className="card p-0">
       {/* Header — toggles the panel open/closed in place */}
       <button
         onClick={() => setOpen((o) => !o)}

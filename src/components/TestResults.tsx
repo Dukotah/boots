@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, X, Terminal } from "lucide-react";
+import { Check, X, Terminal, Circle } from "lucide-react";
 import type { TestResult } from "@/workers/codeRunner";
 
 // The graders emit assertion errors in a stable shape — JS `assertEquals` throws
@@ -19,17 +19,52 @@ function parseExpectedActual(
 export function TestResults({
   results,
   hasRun,
+  pendingTests = [],
 }: {
   results: TestResult[];
   hasRun: boolean;
+  /** Test cases known before running — shown greyed as the spec to aim for. */
+  pendingTests?: { name: string }[];
 }) {
   if (!hasRun) {
-    return (
-      <div className="flex h-full items-center justify-center p-6 text-center text-sm text-gray-500">
-        <div>
-          <Terminal className="mx-auto mb-2 opacity-50" size={22} />
-          Run your code to see test results.
+    // Show the test cases up front as a checklist of what "done" looks like —
+    // turns an empty panel into scaffolding. Named cases only (some graders use
+    // a single unnamed assertion, which reads as noise here).
+    const named = pendingTests.filter((t) => t.name?.trim());
+    if (named.length === 0) {
+      return (
+        <div className="flex h-full items-center justify-center p-6 text-center text-sm text-gray-500">
+          <div>
+            <Terminal className="mx-auto mb-2 opacity-50" size={22} />
+            Run your code to see test results.
+          </div>
         </div>
+      );
+    }
+    return (
+      <div className="p-3">
+        <div className="mb-2 flex items-center justify-between px-1">
+          <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+            Tests
+          </span>
+          <span className="text-xs font-medium text-gray-500">
+            {named.length} to pass
+          </span>
+        </div>
+        <div className="space-y-2">
+          {named.map((t, i) => (
+            <div
+              key={t.name || i}
+              className="flex items-center gap-2 rounded-lg border border-line bg-surface-2/40 p-3 text-sm text-gray-400"
+            >
+              <Circle size={16} className="shrink-0 text-gray-600" aria-hidden />
+              <span>{t.name}</span>
+            </div>
+          ))}
+        </div>
+        <p className="mt-3 px-1 text-xs text-gray-500">
+          Run your code to check these.
+        </p>
       </div>
     );
   }

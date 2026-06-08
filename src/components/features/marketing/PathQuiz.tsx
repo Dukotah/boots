@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, RotateCcw, Compass } from "lucide-react";
-import { getPath, pathStats } from "@/lib/paths";
+import { getPath, pathStats, pathLessonIds } from "@/lib/paths";
 
 // A tiny 2-step quiz that routes a new visitor to the right pathway. Pure
 // client-side — no data, no tracking, just a friendly on-ramp.
@@ -37,19 +37,85 @@ const GOAL_PATH: Record<Goal, string> = {
   fundamentals: "cs-fundamentals",
 };
 
-function resolvePath(goal: Goal, lang: Lang): string {
-  if (lang === "python" && (goal === "fundamentals" || goal === "frontend"))
-    return "python";
-  if (lang === "sql") return "data";
-  return GOAL_PATH[goal];
+// The gentle, zero-experience on-ramp. "Just learn the basics" should land an
+// absolute beginner here — not on the Intermediate CS-Fundamentals path, whose
+// first lesson already assumes object literals.
+const BEGINNER_COURSE = {
+  emoji: "🌱",
+  title: "Programming for Complete Beginners",
+  tagline:
+    "Learn to code from absolute zero — tiny, gentle, jargon-free steps, right in your browser.",
+  gradient: "from-green-400/20 to-emerald-500/10",
+  difficulty: "Beginner",
+  lessons: 8,
+  // Deep-link straight to the first lesson — the fastest route to a first win.
+  href: "/learn/beginner/first-function",
+};
+
+type Recommendation = {
+  emoji: string;
+  title: string;
+  tagline: string;
+  gradient: string;
+  /** Sub-line, e.g. "14 courses · 111 lessons · Intermediate". */
+  meta: string;
+  /** Primary CTA — deep-links straight to the first lesson (the "first win"). */
+  href: string;
+  cta: string;
+  /** Secondary link — the full roadmap/course overview, for those who want it. */
+  secondaryHref: string;
+  secondaryLabel: string;
+};
+
+function pathRecommendation(slug: string): Recommendation | null {
+  const path = getPath(slug);
+  if (!path) return null;
+  const stats = pathStats(path);
+  // Drop the learner straight into lesson one rather than the roadmap page —
+  // every screen before the first typed code is a drop-off point.
+  const firstLesson = pathLessonIds(path)[0];
+  return {
+    emoji: path.emoji,
+    title: `${path.title} Path`,
+    tagline: path.tagline,
+    gradient: path.gradient,
+    meta: `${stats.modules} courses · ${stats.lessons} lessons · ${path.difficulty}`,
+    href: firstLesson ? `/learn/${firstLesson}` : `/paths/${path.slug}`,
+    cta: "Start first lesson",
+    secondaryHref: `/paths/${path.slug}`,
+    secondaryLabel: "See the full roadmap",
+  };
+}
+
+function resolveRecommendation(goal: Goal, lang: Lang): Recommendation | null {
+  // Beginners asking for "the basics" get the gentle intro course — except when
+  // they name a language with its own beginner-friendly path (Python) or pick
+  // SQL (the Beginner "Work with data" path).
+  if (goal === "fundamentals") {
+    if (lang === "python") return pathRecommendation("python");
+    if (lang === "sql") return pathRecommendation("data");
+    return {
+      emoji: BEGINNER_COURSE.emoji,
+      title: BEGINNER_COURSE.title,
+      tagline: BEGINNER_COURSE.tagline,
+      gradient: BEGINNER_COURSE.gradient,
+      meta: `${BEGINNER_COURSE.lessons} lessons · ${BEGINNER_COURSE.difficulty}`,
+      href: BEGINNER_COURSE.href,
+      cta: "Start learning",
+      secondaryHref: "/learn/beginner",
+      secondaryLabel: "See all lessons",
+    };
+  }
+  if (lang === "python" && goal === "frontend") return pathRecommendation("python");
+  if (lang === "sql") return pathRecommendation("data");
+  return pathRecommendation(GOAL_PATH[goal]);
 }
 
 export function PathQuiz() {
   const [goal, setGoal] = useState<Goal | null>(null);
   const [lang, setLang] = useState<Lang | null>(null);
 
-  const recommendedSlug = goal && lang ? resolvePath(goal, lang) : null;
-  const path = recommendedSlug ? getPath(recommendedSlug) : null;
+  const rec = goal && lang ? resolveRecommendation(goal, lang) : null;
 
   function reset() {
     setGoal(null);
@@ -125,35 +191,38 @@ export function PathQuiz() {
           )}
 
           {/* Result */}
-          {path && (
+          {rec && (
             <motion.div
               key="result"
               initial={{ opacity: 0, scale: 0.96 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
             >
-              <p className="text-sm text-gray-400">We recommend the</p>
+              <p className="text-sm text-gray-400">We recommend</p>
               <div
-                className={`mt-3 rounded-2xl border border-accent/40 bg-gradient-to-br ${path.gradient} p-6`}
+                className={`mt-3 rounded-2xl border border-accent/40 bg-gradient-to-br ${rec.gradient} p-6`}
               >
                 <div className="flex items-center gap-4">
-                  <span className="text-5xl">{path.emoji}</span>
+                  <span className="text-5xl">{rec.emoji}</span>
                   <div>
                     <h2 className="text-2xl font-bold text-white">
-                      {path.title} Path
+                      {rec.title}
                     </h2>
-                    <p className="mt-1 text-sm text-gray-200">{path.tagline}</p>
+                    <p className="mt-1 text-sm text-gray-200">{rec.tagline}</p>
                   </div>
                 </div>
-                <p className="mt-4 text-xs text-gray-300">
-                  {pathStats(path).modules} courses · {pathStats(path).lessons}{" "}
-                  lessons · {path.difficulty}
-                </p>
-                <div className="mt-5 flex flex-wrap gap-3">
-                  <Link href={`/paths/${path.slug}`} className="btn-primary">
-                    Start this path <ArrowRight size={16} />
+                <p className="mt-4 text-xs text-gray-300">{rec.meta}</p>
+                <div className="mt-5 flex flex-wrap items-center gap-3">
+                  <Link href={rec.href} className="btn-primary">
+                    {rec.cta} <ArrowRight size={16} />
                   </Link>
-                  <button onClick={reset} className="btn-ghost">
+                  <Link
+                    href={rec.secondaryHref}
+                    className="text-sm font-medium text-gray-200 underline-offset-4 hover:text-white hover:underline"
+                  >
+                    {rec.secondaryLabel}
+                  </Link>
+                  <button onClick={reset} className="btn-ghost ml-auto">
                     <RotateCcw size={15} /> Retake
                   </button>
                 </div>
