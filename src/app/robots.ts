@@ -27,7 +27,8 @@ export default function robots(): MetadataRoute.Robots {
         "/friends",
         "/quests",
         "/skill-tree",
-        "/projects",
+        // /projects (hub) is noindex via its layout meta, but /projects/<slug>
+        // detail pages are indexable SEO landing pages — don't prefix-block here.
         "/review",
         "/refer",
         "/recap",

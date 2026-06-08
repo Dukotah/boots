@@ -6,6 +6,7 @@ import { PATHS } from "@/lib/paths";
 import { TOOLS } from "@/lib/tools";
 import { getHowtos } from "@/lib/howto";
 import { POSTS } from "@/content/blog";
+import { allProjects } from "@/lib/projects";
 import { absoluteUrl } from "@/lib/site";
 
 // Every module and lesson is an indexable page — the SEO flywheel. This emits the
@@ -84,6 +85,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }));
 
+  // Portfolio project detail pages — indexable SEO landing pages (one per build).
+  const projectPages: MetadataRoute.Sitemap = allProjects().map((p) => ({
+    url: absoluteUrl(`/projects/${p.slug}`),
+    changeFrequency: "monthly",
+    priority: 0.6,
+  }));
+
+  // A single build timestamp signals freshness for the generated content pages.
+  const built = new Date();
+  const withFreshness = (pages: MetadataRoute.Sitemap) =>
+    pages.map((p) => ({ lastModified: built, ...p }));
+
   return [
     ...staticPages,
     ...pathPages,
@@ -92,8 +105,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...blogPages,
     ...howtoPages,
     ...certificatePages,
-    ...modulePages,
-    ...lessonPages,
+    ...withFreshness(modulePages),
+    ...withFreshness(lessonPages),
+    ...withFreshness(projectPages),
     ...roomPages,
   ];
 }

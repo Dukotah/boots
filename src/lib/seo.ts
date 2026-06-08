@@ -78,6 +78,48 @@ export function organizationJsonLd(): Record<string, unknown> {
   };
 }
 
+/**
+ * An FAQPage rich-result. Powers Google FAQ rich snippets AND helps answer-engines
+ * (AI Overviews / ChatGPT search) cite the page — high-value for our blog posts,
+ * which already end with a "Frequently asked questions" section.
+ */
+export function faqJsonLd(
+  faqs: { question: string; answer: string }[],
+): Record<string, unknown> {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((f) => ({
+      "@type": "Question",
+      name: f.question,
+      acceptedAnswer: { "@type": "Answer", text: f.answer },
+    })),
+  };
+}
+
+/**
+ * An ItemList of the courses in a career path — gives a path page structured data
+ * describing its ordered curriculum (good for rich results + topical authority).
+ */
+export function pathItemListJsonLd(
+  path: { slug: string; title: string },
+  modules: { slug: string; title: string }[],
+): Record<string, unknown> {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: `${path.title} — course path`,
+    url: absoluteUrl(`/paths/${path.slug}`),
+    numberOfItems: modules.length,
+    itemListElement: modules.map((m, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: m.title,
+      url: absoluteUrl(`/learn/${m.slug}`),
+    })),
+  };
+}
+
 /** A LearningResource rich-result for an individual lesson. */
 export function lessonJsonLd(
   module: Module,
