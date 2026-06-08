@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, RotateCcw, Compass } from "lucide-react";
-import { getPath, pathStats } from "@/lib/paths";
+import { getPath, pathStats, pathLessonIds } from "@/lib/paths";
 
 // A tiny 2-step quiz that routes a new visitor to the right pathway. Pure
 // client-side — no data, no tracking, just a friendly on-ramp.
@@ -59,22 +59,31 @@ type Recommendation = {
   gradient: string;
   /** Sub-line, e.g. "14 courses · 111 lessons · Intermediate". */
   meta: string;
+  /** Primary CTA — deep-links straight to the first lesson (the "first win"). */
   href: string;
   cta: string;
+  /** Secondary link — the full roadmap/course overview, for those who want it. */
+  secondaryHref: string;
+  secondaryLabel: string;
 };
 
 function pathRecommendation(slug: string): Recommendation | null {
   const path = getPath(slug);
   if (!path) return null;
   const stats = pathStats(path);
+  // Drop the learner straight into lesson one rather than the roadmap page —
+  // every screen before the first typed code is a drop-off point.
+  const firstLesson = pathLessonIds(path)[0];
   return {
     emoji: path.emoji,
     title: `${path.title} Path`,
     tagline: path.tagline,
     gradient: path.gradient,
     meta: `${stats.modules} courses · ${stats.lessons} lessons · ${path.difficulty}`,
-    href: `/paths/${path.slug}`,
-    cta: "Start this path",
+    href: firstLesson ? `/learn/${firstLesson}` : `/paths/${path.slug}`,
+    cta: "Start first lesson",
+    secondaryHref: `/paths/${path.slug}`,
+    secondaryLabel: "See the full roadmap",
   };
 }
 
@@ -93,6 +102,8 @@ function resolveRecommendation(goal: Goal, lang: Lang): Recommendation | null {
       meta: `${BEGINNER_COURSE.lessons} lessons · ${BEGINNER_COURSE.difficulty}`,
       href: BEGINNER_COURSE.href,
       cta: "Start learning",
+      secondaryHref: "/learn/beginner",
+      secondaryLabel: "See all lessons",
     };
   }
   if (lang === "python" && goal === "frontend") return pathRecommendation("python");
@@ -201,11 +212,17 @@ export function PathQuiz() {
                   </div>
                 </div>
                 <p className="mt-4 text-xs text-gray-300">{rec.meta}</p>
-                <div className="mt-5 flex flex-wrap gap-3">
+                <div className="mt-5 flex flex-wrap items-center gap-3">
                   <Link href={rec.href} className="btn-primary">
                     {rec.cta} <ArrowRight size={16} />
                   </Link>
-                  <button onClick={reset} className="btn-ghost">
+                  <Link
+                    href={rec.secondaryHref}
+                    className="text-sm font-medium text-gray-200 underline-offset-4 hover:text-white hover:underline"
+                  >
+                    {rec.secondaryLabel}
+                  </Link>
+                  <button onClick={reset} className="btn-ghost ml-auto">
                     <RotateCcw size={15} /> Retake
                   </button>
                 </div>
