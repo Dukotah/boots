@@ -16,19 +16,85 @@ export const beginner: Module = {
     "how to start coding",
   ],
   lessons: [
+    // ── 1. Read code before writing it (no typing) ──
+    {
+      slug: "read-before-you-write",
+      title: "Read Before You Write 👀",
+      blurb: "Predict what a tiny program gives back — no typing yet.",
+      xp: 10,
+      kind: "quiz",
+      content: `# Read Before You Write 👀
+
+Welcome! 👋 You're about to learn to code. Take a breath — we'll go one tiny step
+at a time, and you genuinely can't break anything. 🌱
+
+Before you write any code, let's *read* a little. Coders read way more than they
+write, so this is the perfect first skill.
+
+Here's the big idea: a program can take a **value** — a number, or some text — and
+**hand a value back** to you. The word that hands something back is \`return\`.
+
+Look at this tiny example. It always hands back the number 7:
+
+\`\`\`js
+function lucky() {
+  return 7;
+}
+\`\`\`
+
+When we "run" it by writing \`lucky()\`, it hands back \`7\`. That's it!
+
+The text in "quotes" is called a **string** — that's just coder-speak for *words*. 🧵
+
+Read the examples in each question, then pick what gets handed back. You've got
+this. 👇`,
+      questions: [
+        {
+          prompt:
+            "Look at this:\n\n```js\nfunction lucky() {\n  return 7;\n}\n```\n\nWhen we run `lucky()`, what does it hand back?",
+          options: ["The number 7", 'The word "lucky"', "Nothing at all"],
+          answer: 0,
+          explanation:
+            "`return 7` hands back the number 7. Whatever comes after `return` is the value you get.",
+        },
+        {
+          prompt:
+            'Here is another one:\n\n```js\nfunction pet() {\n  return "cat";\n}\n```\n\nWhat does `pet()` hand back?',
+          options: ['"dog"', '"cat"', '"pet"'],
+          answer: 1,
+          explanation:
+            'It hands back whatever follows `return` — the string "cat".',
+        },
+        {
+          prompt: "The word `return` means:",
+          options: [
+            "delete everything",
+            "hand a value back out",
+            "repeat forever",
+          ],
+          answer: 1,
+          explanation:
+            "`return` is how your code gives an answer back to whoever asked for it.",
+        },
+      ],
+    },
+
+    // ── 2. First function: return a value ──
     {
       slug: "first-function",
       title: "Your First Function",
-      blurb: "Make a little machine that gives back an answer.",
+      blurb: "Make a little machine that hands back a value.",
       xp: 15,
       content: `# Your First Function
 
-Welcome! You're about to write real code. Take a breath — this is going to be fun. 🌱
+You just *read* code — now you'll write it. This is going to be fun. 🌱
 
-A **function** is a little machine. You give it a name, and when someone "runs" it,
-it can hand back an answer. Handing back an answer is called **returning**.
+Here's the heart of it: a value you can **name** and **hand back**. You wrap that
+up in a little machine called a **function**. You give the machine a name, and
+when someone runs it, it hands a value back to them. Handing a value back is
+called **returning**.
 
-Here's a tiny machine that always returns the number 7:
+Here's that same tiny machine that always returns the number 7:
 
 \`\`\`js
 function lucky() {
@@ -39,11 +105,11 @@ function lucky() {
 Read it slowly:
 - \`function\` says "I'm building a machine."
 - \`lucky\` is the machine's name.
-- \`return 7\` means "give back the number 7."
+- \`return 7\` means "hand back the value 7."
 
 ## Your task
 Write a function called \`answer\` that returns the number \`42\`.
-(Just change what's inside the machine — don't worry about the rest yet.)`,
+(Just fill in what's inside the machine — don't worry about the rest yet.)`,
       starterCode: `function answer() {
 
 }
@@ -62,7 +128,17 @@ Write a function called \`answer\` that returns the number \`42\`.
         "Inside the curly braces { }, write the word `return` followed by the number.",
         "The whole line is just: `return 42;` — that's it!",
       ],
-      explanation: `You did it! \`return 42\` tells the machine to hand back the number 42, so calling \`answer()\` gives you \`42\`. That's the heart of every function: it returns a value.`,
+      hintCode: [
+        `function answer() {
+  return
+}
+`,
+        `function answer() {
+  return 42;
+}
+`,
+      ],
+      explanation: `You did it! \`return 42\` tells the machine to hand back the value 42, so calling \`answer()\` gives you \`42\`. That's the heart of every function: it returns a value.`,
     },
     {
       slug: "using-an-input",
@@ -112,6 +188,16 @@ So \`greet("Ada")\` should give back \`"Hi, Ada"\`.`,
         'Start with `return "Hi, "` and remember the comma and space inside the quotes.',
         'Then glue the name on with a plus sign: `return "Hi, " + name;`',
       ],
+      hintCode: [
+        `function greet(name) {
+  return "Hi, "
+}
+`,
+        `function greet(name) {
+  return "Hi, " + name;
+}
+`,
+      ],
       explanation: `Nice work! The word in the parentheses (\`name\`) is a placeholder for whatever someone passes in. \`"Hi, " + name\` glues your greeting to that name and returns the result.`,
     },
     {
@@ -156,6 +242,16 @@ So \`addOne(5)\` should give back \`6\`.`,
       hints: [
         "You want the number that came in, plus one more.",
         "Write it as: `return n + 1;`",
+      ],
+      hintCode: [
+        `function addOne(n) {
+  return n
+}
+`,
+        `function addOne(n) {
+  return n + 1;
+}
+`,
       ],
       explanation: `Lovely. \`n + 1\` takes whatever number arrived and adds one, and \`return\` hands the new number back. Math in code reads just like math on paper.`,
     },
@@ -202,6 +298,16 @@ So \`add(2, 3)\` should give back \`5\`.`,
       hints: [
         "Both numbers arrive with the names `a` and `b`.",
         "Add them and return the result: `return a + b;`",
+      ],
+      hintCode: [
+        `function add(a, b) {
+  return a
+}
+`,
+        `function add(a, b) {
+  return a + b;
+}
+`,
       ],
       explanation: `Great job! With two inputs you just separate them by a comma. \`a + b\` adds the two numbers that came in, and \`return\` gives the total back.`,
     },
@@ -252,6 +358,16 @@ So \`shout("hello")\` should give back \`"HELLO"\`.`,
         "Add a dot after the word, then the trick name: `word.toUpperCase`",
         "Don't forget the empty `()` at the end, and `return` the result: `return word.toUpperCase();`",
       ],
+      hintCode: [
+        `function shout(word) {
+  return word.toUpperCase
+}
+`,
+        `function shout(word) {
+  return word.toUpperCase();
+}
+`,
+      ],
       explanation: `Wonderful — that was your first built-in string trick! \`.toUpperCase()\` makes a capital-letter copy of the text, and you returned it. Strings have lots more helpers like this waiting for you.`,
     },
     {
@@ -287,6 +403,7 @@ than 10, and \`false\` otherwise. So \`isBig(20)\` is \`true\` and \`isBig(3)\` 
 
 }
 `,
+      blocks: ["if (", "n > 10", ") {", "return true;", "} else {", "return false;", "}"],
       solution: `function isBig(n) {
   if (n > 10) {
     return true;
@@ -311,6 +428,22 @@ than 10, and \`false\` otherwise. So \`isBig(20)\` is \`true\` and \`isBig(3)\` 
       hints: [
         "Start with `if (n > 10) {` then return true on the next line.",
         "Add an `else {` block that returns false. Note: 10 is NOT greater than 10, so it should be false.",
+      ],
+      hintCode: [
+        `function isBig(n) {
+  if (n > 10) {
+
+  }
+}
+`,
+        `function isBig(n) {
+  if (n > 10) {
+    return true;
+  } else {
+    return false;
+  }
+}
+`,
       ],
       explanation: `You just taught your code to make a decision! \`if (n > 10)\` checks the condition: when it's true you return \`true\`, and the \`else\` covers every other case with \`false\`. This is how programs react to different situations.`,
     },
@@ -364,6 +497,16 @@ So \`firstItem(["a", "b", "c"])\` should give back \`"a"\`.`,
         "The first item lives at position 0, not 1.",
         "Use square brackets with the position: `return list[0];`",
       ],
+      hintCode: [
+        `function firstItem(list) {
+  return list
+}
+`,
+        `function firstItem(list) {
+  return list[0];
+}
+`,
+      ],
       explanation: `Perfect. Lists count from 0, so \`list[0]\` is the very first item, and you returned it. That "start at zero" rule shows up everywhere in programming — now it's no longer a mystery to you.`,
     },
     {
@@ -402,6 +545,7 @@ So \`ticketPrice(3)\` is \`0\` and \`ticketPrice(30)\` is \`10\`.`,
 
 }
 `,
+      blocks: ["if (", "age < 5", ") {", "return 0;", "} else {", "return 10;", "}"],
       solution: `function ticketPrice(age) {
   if (age < 5) {
     return 0;
@@ -426,6 +570,22 @@ So \`ticketPrice(3)\` is \`0\` and \`ticketPrice(30)\` is \`10\`.`,
       hints: [
         "Start with `if (age < 5) {` then return 0 on the next line.",
         "Add an `else {` that returns 10. Careful: age 5 is NOT less than 5, so it should be 10.",
+      ],
+      hintCode: [
+        `function ticketPrice(age) {
+  if (age < 5) {
+
+  }
+}
+`,
+        `function ticketPrice(age) {
+  if (age < 5) {
+    return 0;
+  } else {
+    return 10;
+  }
+}
+`,
       ],
       explanation: `Incredible — you just wrote a real rule that a real app might use! You combined an input (\`age\`), a choice (\`if/else\`), and returning different values. This is genuinely how working software gets built. You're a programmer now. 🎉`,
     },

@@ -3,6 +3,13 @@ import type { Module } from "./types";
 // HTML Basics. These lessons are graded by the htmlRunner (lib/htmlRunner.ts):
 // the student's markup is rendered in a sandboxed iframe and tests inspect the
 // resulting DOM via `doc` (the document) with `assert` / `assertEquals`.
+//
+// Dialed down for total beginners (ages 9–13 and non-technical adults): the
+// module opens with a no-typing "read the tag" quiz so nobody hits a blank
+// editor first, a second concept quiz names the parts of a tag, and every code
+// lesson is scaffolded with drag-in `blocks` and step-by-step `hintCode` so a
+// single forgotten `</tag>` can't sabotage the first win. Heavier lessons are
+// introduced one new idea at a time, warmly, with read-before-write examples.
 export const html: Module = {
   slug: "html",
   title: "HTML Basics",
@@ -14,7 +21,64 @@ export const html: Module = {
   language: "html",
   keywords: ["learn html", "html for beginners", "html tutorial"],
   lessons: [
-    // 1 ──────────────────────────────────────────────────────────────────────
+    // 1 ── No-typing cold open: what a tag is ──────────────────────────────────
+    {
+      slug: "what-is-a-tag",
+      title: "What Is a Tag? 🏷️",
+      blurb: "HTML wraps your words in little tags. Let's read one first.",
+      xp: 10,
+      kind: "quiz",
+      content: `# What Is a Tag? 🏷️
+
+Welcome! 👋 You're about to build real web pages. We'll go one tiny step at a
+time, and you can't break anything.
+
+**HTML** is just your words, wrapped in little labels called **tags**. A tag
+tells the browser what a piece of text *is* — a heading, a paragraph, a link.
+
+Here is a paragraph tag wrapping the word **Hi**:
+
+\`\`\`html
+<p>Hi</p>
+\`\`\`
+
+See the two parts?
+- \`<p>\` is the **opening tag** — it says "a paragraph starts here."
+- \`</p>\` is the **closing tag** — the slash \`/\` means "the paragraph ends here."
+- **Hi** in the middle is your content.
+
+Almost every tag comes as a matching pair: one to open, one to close. Let's check
+you've spotted the pattern. 👇`,
+      questions: [
+        {
+          prompt: "In `<p>Hi</p>`, which part is the **opening** tag?",
+          options: ["`<p>`", "`Hi`", "`</p>`"],
+          answer: 0,
+          explanation:
+            "`<p>` opens the paragraph. The closing tag `</p>` (with the slash) ends it, and `Hi` is your content in between.",
+        },
+        {
+          prompt: "What makes `</p>` a **closing** tag?",
+          options: [
+            "It has a slash `/` before the letter",
+            "It is shorter",
+            "It comes first",
+          ],
+          answer: 0,
+          explanation:
+            "The slash `/` is the giveaway: `</p>` means 'the paragraph ends here.'",
+        },
+        {
+          prompt: "In `<h1>Welcome</h1>`, what is the content (the words you'd see)?",
+          options: ["`h1`", "`Welcome`", "`</h1>`"],
+          answer: 1,
+          explanation:
+            "Your content lives between the opening and closing tags — here that's `Welcome`.",
+        },
+      ],
+    },
+
+    // 2 ── First code win: headings & paragraphs (scaffolded) ──────────────────
     {
       slug: "headings-paragraphs",
       title: "Headings & Paragraphs",
@@ -22,21 +86,27 @@ export const html: Module = {
       xp: 20,
       content: `# Headings & Paragraphs
 
-HTML is made of **tags** that wrap your content. A heading uses \`<h1>\` … \`<h6>\`
-(\`<h1>\` is the biggest, most important), and a paragraph uses \`<p>\`.
+Now you'll write your first tags! A heading uses \`<h1>\` and a paragraph uses
+\`<p>\` — each one opens *and* closes around your words.
 
 \`\`\`html
 <h1>My Blog</h1>
 <p>Welcome to my little corner of the web.</p>
 \`\`\`
 
-Every tag opens (\`<p>\`) and closes (\`</p>\`), with your text in between.
+Remember from the last lesson: every tag opens (\`<p>\`) and closes (\`</p>\`), with
+your text in between. Forgetting the closing tag is the most common slip — if a
+test fails, check that every \`<h1>\` has a matching \`</h1>\`.
+
+You can drag the blocks in (in order) instead of typing from scratch, or tap the
+hint to fill it in step by step.
 
 ## Your task
 Add an \`<h1>\` containing the text **Welcome** and a \`<p>\` containing
 **Hello there**.`,
       starterCode: `<!-- Add an h1 and a p below -->
 `,
+      blocks: ["<h1>", "Welcome", "</h1>", "<p>", "Hello there", "</p>"],
       solution: `<h1>Welcome</h1>
 <p>Hello there</p>`,
       tests: [
@@ -55,10 +125,17 @@ Add an \`<h1>\` containing the text **Welcome** and a \`<p>\` containing
         "Wrap your heading text in `<h1>` … `</h1>`.",
         "Below it, wrap your sentence in `<p>` … `</p>`.",
       ],
+      hintCode: [
+        `<h1>Welcome</h1>
+`,
+        `<h1>Welcome</h1>
+<p>Hello there</p>
+`,
+      ],
       explanation: `\`<h1>\` marks the page's main heading and \`<p>\` marks a paragraph of body text. Browsers (and screen readers) use these tags to understand the structure of your content — not just to make text big or small.`,
     },
 
-    // 2 ──────────────────────────────────────────────────────────────────────
+    // 3 ── Links (scaffolded) ──────────────────────────────────────────────────
     {
       slug: "links",
       title: "Links",
@@ -73,12 +150,16 @@ and the text between the tags is what the user clicks.
 <a href="https://example.com">Visit Example</a>
 \`\`\`
 
+An **attribute** like \`href\` lives *inside* the opening tag and gives it extra
+info. The web address goes in quotes.
+
 ## Your task
 Create a link that points to \`https://example.com\` with the clickable text
 **Click here**.`,
       starterCode: `<!-- Add an <a> with an href -->
 <a>Click here</a>
 `,
+      blocks: ['<a href="https://example.com">', "Click here", "</a>"],
       solution: `<a href="https://example.com">Click here</a>`,
       tests: [
         {
@@ -98,10 +179,16 @@ Create a link that points to \`https://example.com\` with the clickable text
         "Add an `href` attribute inside the opening tag: `<a href=\"...\">`.",
         "The URL goes in quotes: `href=\"https://example.com\"`.",
       ],
+      hintCode: [
+        `<a href="">Click here</a>
+`,
+        `<a href="https://example.com">Click here</a>
+`,
+      ],
       explanation: `The \`href\` (hypertext reference) is what turns text into a working link. Without it, an \`<a>\` is just text — the browser only navigates when it knows the destination.`,
     },
 
-    // 3 ──────────────────────────────────────────────────────────────────────
+    // 4 ── Images & alt text (scaffolded) ─────────────────────────────────────
     {
       slug: "images",
       title: "Images & alt text",
@@ -116,7 +203,8 @@ an \`alt\` (a text description for screen readers and when the image fails to lo
 <img src="cat.jpg" alt="A sleepy orange cat" />
 \`\`\`
 
-\`<img>\` is *self-closing* — it has no separate closing tag.
+\`<img>\` is *self-closing* — it has no separate closing tag. The slash at the end
+\`/>\` does the closing all by itself.
 
 ## Your task
 Add an image with \`src="logo.png"\` and meaningful \`alt\` text
@@ -124,6 +212,7 @@ Add an image with \`src="logo.png"\` and meaningful \`alt\` text
       starterCode: `<!-- Add an <img> with src and alt -->
 <img src="logo.png" />
 `,
+      blocks: ["<img", ' src="logo.png"', ' alt="Company logo"', " />"],
       solution: `<img src="logo.png" alt="Company logo" />`,
       tests: [
         { name: "There is an <img>", code: `assert(doc.querySelector('img'), 'Add an <img> element');` },
@@ -144,10 +233,16 @@ Add an image with \`src="logo.png"\` and meaningful \`alt\` text
         "Add an `alt` attribute alongside `src`.",
         "Describe the image: `alt=\"Company logo\"`.",
       ],
+      hintCode: [
+        `<img src="logo.png" alt="" />
+`,
+        `<img src="logo.png" alt="Company logo" />
+`,
+      ],
       explanation: `\`alt\` text is read aloud by screen readers and shown if the image can't load. Every meaningful image should have it — it's one of the easiest accessibility wins in HTML.`,
     },
 
-    // 4 ──────────────────────────────────────────────────────────────────────
+    // 5 ── Lists (scaffolded) ──────────────────────────────────────────────────
     {
       slug: "lists",
       title: "Lists",
@@ -165,6 +260,9 @@ points. (Use \`<ol>\` instead when order matters.)
 </ul>
 \`\`\`
 
+Notice the tags *nest*: each \`<li>\` lives **inside** the \`<ul>\`. That's a big HTML
+idea — tags can hold other tags.
+
 ## Your task
 Make a \`<ul>\` with exactly **three** \`<li>\` items: **Red**, **Green**, and
 **Blue**.`,
@@ -172,6 +270,7 @@ Make a \`<ul>\` with exactly **three** \`<li>\` items: **Red**, **Green**, and
   <li>Red</li>
 </ul>
 `,
+      blocks: ["<ul>", "<li>Red</li>", "<li>Green</li>", "<li>Blue</li>", "</ul>"],
       solution: `<ul>
   <li>Red</li>
   <li>Green</li>
@@ -192,16 +291,97 @@ Make a \`<ul>\` with exactly **three** \`<li>\` items: **Red**, **Green**, and
         "Each bullet is its own `<li>` … `</li>`.",
         "You need three `<li>` elements inside the one `<ul>`.",
       ],
+      hintCode: [
+        `<ul>
+  <li>Red</li>
+  <li>Green</li>
+</ul>
+`,
+        `<ul>
+  <li>Red</li>
+  <li>Green</li>
+  <li>Blue</li>
+</ul>
+`,
+      ],
       explanation: `A \`<ul>\` is the container and each \`<li>\` is one bullet. Grouping items in a real list (instead of plain lines) tells assistive tech "these belong together," and announces how many items there are.`,
     },
 
-    // 5 ──────────────────────────────────────────────────────────────────────
+    // 6 ── Concept quiz: nesting (bridge into page structure) ───────────────────
+    {
+      slug: "tags-inside-tags",
+      title: "Tags Inside Tags 📦",
+      blurb: "Tags can live inside other tags — let's read how before we build a whole page.",
+      xp: 10,
+      kind: "quiz",
+      content: `# Tags Inside Tags 📦
+
+You just saw \`<li>\` tags living **inside** a \`<ul>\`. The next lesson builds a
+whole page, and a page is really just *tags inside tags* — so let's get cozy with
+that idea first. 😊
+
+When one tag sits inside another, we say it's **nested**. The outer tag is like a
+box, and the inner tags are what's in the box:
+
+\`\`\`html
+<body>
+  <h1>Home</h1>
+</body>
+\`\`\`
+
+Here the \`<h1>\` is **inside** the \`<body>\`. A full web page nests a few of these
+boxes:
+
+\`\`\`html
+<html>
+  <head>
+    <title>My Page</title>
+  </head>
+  <body>
+    <h1>Hi!</h1>
+  </body>
+</html>
+\`\`\`
+
+- \`<head>\` holds info *about* the page (like the \`<title>\` shown in the browser tab).
+- \`<body>\` holds what people actually *see*.
+
+Read it slowly, then answer below. You'll build exactly this next. 👇`,
+      questions: [
+        {
+          prompt: "In `<body><h1>Home</h1></body>`, the `<h1>` is…",
+          options: ["inside (nested in) the `<body>`", "before the `<body>`", "the same as `<body>`"],
+          answer: 0,
+          explanation:
+            "The `<h1>` sits between `<body>` and `</body>`, so it's nested inside the body — like an item in a box.",
+        },
+        {
+          prompt: "Which part shows up in the **browser tab**?",
+          options: ["the `<title>` (in the `<head>`)", "the `<h1>` (in the `<body>`)", "the `<html>` tag"],
+          answer: 0,
+          explanation:
+            "The `<title>` in the `<head>` becomes the tab label. The `<body>` is what shows on the page itself.",
+        },
+        {
+          prompt: "The `<body>` is for…",
+          options: ["the content people actually see on the page", "secret info only", "closing the page"],
+          answer: 0,
+          explanation:
+            "`<body>` holds everything visible; `<head>` holds info *about* the page.",
+        },
+      ],
+    },
+
+    // 7 ── Page structure (scaffolded) ────────────────────────────────────────
     {
       slug: "page-structure",
       title: "Page structure",
       blurb: "Write a complete little HTML document.",
       xp: 30,
       content: `# Page structure
+
+You just read how a page nests its tags — now you'll fill one in. The skeleton is
+already there for you; you only need to add the \`<title>\` text and one \`<h1>\`.
 
 A full HTML page has a \`<head>\` (metadata like the \`<title>\`) and a \`<body>\`
 (everything you see). The \`<title>\` is what shows in the browser tab.
@@ -218,6 +398,10 @@ A full HTML page has a \`<head>\` (metadata like the \`<title>\`) and a \`<body>
 </html>
 \`\`\`
 
+You don't have to type the whole skeleton — drop your title between the
+\`<title>\` tags and your heading inside the \`<body>\`. Tap the hint to fill it in
+one step at a time.
+
 ## Your task
 Write a document whose \`<title>\` is **My Site** and whose \`<body>\` contains an
 \`<h1>\` that says **Home**.`,
@@ -230,6 +414,7 @@ Write a document whose \`<title>\` is **My Site** and whose \`<body>\` contains 
   </body>
 </html>
 `,
+      blocks: ["<title>My Site</title>", "<h1>Home</h1>"],
       solution: `<!DOCTYPE html>
 <html>
   <head>
@@ -257,10 +442,31 @@ Write a document whose \`<title>\` is **My Site** and whose \`<body>\` contains 
         "Type the page title between the `<title>` tags in the `<head>`.",
         "Add an `<h1>Home</h1>` inside the `<body>`.",
       ],
+      hintCode: [
+        `<!DOCTYPE html>
+<html>
+  <head>
+    <title>My Site</title>
+  </head>
+  <body>
+  </body>
+</html>
+`,
+        `<!DOCTYPE html>
+<html>
+  <head>
+    <title>My Site</title>
+  </head>
+  <body>
+    <h1>Home</h1>
+  </body>
+</html>
+`,
+      ],
       explanation: `The \`<head>\` holds information *about* the page (like its \`<title>\`, shown in the browser tab) while the \`<body>\` holds the content people actually see. \`document.title\` reads back whatever you put in \`<title>\`.`,
     },
 
-    // 6 ──────────────────────────────────────────────────────────────────────
+    // 8 ── Forms & inputs (scaffolded) ────────────────────────────────────────
     {
       slug: "forms",
       title: "Forms & inputs",
@@ -269,8 +475,7 @@ Write a document whose \`<title>\` is **My Site** and whose \`<body>\` contains 
       content: `# Forms & inputs
 
 A \`<form>\` collects user input. A \`<label>\` describes a field, an \`<input>\`
-captures the value, and a \`<button>\` submits it. Linking a label to its input
-(via \`for\`/\`id\`) makes the form accessible.
+captures the value, and a \`<button>\` submits it.
 
 \`\`\`html
 <form>
@@ -280,6 +485,9 @@ captures the value, and a \`<button>\` submits it. Linking a label to its input
 </form>
 \`\`\`
 
+Three pieces go inside the form: a label, an input, and a button. Drag the blocks
+in, or tap the hint to add them one at a time.
+
 ## Your task
 Build a form with a \`<label>\` (text **Name**), a text \`<input>\`, and a
 \`<button>\` that says **Submit**.`,
@@ -287,6 +495,11 @@ Build a form with a \`<label>\` (text **Name**), a text \`<input>\`, and a
   <!-- add a label, an input, and a button -->
 </form>
 `,
+      blocks: [
+        '<label for="name">Name</label>',
+        '<input id="name" type="text" />',
+        '<button type="submit">Submit</button>',
+      ],
       solution: `<form>
   <label for="name">Name</label>
   <input id="name" type="text" />
@@ -311,10 +524,22 @@ Build a form with a \`<label>\` (text **Name**), a text \`<input>\`, and a
         "Put a `<label>Name</label>` inside the form.",
         "Add an `<input />` and a `<button>Submit</button>` too.",
       ],
+      hintCode: [
+        `<form>
+  <label for="name">Name</label>
+</form>
+`,
+        `<form>
+  <label for="name">Name</label>
+  <input id="name" type="text" />
+  <button type="submit">Submit</button>
+</form>
+`,
+      ],
       explanation: `Forms pair a \`<label>\` with an \`<input>\` so users (and screen readers) know what each field is for, and a \`<button type="submit">\` sends the data. Together they're the foundation of every sign-up, search box, and checkout on the web.`,
     },
 
-    // 7 ──────────────────────────────────────────────────────────────────────
+    // 9 ── Semantic layout (scaffolded) ───────────────────────────────────────
     {
       slug: "semantic",
       title: "Semantic layout",
@@ -333,7 +558,8 @@ tags that describe a region's *purpose*: \`<header>\`, \`<nav>\`, \`<main>\`, an
 <footer>…</footer>
 \`\`\`
 
-These help search engines and assistive tech understand your page layout.
+These help search engines and assistive tech understand your page layout. You need
+one of each — drag the blocks in, or tap the hint to add the missing ones.
 
 ## Your task
 Lay out a page with a \`<header>\`, a \`<nav>\`, a \`<main>\`, and a \`<footer>\` —
@@ -341,6 +567,12 @@ one of each.`,
       starterCode: `<header></header>
 <main></main>
 `,
+      blocks: [
+        "<header>My Site</header>",
+        "<nav>Home · About</nav>",
+        "<main>Welcome!</main>",
+        "<footer>© 2026</footer>",
+      ],
       solution: `<header>My Site</header>
 <nav>Home · About</nav>
 <main>Welcome!</main>
@@ -355,10 +587,21 @@ one of each.`,
         "You're missing a `<nav>` and a `<footer>` — add them.",
         "Use each tag once: `<header>`, `<nav>`, `<main>`, `<footer>`.",
       ],
+      hintCode: [
+        `<header>My Site</header>
+<nav>Home · About</nav>
+<main>Welcome!</main>
+`,
+        `<header>My Site</header>
+<nav>Home · About</nav>
+<main>Welcome!</main>
+<footer>© 2026</footer>
+`,
+      ],
       explanation: `Semantic elements name the *role* of each region — banner, navigation, main content, and footer — so browsers, search engines, and screen readers can navigate the page structure instead of guessing what each \`<div>\` means.`,
     },
 
-    // 8 ──────────────────────────────────────────────────────────────────────
+    // 10 ── Tables (scaffolded) ───────────────────────────────────────────────
     {
       slug: "tables",
       title: "Tables",
@@ -376,6 +619,10 @@ A \`<table>\` displays data in rows and columns. Use \`<tr>\` for a table row,
 </table>
 \`\`\`
 
+A row \`<tr>\` holds cells; header cells are \`<th>\`, data cells are \`<td>\`. You'll
+add one more header cell and one full data row — drag the blocks in or follow the
+hint step by step.
+
 ## Your task
 Build a table with a header row of two \`<th>\` cells (**Name** and **Age**) and
 one data row of two \`<td>\` cells (**Ada** and **36**).`,
@@ -385,6 +632,13 @@ one data row of two \`<td>\` cells (**Ada** and **36**).`,
   </tr>
 </table>
 `,
+      blocks: [
+        "<th>Age</th>",
+        "<tr>",
+        "<td>Ada</td>",
+        "<td>36</td>",
+        "</tr>",
+      ],
       solution: `<table>
   <tr>
     <th>Name</th>
@@ -417,6 +671,26 @@ one data row of two \`<td>\` cells (**Ada** and **36**).`,
       hints: [
         "Add a second `<th>` for the Age column.",
         "Then add a new `<tr>` with two `<td>` cells: Ada and 36.",
+      ],
+      hintCode: [
+        `<table>
+  <tr>
+    <th>Name</th>
+    <th>Age</th>
+  </tr>
+</table>
+`,
+        `<table>
+  <tr>
+    <th>Name</th>
+    <th>Age</th>
+  </tr>
+  <tr>
+    <td>Ada</td>
+    <td>36</td>
+  </tr>
+</table>
+`,
       ],
       explanation: `Tables structure tabular data: \`<tr>\` is a row, \`<th>\` marks header cells (announced as headers by screen readers), and \`<td>\` holds the data. Use tables for genuine data — not for page layout.`,
     },

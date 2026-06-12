@@ -156,12 +156,12 @@ import { timeManagementDevs } from "./time-management-devs";
 // The whole curriculum. Add a module here and it shows up everywhere.
 // Order defines the Campaign Map progression (sequential unlock) — a difficulty ramp.
 export const MODULES: Module[] = [
-  // Beginner on-ramps
+  // Beginner on-ramps — leveled ladder for ages 9–13 / classrooms
   beginner,
-  kidsLogic,
-  kids,
-  codeQuest2,
-  buildYourFirstGame,
+  kidsLogic, // Level 1: First Steps
+  kids, // Level 2: Mini Games
+  buildYourFirstGame, // Level 3: Build a Game
+  codeQuest2, // Level 4: Arrays & Objects
   // Web foundations (HTML/CSS — live preview)
   html,
   css,

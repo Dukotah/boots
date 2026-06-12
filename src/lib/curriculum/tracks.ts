@@ -233,14 +233,15 @@ export const TRACKS: Track[] = [
   },
   {
     id: "kids",
-    label: "Kids & Teens",
-    blurb: "A playful on-ramp for young coders — logic, game-building, and staying smart online.",
+    label: "Kids & Classrooms (Ages 9–13)",
+    blurb:
+      "A gentle, leveled on-ramp for young coders and classrooms — start at Level 1 and climb: logic, mini-games, real games, then staying smart online.",
     emoji: "👾",
     modules: [
       "kids-logic",
       "kids",
-      "code-quest-2",
       "build-your-first-game",
+      "code-quest-2",
       "internet-for-kids",
       "ai-safety-kids",
       "digital-citizenship",

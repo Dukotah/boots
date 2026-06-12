@@ -1,77 +1,444 @@
 import type { Module } from "./types";
 
-// Scratch-style Logic for Ages 8-12 — the absolute first steps in coding logic:
-// sequencing, decisions (if/else), simple repeats, and comparisons, taught as
-// tiny, playful JS functions with lots of emoji and gentle hints.
+// Coding Level 1: First Steps — the gentlest possible on-ramp, designed for
+// ages 9–13 (and total-beginner teachers) to use in a classroom. Concept order
+// follows CS-education best practice: read code → values → variables → simple
+// math → true/false → if/else. Every code task is tiny (often "change one
+// thing"), heavily scaffolded with drag-in `blocks` and step-by-step `hintCode`,
+// and interleaved with no-typing "predict the output" quizzes so learners read
+// code before they write it. There are NO loops to write here — learners only
+// *read* one at the very end; writing loops waits for Level 2. This keeps the
+// cognitive load low so nobody bounces off lesson one.
 export const kidsLogic: Module = {
   slug: "kids-logic",
-  title: "Code Logic for Ages 8–12",
-  emoji: "🧩",
+  title: "Coding Level 1: First Steps 🌱",
+  emoji: "🌱",
   gradient: "from-yellow-400/20 to-pink-500/10",
   description:
-    "The very first steps in coding logic! 🧩 Make choices, repeat actions, and compare things — the same ideas as Scratch blocks, now in real code.",
+    "Your very first steps in real code! 🌱 Read tiny programs, store values in boxes, do a little math, and teach the computer to make a choice — one small, friendly step at a time.",
   tagline:
-    "A gentle first coding course for ages 8–12: decisions, repeats, and comparisons, the Scratch way — in real JavaScript.",
+    "The gentlest first coding course for ages 9–13 (and total beginners): read code, use variables, compare numbers, and make choices — in real JavaScript, one tiny step at a time.",
   keywords: [
     "coding for kids",
-    "coding for ages 8-12",
-    "scratch to javascript",
-    "learn to code kids",
+    "coding for beginners",
+    "coding for ages 9-13",
     "first coding course",
+    "learn to code in school",
+    "coding for classrooms",
   ],
   free: true,
   lessons: [
+    // ── 1. What code is (no typing) ──
     {
-      slug: "say-hello",
-      title: "Say Hello 👋",
-      blurb: "Make the computer say hi to anyone you want.",
-      xp: 15,
-      content: `# Say Hello 👋
+      slug: "what-is-code",
+      title: "What Is Code? 🌱",
+      blurb: "Code is just a list of instructions a computer follows.",
+      xp: 10,
+      kind: "quiz",
+      content: `# What Is Code? 🌱
 
-In Scratch you drag a **"say"** block. In code, we write a little machine called a
-**function** that hands something back with \`return\`.
+Welcome! 👋 You're about to write your first real code. Don't worry — we'll go
+one tiny step at a time, and you can't break anything.
+
+**Code** is just a list of **instructions** that a computer follows. The computer
+is super fast, but it isn't clever — it does *exactly* what you tell it, in the
+*exact order* you tell it.
+
+Think about making a peanut-butter sandwich:
+1. Get the bread 🍞
+2. Spread the peanut butter 🥜
+3. Put the slices together
+
+If you swap the order — put the slices together *before* the peanut butter — you
+get a sad, empty sandwich. Computers are the same: **order matters**.
+
+In this course you'll write little instructions like that, but for a computer.
+Let's check you've got the big idea. 👇`,
+      questions: [
+        {
+          prompt: "What is a computer program?",
+          options: [
+            "A list of step-by-step instructions a computer follows",
+            "A photo of a computer",
+            "A kind of video game controller",
+          ],
+          answer: 0,
+          explanation:
+            "A program is just instructions. You write the steps, and the computer follows them.",
+        },
+        {
+          prompt: "A computer follows your instructions…",
+          options: [
+            "in any order it feels like",
+            "exactly, and in the order you wrote them",
+            "only on weekends",
+          ],
+          answer: 1,
+          explanation:
+            "Computers do exactly what you say, in order. That's why the order of your steps matters.",
+        },
+        {
+          prompt: "If your instructions are in the wrong order, the program will probably…",
+          options: ["fix itself", "do the wrong thing", "call you on the phone"],
+          answer: 1,
+          explanation:
+            "Wrong order = wrong result, just like building a sandwich out of order. No worries — you can always reorder and try again!",
+        },
+      ],
+    },
+
+    // ── 2. Read code before writing it ──
+    {
+      slug: "read-the-code",
+      title: "Read the Code 👀",
+      blurb: "Before you write code, learn to read it.",
+      xp: 10,
+      kind: "quiz",
+      content: `# Read the Code 👀
+
+Coders read a *lot* of code. Let's practice reading a tiny bit before we write
+any.
+
+Here is a little machine called a **function**. You give it a name and, when you
+call it, it **hands something back** with the word \`return\`:
 
 \`\`\`js
-function wave() {
-  return "👋";
+function greet() {
+  return "Hi there!";
 }
 \`\`\`
 
-## Your task
-Write \`hello(name)\` that **returns** \`"Hello, "\` with the name and a \`"!"\` on the
-end. So \`hello("Sam")\` gives back \`"Hello, Sam!"\`.`,
-      starterCode: `function hello(name) {
+When we call \`greet()\`, it hands back the words \`"Hi there!"\`.
 
+The words in "quotes" are called a **string** — that's just coder-speak for
+*text*. 🧵
+
+Read the code above, then answer below. 👇`,
+      questions: [
+        {
+          prompt: "When we call `greet()`, what does it hand back?",
+          options: ['The word "greet"', '"Hi there!"', "Nothing at all"],
+          answer: 1,
+          explanation:
+            "`return` hands back whatever comes after it — here, the string \"Hi there!\".",
+        },
+        {
+          prompt:
+            'Here is another function:\n\n```js\nfunction pet() {\n  return "cat";\n}\n```\n\nWhat does `pet()` hand back?',
+          options: ['"dog"', '"cat"', '"pet"'],
+          answer: 1,
+          explanation: "It returns whatever is after `return` — the string \"cat\".",
+        },
+        {
+          prompt: "The word `return` means:",
+          options: [
+            "delete everything",
+            "hand a value back out of the function",
+            "repeat forever",
+          ],
+          answer: 1,
+          explanation:
+            "`return` is how a function gives an answer back to whoever called it.",
+        },
+      ],
+    },
+
+    // ── 3. First real edit: change one word ──
+    {
+      slug: "change-one-word",
+      title: "Change One Word ✏️",
+      blurb: "Your first edit — make the computer say your word.",
+      xp: 15,
+      content: `# Change One Word ✏️
+
+Time to write your very first code! This is the smallest possible change: you'll
+just type a word.
+
+Below is a function called \`shout\`. Right now it hands back an **empty** string
+\`""\` — nothing between the quotes. Your job: put **any word you like** between
+the quotes.
+
+\`\`\`js
+return "PIZZA";   // hands back the word PIZZA
+\`\`\`
+
+## Your task
+Make \`shout\` hand back any word that isn't empty. Go wild — your name, your
+favorite food, anything! 🍕`,
+      starterCode: `function shout() {
+  // Put any word you like between the quotes!
+  return "";
 }
 `,
-      blocks: ["return ", '"Hello, "', " + ", "name", " + ", '"!"', ";"],
-      solution: `function hello(name) {
-  return "Hello, " + name + "!";
+      solution: `function shout() {
+  return "PIZZA";
 }`,
       tests: [
-        { name: 'hello("Sam") → "Hello, Sam!"', code: `assertEquals(hello("Sam"), "Hello, Sam!");` },
-        { name: 'hello("Ada") → "Hello, Ada!"', code: `assertEquals(hello("Ada"), "Hello, Ada!");` },
+        {
+          name: "shout() hands back a word",
+          code: `assert(typeof shout() === "string" && shout().length > 0, "Put a word between the quotes so it isn't empty!");`,
+        },
       ],
       hints: [
-        'Glue words together with `+`: `"Hello, " + name + "!"`.',
-        "Don't forget the `!` at the very end. 🎉",
+        'Type a word between the two quote marks, like `return "awesome";`.',
+        "Empty quotes `\"\"` don't count — your word needs at least one letter!",
+      ],
+      hintCode: [`function shout() {\n  return "awesome";\n}\n`, undefined],
+      explanation:
+        "🎉 You did it — your first line of working code! The computer handed back exactly the word you typed.",
+    },
+
+    // ── 4. Concept: variables (no typing) ──
+    {
+      slug: "what-is-a-variable",
+      title: "What's a Variable? 📦",
+      blurb: "A variable is a labeled box that holds a value.",
+      xp: 10,
+      kind: "quiz",
+      content: `# What's a Variable? 📦
+
+A **variable** is a **labeled box** that holds a value so you can use it later.
+
+We make a box with the word \`let\`, give it a name, and put something inside with
+\`=\`:
+
+\`\`\`js
+let score = 10;   // a box named "score" holding 10
+let name = "Sam"; // a box named "name" holding "Sam"
+\`\`\`
+
+Later, whenever you write \`score\`, the computer swaps in what's inside the box —
+\`10\`.
+
+You'll use boxes constantly: a score, a number of lives, a player's name… all of
+them live in variables. 📦`,
+      questions: [
+        {
+          prompt: "A variable is like:",
+          options: ["a labeled box that holds a value", "a kind of monster", "a website"],
+          answer: 0,
+          explanation: "Exactly — a named box you can put a value into and read back later.",
+        },
+        {
+          prompt: "After `let lives = 3;`, what is inside the box named `lives`?",
+          options: ['the word "lives"', "3", 'the word "let"'],
+          answer: 1,
+          explanation: "`= 3` puts the number 3 into the box named lives.",
+        },
+        {
+          prompt: "The word `let` is used to:",
+          options: ["make a new variable box", "end the program", "shout loudly"],
+          answer: 0,
+          explanation: "`let` creates a new variable (a new box) for you to use.",
+        },
+      ],
+    },
+
+    // ── 5. Set a variable ──
+    {
+      slug: "make-a-box",
+      title: "Make a Box 📦",
+      blurb: "Put your own value into a variable.",
+      xp: 15,
+      content: `# Make a Box 📦
+
+Now you make a box and put a value in it.
+
+Below, the box \`age\` starts at \`0\`. Change the \`0\` to **how old you are** (any
+number bigger than 0).
+
+\`\`\`js
+let age = 11;   // a box holding the number 11
+\`\`\`
+
+## Your task
+Set \`age\` to your age (a number bigger than 0). The function hands the box back
+for you.`,
+      starterCode: `function myAge() {
+  let age = 0; // change 0 to how old you are
+  return age;
+}
+`,
+      solution: `function myAge() {
+  let age = 10;
+  return age;
+}`,
+      tests: [
+        {
+          name: "age is set to a number bigger than 0",
+          code: `assert(typeof myAge() === "number" && myAge() > 0, "Change 0 to your age — a number bigger than 0!");`,
+        },
+      ],
+      hints: [
+        "Replace the `0` with a number, like `let age = 11;`.",
+        "Any number bigger than 0 works — it's the box that matters!",
+      ],
+      hintCode: [`function myAge() {\n  let age = 11;\n  return age;\n}\n`, undefined],
+      explanation:
+        "📦 Nice! You made a box, put a value inside, and handed it back. That's the heart of every program.",
+    },
+
+    // ── 6. Add two variables ──
+    {
+      slug: "add-them-up",
+      title: "Add Them Up ➕",
+      blurb: "Use + to add two boxes together.",
+      xp: 20,
+      content: `# Add Them Up ➕
+
+Computers are great at math. You can add two numbers (or two boxes) with the
+\`+\` sign:
+
+\`\`\`js
+let a = 2;
+let b = 3;
+a + b;   // 5
+\`\`\`
+
+Below you have a box of \`cookies\` and a box of \`candies\`. Right now the function
+only hands back the cookies. Add the candies too!
+
+## Your task
+Make \`snackTotal\` hand back \`cookies + candies\` (that's \`2 + 3 = 5\`).`,
+      starterCode: `function snackTotal() {
+  let cookies = 2;
+  let candies = 3;
+  return cookies; // add candies too!
+}
+`,
+      blocks: ["return ", "cookies", " + ", "candies", ";"],
+      solution: `function snackTotal() {
+  let cookies = 2;
+  let candies = 3;
+  return cookies + candies;
+}`,
+      tests: [
+        { name: "snackTotal() is 5", code: `assertEquals(snackTotal(), 5);` },
+      ],
+      hints: [
+        "Glue the two boxes together with `+`: `cookies + candies`.",
+        "Drag the blocks in order, or type `return cookies + candies;`.",
       ],
       hintCode: [
-        `function hello(name) {\n  return "Hello, " + name;\n}\n`,
-        `function hello(name) {\n  return "Hello, " + name + "!";\n}\n`,
+        `function snackTotal() {\n  let cookies = 2;\n  let candies = 3;\n  return cookies + candies;\n}\n`,
+        undefined,
       ],
       explanation:
-        'Yes! 🎉 The `+` glues the words and the name into one greeting. You just made a function that can say hi to anybody!',
+        "➕ Yum! `cookies + candies` adds the two boxes and hands back the total: 5 snacks.",
     },
-    {
-      slug: "traffic-light",
-      title: "Red Light, Green Light 🚦",
-      blurb: "Make a decision: should we stop or go?",
-      xp: 20,
-      content: `# Red Light, Green Light 🚦
 
-Computers make **decisions** with \`if\` and \`else\` — just like the Scratch
-"if/else" block.
+    // ── 7. Concept: true/false ──
+    {
+      slug: "true-or-false",
+      title: "True or False? ✅",
+      blurb: "Computers compare things and answer true or false.",
+      xp: 10,
+      kind: "quiz",
+      content: `# True or False? ✅
+
+Computers can **compare** two numbers and answer with **true** or **false**.
+A true/false value even has a special name: a **boolean**.
+
+Here are the comparing tools:
+
+- \`>\` means **greater than** (bigger)
+- \`<\` means **less than** (smaller)
+- \`===\` means **exactly equal**
+
+\`\`\`js
+5 > 3     // true  (5 is bigger than 3)
+2 > 10    // false (2 is not bigger than 10)
+4 === 4   // true  (4 is exactly 4)
+\`\`\`
+
+Try reading each one in the quiz below. 👇`,
+      questions: [
+        {
+          prompt: "Is `5 > 3` true or false?",
+          options: ["true", "false"],
+          answer: 0,
+          explanation: "5 really is bigger than 3, so it's true.",
+        },
+        {
+          prompt: "Is `2 > 10` true or false?",
+          options: ["true", "false"],
+          answer: 1,
+          explanation: "2 is NOT bigger than 10, so it's false.",
+        },
+        {
+          prompt: "`===` checks if two things are:",
+          options: ["exactly equal", "totally different", "both even"],
+          answer: 0,
+          explanation: "`===` is the 'exactly equal?' check.",
+        },
+        {
+          prompt: "Is `4 === 4` true or false?",
+          options: ["true", "false"],
+          answer: 0,
+          explanation: "4 is exactly equal to 4 — true!",
+        },
+      ],
+    },
+
+    // ── 8. Return a boolean (first parameter) ──
+    {
+      slug: "is-it-big",
+      title: "Is It Big? 🔍",
+      blurb: "Hand a number in, get back true or false.",
+      xp: 20,
+      content: `# Is It Big? 🔍
+
+So far our functions worked with the same numbers every time. Now we'll let the
+function take a number **in**. The \`n\` inside the parentheses is the number we
+hand it — it could be anything!
+
+\`\`\`js
+function isTiny(n) {
+  return n < 5;   // true when n is smaller than 5
+}
+isTiny(2);  // true
+isTiny(9);  // false
+\`\`\`
+
+The comparison \`n < 5\` already gives back true or false, so we just \`return\` it.
+
+## Your task
+Write \`isBig(n)\` that hands back \`true\` when \`n\` is **bigger than 100**, and
+\`false\` otherwise.`,
+      starterCode: `function isBig(n) {
+  return false; // change this: is n bigger than 100?
+}
+`,
+      blocks: ["return ", "n", " > ", "100", ";"],
+      solution: `function isBig(n) {
+  return n > 100;
+}`,
+      tests: [
+        { name: "isBig(200) is true", code: `assertEquals(isBig(200), true);` },
+        { name: "isBig(5) is false", code: `assertEquals(isBig(5), false);` },
+        { name: "isBig(100) is false", code: `assertEquals(isBig(100), false);` },
+      ],
+      hints: [
+        "Use `>` to compare: `n > 100`.",
+        "`n > 100` is already true or false — just return it, no `if` needed!",
+      ],
+      hintCode: [`function isBig(n) {\n  return n > 100;\n}\n`, undefined],
+      explanation:
+        "🔍 Nice compare! `n > 100` checks the number you handed in and answers true or false all by itself.",
+    },
+
+    // ── 9. Concept: if / else ──
+    {
+      slug: "making-choices",
+      title: "Making Choices 🔀",
+      blurb: "How code picks between two paths.",
+      xp: 10,
+      kind: "quiz",
+      content: `# Making Choices 🔀
+
+Real programs make **decisions**. We use \`if\` and \`else\`:
+
+> **If** something is true, do this. **Else** (otherwise), do that.
 
 \`\`\`js
 function weather(rainy) {
@@ -83,13 +450,66 @@ function weather(rainy) {
 }
 \`\`\`
 
+If \`rainy\` is true, it returns the umbrella. Otherwise, it returns the
+sunglasses. Read it carefully, then answer below. 👇`,
+      questions: [
+        {
+          prompt: "What does `weather(true)` hand back?",
+          options: ['"umbrella ☔"', '"sunglasses 😎"'],
+          answer: 0,
+          explanation: "rainy is true, so the `if` path runs — grab the umbrella!",
+        },
+        {
+          prompt: "What does `weather(false)` hand back?",
+          options: ['"umbrella ☔"', '"sunglasses 😎"'],
+          answer: 1,
+          explanation: "rainy is false, so the `else` path runs — sunglasses it is.",
+        },
+        {
+          prompt: "`if / else` lets the computer:",
+          options: ["pick between two paths", "count to ten", "delete your code"],
+          answer: 0,
+          explanation: "`if / else` is how code chooses what to do.",
+        },
+      ],
+    },
+
+    // ── 10. Write an if/else (max scaffold) ──
+    {
+      slug: "traffic-light",
+      title: "Red Light, Green Light 🚦",
+      blurb: "Write your first if/else: stop or go?",
+      xp: 25,
+      content: `# Red Light, Green Light 🚦
+
+Now you write the choice yourself! A traffic light tells cars when to **go** and
+when to **stop**.
+
+You can drag the blocks in (in order) instead of typing from scratch, or tap the
+hint to fill it in step by step.
+
+\`\`\`js
+if (color === "green") {
+  return "go";
+} else {
+  return "stop";
+}
+\`\`\`
+
 ## Your task
-Write \`light(color)\`. If \`color\` is \`"green"\`, return \`"go"\`. Otherwise,
+Write \`light(color)\`. If \`color\` is exactly \`"green"\`, return \`"go"\`. Otherwise,
 return \`"stop"\`.`,
       starterCode: `function light(color) {
 
 }
 `,
+      blocks: [
+        'if (color === "green") {',
+        'return "go";',
+        "} else {",
+        'return "stop";',
+        "}",
+      ],
       solution: `function light(color) {
   if (color === "green") {
     return "go";
@@ -103,36 +523,43 @@ return \`"stop"\`.`,
         { name: '"yellow" → "stop"', code: `assertEquals(light("yellow"), "stop");` },
       ],
       hints: [
-        'Check it with `if (color === "green")`. The `===` means "is exactly".',
-        "Everything that isn't green should `return \"stop\"` in the `else`.",
+        'Check the color with `if (color === "green")`. The `===` means "is exactly".',
+        'Everything that isn\'t green should `return "stop"` in the `else`.',
       ],
       hintCode: [
         `function light(color) {\n  if (color === "green") {\n    \n  }\n}\n`,
         `function light(color) {\n  if (color === "green") {\n    return "go";\n  } else {\n    return "stop";\n  }\n}\n`,
       ],
       explanation:
-        "🚦 Green means go, everything else means stop! That's an `if/else` — the way code chooses between two paths.",
+        "🚦 Green means go, everything else means stop! You just wrote an `if/else` — the way code chooses between two paths.",
     },
+
+    // ── 11. Even/odd (a second if-free boolean, with %) ──
     {
-      slug: "sort-the-candy",
-      title: "Even or Odd Candy 🍬",
+      slug: "even-or-odd",
+      title: "Even or Odd? 🍬",
       blurb: "Can you share the candy evenly with a friend?",
       xp: 25,
-      content: `# Even or Odd Candy 🍬
+      content: `# Even or Odd? 🍬
 
-If you can split candy into two equal piles, the number is **even**. The secret
-tool is \`%\` (called "remainder"). It tells you what's left over after dividing.
+If you can split your candy into two equal piles, the number is **even**. If one
+piece is left over, it's **odd**.
+
+The secret tool is \`%\` (say "remainder"). It tells you what's *left over* after
+sharing:
 
 \`\`\`js
-6 % 2  // 0  → nothing left over → even!
-7 % 2  // 1  → one left over → odd
+6 % 2   // 0  → nothing left over → even!
+7 % 2   // 1  → one left over → odd
 \`\`\`
 
+So \`n % 2 === 0\` is **true** when the number is even.
+
 ## Your task
-Write \`isEven(n)\` that **returns** \`true\` if \`n\` is even, and \`false\` if it's
+Write \`isEven(n)\` that hands back \`true\` when \`n\` is even, and \`false\` when it's
 odd.`,
       starterCode: `function isEven(n) {
-
+  return false; // change this: is there nothing left over?
 }
 `,
       blocks: ["return ", "n", " % ", "2", " === ", "0", ";"],
@@ -148,22 +575,25 @@ odd.`,
         "`n % 2` is 0 when the number splits evenly.",
         "`n % 2 === 0` is already a true/false answer — just return it!",
       ],
-      hintCode: [
-        `function isEven(n) {\n  return n % 2;\n}\n`,
-        `function isEven(n) {\n  return n % 2 === 0;\n}\n`,
-      ],
+      hintCode: [`function isEven(n) {\n  return n % 2 === 0;\n}\n`, undefined],
       explanation:
         "🍬 Sharing made easy! `n % 2 === 0` checks if there's nothing left over, which means the candy splits evenly. Even!",
     },
-    {
-      slug: "repeat-jump",
-      title: "Jump, Jump, Jump! 🦘",
-      blurb: "Make your character repeat a move lots of times.",
-      xp: 30,
-      content: `# Jump, Jump, Jump! 🦘
 
-Scratch has a **"repeat 10 times"** block. In code we use a **loop**. This one
-builds up a word by repeating it:
+    // ── 12. Read a loop (preview of Level 2) ──
+    {
+      slug: "what-is-a-loop",
+      title: "A Peek at Loops 🔁",
+      blurb: "See how computers repeat things — you'll write these in Level 2.",
+      xp: 15,
+      kind: "quiz",
+      content: `# A Peek at Loops 🔁
+
+You've reached the last lesson of Level 1 — amazing work! 🌟 Here's a peek at
+what's coming next.
+
+Sometimes you want to do the same thing **many times**. Instead of copying a line
+over and over, computers use a **loop**. This one builds up a laugh:
 
 \`\`\`js
 function laugh(times) {
@@ -171,134 +601,43 @@ function laugh(times) {
   for (let i = 0; i < times; i++) {
     sound = sound + "ha";
   }
-  return sound; // laugh(3) → "hahaha"
+  return sound;
 }
 \`\`\`
 
-## Your task
-Write \`jumps(n)\` that returns the word \`"jump "\` repeated \`n\` times (with a
-space after each). So \`jumps(2)\` → \`"jump jump "\`.`,
-      starterCode: `function jumps(n) {
-  let moves = "";
+\`laugh(3)\` adds "ha" three times and hands back \`"hahaha"\`.
 
-  return moves;
-}
-`,
-      solution: `function jumps(n) {
-  let moves = "";
-  for (let i = 0; i < n; i++) {
-    moves = moves + "jump ";
-  }
-  return moves;
-}`,
-      tests: [
-        { name: 'jumps(2) → "jump jump "', code: `assertEquals(jumps(2), "jump jump ");` },
-        { name: 'jumps(1) → "jump "', code: `assertEquals(jumps(1), "jump ");` },
-        { name: 'jumps(0) → ""', code: `assertEquals(jumps(0), "");` },
+You don't have to write this yet — just **read** it and get the idea. In
+**Level 2: Mini Games**, you'll write your own loops, one step at a time. 👇`,
+      questions: [
+        {
+          prompt: "What does `laugh(3)` hand back?",
+          options: ['"ha"', '"hahaha"', '"hahahaha"'],
+          answer: 1,
+          explanation: 'It adds "ha" three times: ha + ha + ha = "hahaha".',
+        },
+        {
+          prompt: "A loop is handy when you want to:",
+          options: [
+            "do something many times without writing it many times",
+            "never repeat anything",
+            "delete a variable",
+          ],
+          answer: 0,
+          explanation: "That's the whole point of a loop — repeat without copy-pasting.",
+        },
+        {
+          prompt: "What's next for you?",
+          options: [
+            "Level 2: Mini Games, where you write your own loops",
+            "Nothing — coding is over",
+            "Start again from the very beginning",
+          ],
+          answer: 0,
+          explanation:
+            "Onward to Level 2! You've got values, variables, math, true/false, and choices under your belt. 🎉",
+        },
       ],
-      hints: [
-        "The loop runs `n` times: `for (let i = 0; i < n; i++)`.",
-        'Each time, add to the word: `moves = moves + "jump ";`.',
-      ],
-      hintCode: [
-        `function jumps(n) {\n  let moves = "";\n  for (let i = 0; i < n; i++) {\n    \n  }\n  return moves;\n}\n`,
-        `function jumps(n) {\n  let moves = "";\n  for (let i = 0; i < n; i++) {\n    moves = moves + "jump ";\n  }\n  return moves;\n}\n`,
-      ],
-      explanation:
-        "🦘 Boing! The loop added `\"jump \"` again and again until it ran `n` times. That's how computers repeat things super fast!",
-    },
-    {
-      slug: "count-up",
-      title: "Count to a Number 🔢",
-      blurb: "Add up all the numbers from 1 up to your number.",
-      xp: 30,
-      content: `# Count to a Number 🔢
-
-Loops can **count and add** as they go. This one adds every number from 1 up to
-\`n\`:
-
-\`\`\`js
-function addUpTo(n) {
-  let total = 0;
-  for (let i = 1; i <= n; i++) {
-    total = total + i;
-  }
-  return total; // addUpTo(3) → 1 + 2 + 3 = 6
-}
-\`\`\`
-
-## Your task
-Write \`addUpTo(n)\` that returns the sum of all numbers from 1 to \`n\`. So
-\`addUpTo(4)\` is \`1 + 2 + 3 + 4 = 10\`.`,
-      starterCode: `function addUpTo(n) {
-  let total = 0;
-
-  return total;
-}
-`,
-      solution: `function addUpTo(n) {
-  let total = 0;
-  for (let i = 1; i <= n; i++) {
-    total = total + i;
-  }
-  return total;
-}`,
-      tests: [
-        { name: "addUpTo(4) → 10", code: `assertEquals(addUpTo(4), 10);` },
-        { name: "addUpTo(1) → 1", code: `assertEquals(addUpTo(1), 1);` },
-        { name: "addUpTo(5) → 15", code: `assertEquals(addUpTo(5), 15);` },
-      ],
-      hints: [
-        "Start the loop at 1 and go while `i <= n`.",
-        "Add each `i` onto `total`: `total = total + i;`.",
-      ],
-      hintCode: [
-        `function addUpTo(n) {\n  let total = 0;\n  for (let i = 1; i <= n; i++) {\n    \n  }\n  return total;\n}\n`,
-        `function addUpTo(n) {\n  let total = 0;\n  for (let i = 1; i <= n; i++) {\n    total = total + i;\n  }\n  return total;\n}\n`,
-      ],
-      explanation:
-        "🔢 Awesome counting! The loop visited every number from 1 to `n` and kept a running `total`. That's a super useful trick.",
-    },
-    {
-      slug: "who-is-taller",
-      title: "Who Is Taller? 📏",
-      blurb: "Compare two numbers and pick the bigger one.",
-      xp: 30,
-      content: `# Who Is Taller? 📏
-
-Computers can **compare** things and pick a winner. We can do it with \`if\`, or
-with a handy helper called \`Math.max\` that hands back the bigger number:
-
-\`\`\`js
-Math.max(3, 9)  // 9
-\`\`\`
-
-## Your task
-Write \`taller(a, b)\` that returns the **bigger** of the two heights. If they're
-the same, returning that number is fine.`,
-      starterCode: `function taller(a, b) {
-
-}
-`,
-      blocks: ["return ", "Math.max(a, b)", ";"],
-      solution: `function taller(a, b) {
-  return Math.max(a, b);
-}`,
-      tests: [
-        { name: "taller(120, 150) → 150", code: `assertEquals(taller(120, 150), 150);` },
-        { name: "taller(200, 199) → 200", code: `assertEquals(taller(200, 199), 200);` },
-        { name: "equal heights", code: `assertEquals(taller(100, 100), 100);` },
-      ],
-      hints: [
-        "`Math.max(a, b)` gives back whichever number is bigger.",
-        "Or use an `if`: `if (a > b) return a; else return b;`.",
-      ],
-      hintCode: [
-        `function taller(a, b) {\n  return Math.max(a, b);\n}\n`,
-        undefined,
-      ],
-      explanation:
-        "📏 Great compare! `Math.max` looks at both numbers and hands back the bigger one. Computers love comparing — it's how games decide who wins!",
     },
   ],
 };
